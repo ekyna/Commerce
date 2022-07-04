@@ -6,12 +6,15 @@ namespace Ekyna\Component\Commerce\Payment\Repository;
 
 use Ekyna\Component\Commerce\Common\Model\CurrencyInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentMethodInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface PaymentMethodRepositoryInterface
  * @package Ekyna\Component\Commerce\Payment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<PaymentMethodInterface>
  */
 interface PaymentMethodRepositoryInterface extends TranslatableRepositoryInterface
 {
@@ -20,7 +23,7 @@ interface PaymentMethodRepositoryInterface extends TranslatableRepositoryInterfa
      *
      * @param CurrencyInterface|null $currency Filter authorized currency.
      *
-     * @return PaymentMethodInterface[]
+     * @return array<PaymentMethodInterface>
      */
     public function findAvailable(CurrencyInterface $currency = null): array;
 
@@ -29,7 +32,7 @@ interface PaymentMethodRepositoryInterface extends TranslatableRepositoryInterfa
      *
      * @param CurrencyInterface|null $currency Filter authorized currency.
      *
-     * @return PaymentMethodInterface[]
+     * @return array<PaymentMethodInterface>
      */
     public function findEnabled(CurrencyInterface $currency = null): array;
 
@@ -39,7 +42,7 @@ interface PaymentMethodRepositoryInterface extends TranslatableRepositoryInterfa
      * @param string $name
      * @param bool   $available
      *
-     * @return PaymentMethodInterface[]
+     * @return array<PaymentMethodInterface>
      */
     public function findByFactoryName(string $name, bool $available = true): array;
 

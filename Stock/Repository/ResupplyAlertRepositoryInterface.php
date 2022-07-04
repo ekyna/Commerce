@@ -12,16 +12,13 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Class ResupplyAlertRepository
  * @package Ekyna\Component\Commerce\Stock\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<ResupplyAlert>
  */
 interface ResupplyAlertRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the resupply alert by email and subject.
-     *
-     * @param string           $email
-     * @param SubjectInterface $subject
-     *
-     * @return ResupplyAlert|null
      */
     public function findByEmailAndSubject(string $email, SubjectInterface $subject): ?ResupplyAlert;
 }

@@ -15,6 +15,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
  * Interface OrderInvoiceRepositoryInterface
  * @package Ekyna\Component\Commerce\Order\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements InvoiceRepositoryInterface<OrderInvoiceInterface>
  */
 interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
 {
@@ -25,7 +27,7 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
      */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
-        string $currency = null,
+        string            $currency = null,
         DateTimeInterface $from = null,
         DateTimeInterface $to = null
     ): array;
@@ -36,7 +38,7 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
     public function getDueTotal(CustomerInterface $customer = null): Decimal;
 
     /**
-     * Finds invoices of unpaid orders with due date lower than today.
+     * Finds invoices for unpaid orders with due date lower than today.
      *
      * @return array<OrderInvoiceInterface>
      */
@@ -53,7 +55,7 @@ interface OrderInvoiceRepositoryInterface extends InvoiceRepositoryInterface
     public function getFallTotal(CustomerInterface $customer = null): Decimal;
 
     /**
-     * Finds invoices of unpaid orders with due date greater than today.
+     * Finds invoices for unpaid orders with due date greater than today.
      *
      * @return array<OrderInvoiceInterface>
      */

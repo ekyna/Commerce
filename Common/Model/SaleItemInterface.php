@@ -45,7 +45,7 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function removeChild(SaleItemInterface $child): SaleItemInterface;
 
     /**
-     * @return array<SaleItemInterface>|Collection
+     * @return Collection<SaleItemInterface>
      */
     public function getChildren(): Collection;
 
@@ -86,22 +86,17 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
      */
     public function hasPublicChildren(): bool;
 
-    public function hasData(?string $key): bool;
+    public function getData(): array;
 
-    /**
-     * @return mixed
-     * @TODO PHP8 Union types
-     */
-    public function getData(?string $key);
+    public function setData(array $data): SaleItemInterface;
 
-    /**
-     * @param array|string $keyOrData The key of the data or the whole data as array.
-     * @param mixed        $data      The data assigned to the key (must be null if $keyOrData is the whole data).
-     * @TODO PHP8 Union types
-     */
-    public function setData($keyOrData, $data = null): SaleItemInterface;
+    public function hasDatum(string $key): bool;
 
-    public function unsetData(string $key): SaleItemInterface;
+    public function getDatum(string $key): string|int|null;
+
+    public function setDatum(string $key, string|int $data): SaleItemInterface;
+
+    public function unsetDatum(string $key): SaleItemInterface;
 
     /**
      * Returns the item level in the sale hierarchy.
@@ -129,11 +124,6 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
 
     /**
      * Returns the unique hash.
-     *
-     * @param bool $encode Whether to return the plain array data or the encoded string.
-     *
-     * @return array|string
-     * @TODO PHP8 Union types
      */
-    public function getHash(bool $encode = true);
+    public function getHash(): string;
 }

@@ -86,7 +86,7 @@ abstract class AbstractNotifyListener
                 continue;
             }
 
-            if ($n->hasData($key) && $n->getData($key) === $number) {
+            if ($n->getData($key) === $number) {
                 return true;
             }
         }

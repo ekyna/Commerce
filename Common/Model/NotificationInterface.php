@@ -19,25 +19,19 @@ interface NotificationInterface extends ResourceInterface
     public function setType(string $type): NotificationInterface;
 
     /**
-     * Returns whether the notification has data, optionally for the given key.
+     * Returns whether the notification has data for the given key.
      */
-    public function hasData(?string $key): bool;
+    public function hasData(string $key): bool;
 
     /**
-     * Returns the data, optionally for the given key.
-     *
-     * @return mixed
-     * @TODO PHP8 union types hint
+     * Returns the data for the given key.
      */
-    public function getData(?string $key);
+    public function getData(string $key): ?string;
 
     /**
-     * Sets the data, optionally for the given key.
-     *
-     * @param mixed $data
-     * @TODO PHP8 union types hint
+     * Sets the data for the given key.
      */
-    public function setData($data, string $key = null): NotificationInterface;
+    public function setData(string $key, string $data): NotificationInterface;
 
     public function getSentAt(): ?DateTimeInterface;
 

@@ -15,13 +15,14 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderPaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 
 /**
  * Class OrderPaymentRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderPaymentInterface|null findOneByKey(string $key)
+ * @implements PaymentRepositoryInterface<OrderPaymentInterface>
  */
 class OrderPaymentRepository extends AbstractPaymentRepository implements OrderPaymentRepositoryInterface
 {
@@ -30,10 +31,10 @@ class OrderPaymentRepository extends AbstractPaymentRepository implements OrderP
     private ?Query $customerPaymentCountQuery = null;
     private ?Query $customerRefundCountQuery  = null;
 
-    public function findOneByOrderAndKey(OrderInterface $quote, string $key): ?OrderPaymentInterface
+    public function findOneByOrderAndKey(OrderInterface $order, string $key): ?OrderPaymentInterface
     {
         return $this->findOneBy([
-            'quote' => $quote,
+            'order' => $order,
             'key'   => $key,
         ]);
     }

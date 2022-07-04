@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Tests;
 
 use Acme\Product\Entity as Acme;
 use DateTime;
+use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Context\Context;
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
@@ -24,6 +25,8 @@ use Ekyna\Component\Commerce\Shipment\Entity as ShipmentE;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Entity as StockE;
 use Ekyna\Component\Commerce\Stock\Model as StockM;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolver;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
@@ -39,6 +42,8 @@ use Symfony\Component\Intl\Countries;
 use Symfony\Component\Intl\Currencies;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
+
+use function is_object;
 
 /**
  * Class Fixture
@@ -133,17 +138,13 @@ class Fixture
     /**
      * Creates a tax.
      *
-     * Defaults : [
-     *     'name'    => null,
-     *     'rate'    => null,
-     *     'country' => null,
-     * ]
-     *
-     * @param PricingE\Tax|array|int|string $data
-     *
-     * @return PricingE\Tax
+     * @psalm-param array{
+     *     name:    string,
+     *     code:    string,
+     *     country: string|int
+     * } $data
      */
-    public static function tax($data = null): PricingE\Tax
+    public static function tax(PricingE\Tax|array|int|string $data = []): PricingE\Tax
     {
         self::loadTaxes();
 
@@ -168,7 +169,7 @@ class Fixture
         $tax
             ->setCode($data['code'])
             ->setName($data['name'])
-            ->setRate(new Decimal((string)$data['rate']));
+            ->setRate(self::decimal($data['rate']));
 
         if (null !== $datum = $data['country']) {
             $tax->setCountry(self::country($datum));
@@ -180,17 +181,14 @@ class Fixture
     /**
      * Creates a tax group.
      *
-     * Defaults : [
-     *     'name'    => null,
-     *     'rate'    => null,
-     *     'country' => null,
-     * ]
-     *
-     * @param PricingE\TaxGroup|array|int|string $data
-     *
-     * @return PricingE\TaxGroup
+     * @psalm-param array{
+     *     name:    string,
+     *     code:    string,
+     *     default: bool,
+     *     taxes:   array,
+     * } $data
      */
-    public static function taxGroup($data = null): PricingE\TaxGroup
+    public static function taxGroup(PricingE\TaxGroup|array|int|string $data = []): PricingE\TaxGroup
     {
         self::loadTaxes();
 
@@ -202,8 +200,8 @@ class Fixture
         }
 
         $data = array_replace([
-            'code'    => null,
             'name'    => null,
+            'code'    => null,
             'default' => false,
             'taxes'   => [],
         ], $data);
@@ -223,22 +221,18 @@ class Fixture
     /**
      * Creates a tax rule.
      *
-     * Defaults : [
-     *     'code'     => null,
-     *     'name'     => null,
-     *     'customer' => false,
-     *     'business' => false,
-     *     'sources'  => [],
-     *     'targets'  => [],
-     *     'taxes'    => [],
-     *     'priority' => 0,
-     * ]
-     *
-     * @param PricingE\TaxRule|array|int|string $data
-     *
-     * @return PricingE\TaxRule
+     * @psalm-param array{
+     *     code:     string,
+     *     name:     string,
+     *     customer: bool,
+     *     business: bool,
+     *     sources:  array,
+     *     targets:  array,
+     *     taxes:    array,
+     *     priority: int,
+     * } $data
      */
-    public static function taxRule($data = null): PricingE\TaxRule
+    public static function taxRule(PricingE\TaxRule|array|int|string $data = []): PricingE\TaxRule
     {
         self::loadTaxes();
 
@@ -285,17 +279,13 @@ class Fixture
     /**
      * Creates a currency.
      *
-     * Defaults : [
-     *     'name'    => null,
-     *     'code'    => null,
-     *     'enabled' => true,
-     * ]
-     *
-     * @param CommonE\Currency|array|int|string $data
-     *
-     * @return CommonE\Currency
+     * @psalm-param array{
+     *     name:    string,
+     *     code:    string,
+     *     enabled: bool
+     * } $data
      */
-    public static function currency($data = null): CommonE\Currency
+    public static function currency(CommonE\Currency|array|int|string|null $data = null): CommonE\Currency
     {
         if (null === $data) {
             $data = self::CURRENCY_EUR;
@@ -326,7 +316,7 @@ class Fixture
             'enabled' => true,
         ], $data);
 
-        if (!isset($data['code']) || empty($data['code'])) {
+        if (empty($data['code'])) {
             throw new LogicException('Country code is required.');
         }
 
@@ -350,23 +340,19 @@ class Fixture
     /**
      * Creates a context.
      *
-     * Defaults: [
-     *     'customer_group'   => [],
-     *     'invoice_country'  => self::COUNTRY_FR,
-     *     'delivery_country' => self::COUNTRY_FR,
-     *     'shipping_country' => self::COUNTRY_FR,
-     *     'currency'         => self::CURRENCY_EUR,
-     *     'locale'           => 'fr',
-     *     'vat_display_mode' => VatDisplayModes::MODE_NET,
-     *     'business'         => null,
-     *     'tax_exempt'       => null,
-     *     'date'             => null,
-     *     'admin'            => null,
-     * ]
-     *
-     * @param array $data
-     *
-     * @return ContextInterface
+     * @psalm-param array{
+     *     customer_group:   mixed,
+     *     invoice_country:  string,
+     *     delivery_country: string,
+     *     shipping_country: string,
+     *     currency:         string,
+     *     locale:           string,
+     *     vat_display_mode: string,
+     *     business:         bool,
+     *     tax_exempt:       bool,
+     *     date:             DateTimeInterface|string,
+     *     admin:            bool,
+     * } $data
      */
     public static function context(array $data): ContextInterface
     {
@@ -426,17 +412,13 @@ class Fixture
     /**
      * Creates a country.
      *
-     * Defaults : [
-     *     'name'    => null,
-     *     'code'    => null,
-     *     'enabled' => true,
-     * ]
-     *
-     * @param CommonE\Country|array|int|string $data
-     *
-     * @return CommonE\Country
+     * @psalm-param array{
+     *     name:    string,
+     *     code:    string,
+     *     enabled: bool,
+     * } $data
      */
-    public static function country($data = null): CommonE\Country
+    public static function country(CommonE\Country|array|int|string|null $data = null): CommonE\Country
     {
         if (null === $data) {
             $data = self::COUNTRY_FR;
@@ -467,7 +449,7 @@ class Fixture
             'enabled' => true,
         ], $data);
 
-        if (!isset($data['code']) || empty($data['code'])) {
+        if (empty($data['code'])) {
             throw new LogicException('Country code is required.');
         }
 
@@ -491,21 +473,17 @@ class Fixture
     /**
      * Creates a customer.
      *
-     * Defaults : [
-     *     'group'               => null,
-     *     'company'             => 'Acme',
-     *     'first_name'          => 'John',
-     *     'last_name'           => 'Doe',
-     *     'email'               => 'john.doe@acme.org',
-     *     'credit_balance'      => 0.,
-     *     'outstanding_balance' => 0.,
-     * ]
-     *
-     * @param CustomerE\Customer|array|int|string $data
-     *
-     * @return CustomerE\Customer
+     * @psalm-param array{
+     *     group:               mixed,
+     *     company:             string,
+     *     first_name:          string,
+     *     last_name:           string,
+     *     email:               string,
+     *     credit_balance:      string|int|float,
+     *     outstanding_balance: string|int|float,
+     * } $data
      */
-    public static function customer($data = []): CustomerE\Customer
+    public static function customer(CustomerE\Customer|array|int|string $data = []): CustomerE\Customer
     {
         /** @var CustomerE\Customer $customer */
         [$customer, $return] = self::create($data, CustomerE\Customer::class);
@@ -520,17 +498,17 @@ class Fixture
             'first_name'          => 'John',
             'last_name'           => 'Doe',
             'email'               => 'john.doe@acme.org',
-            'credit_balance'      => 0.,
-            'outstanding_balance' => 0.,
+            'credit_balance'      => 0,
+            'outstanding_balance' => 0,
         ], $data);
 
         $customer
             ->setCompany($data['company'])
-            ->setFirstName($data['first_name'])
-            ->setLastName($data['last_name'])
             ->setEmail($data['email'])
-            ->setCreditBalance($data['credit_balance'])
-            ->setOutstandingBalance($data['outstanding_balance']);
+            ->setCreditBalance(self::decimal($data['credit_balance']))
+            ->setOutstandingBalance(self::decimal($data['outstanding_balance']))
+            ->setFirstName($data['first_name'])
+            ->setLastName($data['last_name']);
 
         if (null !== $datum = $data['group']) {
             $customer->setCustomerGroup(self::customerGroup($datum));
@@ -542,17 +520,13 @@ class Fixture
     /**
      * Creates a customer.
      *
-     * Defaults : [
-     *     'name'     => 'Unknown',
-     *     'default'  => false,
-     *     'business' => false,
-     * ]
-     *
-     * @param CustomerE\CustomerGroup|array|int|string $data
-     *
-     * @return CustomerE\CustomerGroup
+     * @psalm-param array{
+     *     name:     string,
+     *     default:  bool,
+     *     business: bool
+     * } $data
      */
-    public static function customerGroup($data = []): CustomerE\CustomerGroup
+    public static function customerGroup(CustomerE\CustomerGroup|array|int|string $data = []): CustomerE\CustomerGroup
     {
         if (is_string($data) && isset(self::CUSTOMER_GROUPS_MAP[$data]) && !self::has($data)) {
             $data = array_replace(self::CUSTOMER_GROUPS_MAP[$data], [
@@ -588,24 +562,24 @@ class Fixture
     /**
      * Creates a new stock unit.
      *
-     * Defaults : [
-     *     'subject'     => null,
-     *     'item'        => null,
-     *     'ordered'     => 0.,
-     *     'received'    => 0.,
-     *     'adjusted'    => 0.,
-     *     'sold'        => 0.,
-     *     'shipped'     => 0.,
-     *     'locked'      => 0.,
-     *     'assignments' => [],
-     *     'adjustments' => [],
-     * ]
-     *
-     * @param Acme\StockUnit|array|int|string $data
-     *
-     * @return Acme\StockUnit
+     * @psalm-param array{
+     *     subject:        mixed,
+     *     item:           mixed,
+     *     eda:            DateTimeInterface|string,
+     *     state:          string,
+     *     net_price:      string|int|float,
+     *     shipping_price: string|int|float,
+     *     ordered:        string|int|float,
+     *     received:       string|int|float,
+     *     adjusted:       string|int|float,
+     *     sold:           string|int|float,
+     *     shipped:        string|int|float,
+     *     locked:         string|int|float,
+     *     assignments:    array,
+     *     adjustments:    array,
+     * } $data
      */
-    public static function stockUnit($data = []): Acme\StockUnit
+    public static function stockUnit(Acme\StockUnit|array|int|string $data = []): Acme\StockUnit
     {
         /** @var Acme\StockUnit $unit */
         [$unit, $return] = self::create($data, Acme\StockUnit::class);
@@ -618,14 +592,15 @@ class Fixture
             'subject'        => null,
             'item'           => null,
             'eda'            => null,
-            'net_price'      => 0.,
-            'shipping_price' => 0.,
-            'ordered'        => 0.,
-            'received'       => 0.,
-            'adjusted'       => 0.,
-            'sold'           => 0.,
-            'shipped'        => 0.,
-            'locked'         => 0.,
+            'state'          => null,
+            'net_price'      => 0,
+            'shipping_price' => 0,
+            'ordered'        => 0,
+            'received'       => 0,
+            'adjusted'       => 0,
+            'sold'           => 0,
+            'shipped'        => 0,
+            'locked'         => 0,
             'assignments'    => [],
             'adjustments'    => [],
         ], $data);
@@ -657,14 +632,14 @@ class Fixture
         }
 
         $unit
-            ->setNetPrice(new Decimal((string)$data['net_price']))
-            ->setShippingPrice(new Decimal((string)$data['shipping_price']))
-            ->setOrderedQuantity(new Decimal((string)$data['ordered']))
-            ->setReceivedQuantity(new Decimal((string)$data['received']))
-            ->setAdjustedQuantity(new Decimal((string)$data['adjusted']))
-            ->setSoldQuantity(new Decimal((string)$data['sold']))
-            ->setShippedQuantity(new Decimal((string)$data['shipped']))
-            ->setLockedQuantity(new Decimal((string)$data['locked']));
+            ->setNetPrice(self::decimal($data['net_price']))
+            ->setShippingPrice(self::decimal($data['shipping_price']))
+            ->setOrderedQuantity(self::decimal($data['ordered']))
+            ->setReceivedQuantity(self::decimal($data['received']))
+            ->setAdjustedQuantity(self::decimal($data['adjusted']))
+            ->setSoldQuantity(self::decimal($data['sold']))
+            ->setShippedQuantity(self::decimal($data['shipped']))
+            ->setLockedQuantity(self::decimal($data['locked']));
 
         if (null !== $datum = $data['eda']) {
             $unit->setEstimatedDateOfArrival(self::date($datum));
@@ -678,7 +653,11 @@ class Fixture
             $unit->addStockAdjustment(self::stockAdjustment($datum));
         }
 
-        self::resolveStockUnitState($unit);
+        if (null !== $datum = $data['state']) {
+            $unit->setState($datum);
+        } else {
+            self::resolveStockUnitState($unit);
+        }
 
         return $unit;
     }
@@ -686,20 +665,17 @@ class Fixture
     /**
      * Creates a stock assignment.
      *
-     * Defaults : [
-     *     'unit'    => null,
-     *     'item'    => null,
-     *     'sold'    => 0.,
-     *     'shipped' => 0.,
-     *     'locked'  => 0.,
-     * ]
-     *
-     * @param OrderE\OrderItemStockAssignment|array|int|string $data
-     *
-     * @return OrderE\OrderItemStockAssignment
+     * @psalm-param array{
+     *     unit:    mixed,
+     *     item:    mixed,
+     *     sold:    string|int|float,
+     *     shipped: string|int|float,
+     *     locked:  string|int|float,
+     * } $data
      */
-    public static function stockAssignment($data = []): OrderE\OrderItemStockAssignment
-    {
+    public static function stockAssignment(
+        OrderE\OrderItemStockAssignment|array|int|string $data = []
+    ): OrderE\OrderItemStockAssignment {
         /** @var OrderE\OrderItemStockAssignment $assignment */
         [$assignment, $return] = self::create($data, OrderE\OrderItemStockAssignment::class);
 
@@ -710,9 +686,9 @@ class Fixture
         $data = array_replace([
             'unit'    => null,
             'item'    => null,
-            'sold'    => 0.,
-            'shipped' => 0.,
-            'locked'  => 0.,
+            'sold'    => 0,
+            'shipped' => 0,
+            'locked'  => 0,
         ], $data);
 
         if (null !== $datum = $data['unit']) {
@@ -724,9 +700,9 @@ class Fixture
         }
 
         $assignment
-            ->setSoldQuantity(new Decimal((string)$data['sold']))
-            ->setShippedQuantity(new Decimal((string)$data['shipped']))
-            ->setLockedQuantity(new Decimal((string)$data['locked']));
+            ->setSoldQuantity(self::decimal($data['sold']))
+            ->setShippedQuantity(self::decimal($data['shipped']))
+            ->setLockedQuantity(self::decimal($data['locked']));
 
         return $assignment;
     }
@@ -734,17 +710,13 @@ class Fixture
     /**
      * Creates a new stock adjustment.
      *
-     * Defaults :[
-     *     'unit'     => null,
-     *     'quantity' => 1.,
-     *     'debit'    => false,
-     * ]
-     *
-     * @param StockE\StockAdjustment|array|int|string $data
-     *
-     * @return StockE\StockAdjustment
+     * @psalm-param array{
+     *     unit:     mixed,
+     *     quantity: string|int|float,
+     *     debit:    bool,
+     * } $data
      */
-    public static function stockAdjustment($data = []): StockE\StockAdjustment
+    public static function stockAdjustment(StockE\StockAdjustment|array|int|string $data = []): StockE\StockAdjustment
     {
         /** @var StockE\StockAdjustment $adjustment */
         [$adjustment, $return] = self::create($data, StockE\StockAdjustment::class);
@@ -755,7 +727,7 @@ class Fixture
 
         $data = array_replace([
             'unit'     => null,
-            'quantity' => 1.,
+            'quantity' => 1,
             'debit'    => false,
         ], $data);
 
@@ -764,7 +736,7 @@ class Fixture
         }
 
         $adjustment
-            ->setQuantity(new Decimal((string)$data['quantity']))
+            ->setQuantity(self::decimal($data['quantity']))
             ->setReason($data['debit']
                 ? StockM\StockAdjustmentReasons::REASON_DEBIT
                 : StockM\StockAdjustmentReasons::REASON_CREDIT
@@ -776,18 +748,20 @@ class Fixture
     /**
      * Creates a new subject (acme product).
      *
-     * Defaults : [
-     *     'designation' => 'Apple iPhone',
-     *     'reference'   => 'APPL-IPHO',
-     *     'price'       => 249.,
-     *     'weight'      => .8,
-     * ]
-     *
-     * @param Acme\Product|array|int|string $data
-     *
-     * @return Acme\Product
+     * @psalm-param array{
+     *     designation:  string,
+     *     reference:    string,
+     *     price:        string|int|float,
+     *     weight:       string|int|float,
+     *     mode: string,
+     *     state: string,
+     *     in: string|int|float,
+     *     available: string|int|float,
+     *     virtual: string|int|float,
+     *     eda: DateTimeInterface|string,
+     * } $data
      */
-    public static function subject($data = []): Acme\Product
+    public static function subject(Acme\Product|array|int|string $data = []): Acme\Product
     {
         /** @var Acme\Product $subject */
         [$subject, $return] = self::create($data, Acme\Product::class);
@@ -800,18 +774,33 @@ class Fixture
             'designation' => 'Subject Test',
             'reference'   => 'SU-TE',
             'price'       => 49.99,
-            'weight'      => .8,
+            'weight'      => 0.8,
             'tax_group'   => self::TAX_GROUP_NORMAL,
+            'mode'        => StockSubjectModes::MODE_DISABLED,
+            'state'       => StockSubjectStates::STATE_IN_STOCK,
+            'in'          => 0,
+            'available'   => 0,
+            'virtual'     => 0,
+            'eda'         => null,
         ], $data);
 
         $subject
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice(new Decimal((string)$data['price']))
-            ->setWeight(new Decimal((string)$data['weight']));
+            ->setNetPrice(self::decimal($data['price']))
+            ->setWeight(self::decimal($data['weight']))
+            ->setStockMode($data['mode'])
+            ->setStockState($data['state'])
+            ->setInStock(self::decimal($data['in']))
+            ->setAvailableStock(self::decimal($data['available']))
+            ->setVirtualStock(self::decimal($data['virtual']));
 
         if (null !== $datum = $data['tax_group']) {
             $subject->setTaxGroup(self::taxGroup($datum));
+        }
+
+        if (null !== $datum = $data['eda']) {
+            $subject->setEstimatedDateOfArrival(self::date($datum));
         }
 
         return $subject;
@@ -820,18 +809,14 @@ class Fixture
     /**
      * Creates a new supplier.
      *
-     * Defaults : [
-     *     'name'     => 'Foo supply',
-     *     'currency' => self::CURRENCY_EUR,
-     *     'tax'      => null,
-     *     'carrier'  => null,
-     * ]
-     *
-     * @param SupplierE\Supplier|array|int|string $data
-     *
-     * @return SupplierE\Supplier
+     * @psalm-param array{
+     *     name:     string,
+     *     currency: string,
+     *     tax:      mixed,
+     *     carrier:  mixed,
+     * } $data
      */
-    public static function supplier($data = []): SupplierE\Supplier
+    public static function supplier(SupplierE\Supplier|array|int|string $data = []): SupplierE\Supplier
     {
         /** @var SupplierE\Supplier $subject */
         [$subject, $return] = self::create($data, SupplierE\Supplier::class);
@@ -870,17 +855,13 @@ class Fixture
     /**
      * Creates a new supplier carrier.
      *
-     * Defaults : [
-     *     'name' => 'Foo carrier',
-     *     'tax'  => null,
-     * ]
-     *
-     * @param SupplierE\SupplierCarrier|array|int|string $data
-     *
-     * @return SupplierE\SupplierCarrier
+     * @psalm-param array{
+     *     name: string,
+     *     tax:  mixed,
+     * } $data
      */
-    public static function supplierCarrier($data = []): SupplierE\SupplierCarrier
-    {
+    public static function supplierCarrier(SupplierE\SupplierCarrier|array|int|string $data = []
+    ): SupplierE\SupplierCarrier {
         /** @var SupplierE\SupplierCarrier $carrier */
         [$carrier, $return] = self::create($data, SupplierE\SupplierCarrier::class);
 
@@ -905,14 +886,10 @@ class Fixture
     /**
      * Creates a new supplier address.
      *
-     * @param SupplierE\SupplierAddress|array|int|string $data
-     *
-     * @return SupplierE\SupplierAddress
-     *
      * @see Fixture::fillAddress()
      */
-    public static function supplierAddress($data = []): SupplierE\SupplierAddress
-    {
+    public static function supplierAddress(SupplierE\SupplierAddress|array|int|string $data = []
+    ): SupplierE\SupplierAddress {
         /** @var SupplierE\SupplierAddress $address */
         [$address, $return] = self::create($data, SupplierE\SupplierAddress::class);
 
@@ -928,25 +905,21 @@ class Fixture
     /**
      * Creates a new supplier product.
      *
-     * Defaults : [
-     *     'supplier'    => null,
-     *     'subject'     => null,
-     *     'tax_group'   => self::TAX_GROUP_NORMAL,
-     *     'designation' => 'Apple iPhone',
-     *     'reference'   => 'APPL-IPHO',
-     *     'price'       => 190.0,
-     *     'weight'      => 0.8,
-     *     'available'   => 0,
-     *     'ordered'     => 0,
-     *     'eda'         => null,
-     * ]
-     *
-     * @param SupplierE\SupplierProduct|array|int|string $data
-     *
-     * @return SupplierE\SupplierProduct
+     * @psalm-param array{
+     *     supplier:    mixed,
+     *     subject:     mixed,
+     *     tax_group:   string,
+     *     designation: string,
+     *     reference:   string,
+     *     price:       string|int|float,
+     *     weight:      string|int|float,
+     *     available:   string|int|float,
+     *     ordered:     string|int|float,
+     *     eda:         DateTimeInterface|string,
+     * } $data
      */
-    public static function supplierProduct($data = []): SupplierE\SupplierProduct
-    {
+    public static function supplierProduct(SupplierE\SupplierProduct|array|int|string $data = []
+    ): SupplierE\SupplierProduct {
         /** @var SupplierE\SupplierProduct $product */
         [$product, $return] = self::create($data, SupplierE\SupplierProduct::class);
 
@@ -970,10 +943,10 @@ class Fixture
         $product
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice(new Decimal((string)$data['price']))
-            ->setWeight(new Decimal((string)$data['weight']))
-            ->setAvailableStock($data['available'])
-            ->setOrderedStock($data['ordered']);
+            ->setNetPrice(self::decimal($data['price']))
+            ->setWeight(self::decimal($data['weight']))
+            ->setAvailableStock(self::decimal($data['available']))
+            ->setOrderedStock(self::decimal($data['ordered']));
 
         if (null !== $datum = $data['supplier']) {
             $product->setSupplier(self::supplier($datum));
@@ -997,29 +970,25 @@ class Fixture
     /**
      * Creates a new supplier order.
      *
-     * Defaults : [
-     *     'currency'        => self::CURRENCY_EUR,
-     *     'shipping_cost'   => 0,
-     *     'discount_total'  => 0,
-     *     'tax_total'       => 0,
-     *     'payment_total'   => 0,
-     *     'customs_tax'     => 0,
-     *     'customs_vat'     => 0,
-     *     'forwarder_fee'   => 0,
-     *     'forwarder_total' => 0,
-     *     'created_at'      => 'now',
-     *     'ordered_at'      => null,
-     *     'supplier'        => null,
-     *     'carrier'         => null,
-     *     'warehouse'       => null,
-     *     'items'           => [],
-     * ]
-     *
-     * @param SupplierE\SupplierOrder|array|int|string $data
-     *
-     * @return SupplierE\SupplierOrder
+     * @psalm-param array{
+     *     currency:        string,
+     *     shipping_cost:   string|int|float,
+     *     discount_total:  string|int|float,
+     *     tax_total:       string|int|float,
+     *     payment_total:   string|int|float,
+     *     customs_tax:     string|int|float,
+     *     customs_vat:     string|int|float,
+     *     forwarder_fee:   string|int|float,
+     *     forwarder_total: string|int|float,
+     *     created_at:      DateTimeInterface|string,
+     *     ordered_at:      DateTimeInterface|string,
+     *     supplier:        mixed,
+     *     carrier:         mixed,
+     *     warehouse:       mixed,
+     *     items:           array,
+     * } $data
      */
-    public static function supplierOrder($data = []): SupplierE\SupplierOrder
+    public static function supplierOrder(SupplierE\SupplierOrder|array|int|string $data = []): SupplierE\SupplierOrder
     {
         /** @var SupplierE\SupplierOrder $order */
         [$order, $return] = self::create($data, SupplierE\SupplierOrder::class);
@@ -1050,15 +1019,15 @@ class Fixture
 
         $order
             ->setCurrency(self::currency($data['currency']))
-            ->setShippingCost(new Decimal((string)$data['shipping_cost']))
-            ->setDiscountTotal(new Decimal((string)$data['discount_total']))
-            ->setTaxTotal(new Decimal((string)$data['tax_total']))
-            ->setPaymentTotal(new Decimal((string)$data['payment_total']))
-            ->setCustomsTax(new Decimal((string)$data['customs_tax']))
-            ->setCustomsVat(new Decimal((string)$data['customs_vat']))
-            ->setForwarderFee(new Decimal((string)$data['forwarder_fee']))
-            ->setForwarderTotal(new Decimal((string)$data['forwarder_total']))
-            ->setExchangeRate(new Decimal((string)$data['exchange_rate']));
+            ->setShippingCost(self::decimal($data['shipping_cost']))
+            ->setDiscountTotal(self::decimal($data['discount_total']))
+            ->setTaxTotal(self::decimal($data['tax_total']))
+            ->setPaymentTotal(self::decimal($data['payment_total']))
+            ->setCustomsTax(self::decimal($data['customs_tax']))
+            ->setCustomsVat(self::decimal($data['customs_vat']))
+            ->setForwarderFee(self::decimal($data['forwarder_fee']))
+            ->setForwarderTotal(self::decimal($data['forwarder_total']))
+            ->setExchangeRate(self::decimal($data['exchange_rate']));
 
         if (null !== $datum = $data['exchange_date']) {
             $order->setExchangeDate(self::date($datum));
@@ -1094,25 +1063,21 @@ class Fixture
     /**
      * Creates a new supplier order item.
      *
-     * Defaults : [
-     *     'order'     => null,
-     *     'product'   => null,
-     *     'subject'   => null,
-     *     'unit'      => null,
-     *     'tax_group' => null,
-     *     'designation' => '',
-     *     'reference'   => '',
-     *     'price'       => 0.,
-     *     'weight'      => 0.,
-     *     'quantity'  => 1.,
-     * ]
-     *
-     * @param SupplierE\SupplierOrderItem|array|int|string $data
-     *
-     * @return SupplierE\SupplierOrderItem
+     * @psalm-param array{
+     *     order:       mixed,
+     *     product:     mixed,
+     *     subject:     mixed,
+     *     unit:        mixed,
+     *     tax_group:   mixed,
+     *     designation: string,
+     *     reference:   string,
+     *     price:       string|int|float,
+     *     weight:      string|int|float,
+     *     quantity:    string|int|float,
+     * } $data
      */
-    public static function supplierOrderItem($data = []): SupplierE\SupplierOrderItem
-    {
+    public static function supplierOrderItem(SupplierE\SupplierOrderItem|array|int|string $data = []
+    ): SupplierE\SupplierOrderItem {
         /** @var SupplierE\SupplierOrderItem $item */
         [$item, $return] = self::create($data, SupplierE\SupplierOrderItem::class);
 
@@ -1128,9 +1093,9 @@ class Fixture
             'tax_group'   => null,
             'designation' => '',
             'reference'   => '',
-            'price'       => 0.,
-            'weight'      => 0.,
-            'quantity'    => 1.,
+            'price'       => 0,
+            'weight'      => 0,
+            'quantity'    => 1,
         ], $data);
 
         if (null !== $datum = $data['order']) {
@@ -1173,9 +1138,9 @@ class Fixture
         $item
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice(new Decimal((string)$data['price']))
-            ->setWeight(new Decimal((string)$data['weight']))
-            ->setQuantity(new Decimal((string)$data['quantity']));
+            ->setNetPrice(self::decimal($data['price']))
+            ->setWeight(self::decimal($data['weight']))
+            ->setQuantity(self::decimal($data['quantity']));
 
         if ($subject) {
             self::assignSubject($item, $subject);
@@ -1187,21 +1152,17 @@ class Fixture
     /**
      * Creates a payment.
      *
-     * Defaults : [
-     *     'order'         => null,
-     *     'method'        => null,
-     *     'state'         => PaymentStates::STATE_CAPTURED,
-     *     'currency'      => self::CURRENCY_EUR,
-     *     'amount'        => 0.,
-     *     'exchange_rate' => 1.,
-     *     'exchange_date' => 'now',
-     * ]
-     *
-     * @param OrderE\OrderPayment|array|int|string $data
-     *
-     * @return OrderE\OrderPayment
+     * @psalm-param array{
+     *     order:         mixed,
+     *     method:        mixed,
+     *     state:         string,
+     *     currency:      string,
+     *     amount:        string|int|float,
+     *     exchange_rate: string|int|float,
+     *     exchange_date: DateTimeInterface|string,
+     * } $data
      */
-    public static function payment($data = []): OrderE\OrderPayment
+    public static function payment(OrderE\OrderPayment|array|int|string $data = []): OrderE\OrderPayment
     {
         /** @var OrderE\OrderPayment $payment */
         [$payment, $return] = self::create($data, OrderE\OrderPayment::class);
@@ -1216,8 +1177,8 @@ class Fixture
             'refund'        => false,
             'state'         => PaymentStates::STATE_CAPTURED,
             'currency'      => self::CURRENCY_EUR,
-            'amount'        => 0.,
-            'exchange_rate' => 1.,
+            'amount'        => 0,
+            'exchange_rate' => 1,
             'exchange_date' => 'now',
         ], $data);
 
@@ -1230,12 +1191,12 @@ class Fixture
         }
 
         $payment
-            ->setRefund($data['refund'])
-            ->setAmount($data['amount'])
-            ->setRealAmount($data['amount'])
             ->setCurrency(self::currency($data['currency']))
-            ->setExchangeRate($data['exchange_rate'])
-            ->setState($data['state']);
+            ->setState($data['state'])
+            ->setRefund($data['refund'])
+            ->setAmount(self::decimal($data['amount']))
+            ->setRealAmount(self::decimal($data['amount']))
+            ->setExchangeRate(self::decimal($data['exchange_rate']));
 
         if (null !== $datum = $data['exchange_date']) {
             $payment->setExchangeDate(self::date($datum));
@@ -1245,19 +1206,15 @@ class Fixture
     }
 
     /**
-     * Creates a payment.
+     * Creates a payment method.
      *
-     * Defaults : [
-     *     'manual'      => false,
-     *     'outstanding' => false,
-     *     'credit'      => false,
-     * ]
-     *
-     * @param Acme\PaymentMethod|array|int|string $data
-     *
-     * @return Acme\PaymentMethod
+     * @psalm-param array{
+     *     manual:      bool,
+     *     outstanding: bool,
+     *     credit:      bool,
+     * }
      */
-    public static function paymentMethod($data = []): Acme\PaymentMethod
+    public static function paymentMethod(Acme\PaymentMethod|array|int|string $data = []): Acme\PaymentMethod
     {
         if (is_string($data) && isset(self::PAYMENT_METHODS_MAP[$data]) && !self::has($data)) {
             $data = array_replace(self::PAYMENT_METHODS_MAP[$data], [
@@ -1297,39 +1254,35 @@ class Fixture
     /**
      * Creates a new order.
      *
-     * Defaults : [
-     *     'currency'             => self::CURRENCY_EUR,
-     *     'state'                => OrderM\OrderStates::STATE_NEW,
-     *     'customer'             => null,
-     *     'invoice_address'      => null,
-     *     'delivery_address'     => null,
-     *     'weight_total'         => 0.,
-     *     'shipment_weight'      => 0.,
-     *     'shipment_amount'      => 0.,
-     *     'grand_total'          => 0.,
-     *     'deposit_total'        => 0.,
-     *     'pending_total'        => 0.,
-     *     'paid_total'           => 0.,
-     *     'outstanding_accepted' => 0.,
-     *     'outstanding_expired'  => 0.,
-     *     'exchange_rate'        => null,
-     *     'exchange_date'        => null,
-     *     'invoice_total'        => 0.,
-     *     'credit_total'         => 0.,
-     *     'created_at'           => 'now',
-     *     'items'                => [],
-     *     'discounts'            => [],
-     *     'taxes'                => [],
-     *     'payments'             => [],
-     *     'shipments'            => [],
-     *     'invoices'             => [],
-     * ]
-     *
-     * @param OrderE\Order|array|int|string $data
-     *
-     * @return OrderE\Order
+     * @psalm-param array{
+     *     currency:             string,
+     *     state:                string,
+     *     customer:             mixed,
+     *     invoice_address:      mixed,
+     *     delivery_address:     mixed,
+     *     weight_total:         string|int|float,
+     *     shipment_weight:      string|int|float,
+     *     shipment_amount:      string|int|float,
+     *     grand_total:          string|int|float,
+     *     deposit_total:        string|int|float,
+     *     pending_total:        string|int|float,
+     *     paid_total:           string|int|float,
+     *     outstanding_accepted: string|int|float,
+     *     outstanding_expired:  string|int|float,
+     *     exchange_rate:        string|int|float,
+     *     exchange_date:        DateTimeInterface|string,
+     *     invoice_total:        string|int|float,
+     *     credit_total:         string|int|float,
+     *     created_at:           DateTimeInterface|string,
+     *     items:                array,
+     *     discounts:            array,
+     *     taxes:                array,
+     *     payments:             array,
+     *     shipments:            array,
+     *     invoices:             array,
+     * } $data
      */
-    public static function order($data = []): OrderE\Order
+    public static function order(OrderE\Order|array|int|string $data = []): OrderE\Order
     {
         /** @var OrderE\Order $order */
         [$order, $return] = self::create($data, OrderE\Order::class);
@@ -1353,18 +1306,18 @@ class Fixture
             'same_address'         => true,
             'shipment_method'      => null,
             'shipment_weight'      => null,
-            'shipment_amount'      => 0.,
-            'weight_total'         => 0.,
-            'grand_total'          => 0.,
-            'deposit_total'        => 0.,
-            'pending_total'        => 0.,
-            'paid_total'           => 0.,
-            'outstanding_accepted' => 0.,
-            'outstanding_expired'  => 0.,
+            'shipment_amount'      => 0,
+            'weight_total'         => 0,
+            'grand_total'          => 0,
+            'deposit_total'        => 0,
+            'pending_total'        => 0,
+            'paid_total'           => 0,
+            'outstanding_accepted' => 0,
+            'outstanding_expired'  => 0,
             'exchange_rate'        => null,
             'exchange_date'        => null,
-            'invoice_total'        => 0.,
-            'credit_total'         => 0.,
+            'invoice_total'        => 0,
+            'credit_total'         => 0,
             'created_at'           => 'now',
             'items'                => [],
             'discounts'            => [],
@@ -1382,18 +1335,18 @@ class Fixture
             ->setInvoiceState($data['invoice_state'])
             ->setVatValid($data['vat_valid'])
             ->setVatNumber($data['vat_number'])
-            ->setWeightTotal(new Decimal((string)$data['weight_total']))
-            ->setShipmentWeight($data['shipment_weight'] ? new Decimal((string)$data['shipment_weight']) : null)
-            ->setShipmentAmount(new Decimal((string)$data['shipment_amount']))
-            ->setGrandTotal(new Decimal((string)$data['grand_total']))
-            ->setDepositTotal(new Decimal((string)$data['deposit_total']))
-            ->setPendingTotal(new Decimal((string)$data['pending_total']))
-            ->setPaidTotal(new Decimal((string)$data['paid_total']))
-            ->setOutstandingAccepted(new Decimal((string)$data['outstanding_accepted']))
-            ->setOutstandingExpired(new Decimal((string)$data['outstanding_expired']))
-            ->setExchangeRate($data['exchange_rate'] ? new Decimal((string)$data['exchange_rate']) : null)
-            ->setInvoiceTotal(new Decimal((string)$data['invoice_total']))
-            ->setCreditTotal(new Decimal((string)$data['credit_total']));
+            ->setWeightTotal(self::decimal($data['weight_total']))
+            ->setShipmentWeight($data['shipment_weight'] ? self::decimal($data['shipment_weight']) : null)
+            ->setShipmentAmount(self::decimal($data['shipment_amount']))
+            ->setGrandTotal(self::decimal($data['grand_total']))
+            ->setDepositTotal(self::decimal($data['deposit_total']))
+            ->setPendingTotal(self::decimal($data['pending_total']))
+            ->setPaidTotal(self::decimal($data['paid_total']))
+            ->setOutstandingAccepted(self::decimal($data['outstanding_accepted']))
+            ->setOutstandingExpired(self::decimal($data['outstanding_expired']))
+            ->setExchangeRate($data['exchange_rate'] ? self::decimal($data['exchange_rate']) : null)
+            ->setInvoiceTotal(self::decimal($data['invoice_total']))
+            ->setCreditTotal(self::decimal($data['credit_total']));
 
         if (null !== $datum = $data['shipment_method']) {
             $order->setShipmentMethod(self::shipmentMethod($datum));
@@ -1470,13 +1423,9 @@ class Fixture
     /**
      * Creates a new order address.
      *
-     * @param OrderE\OrderAddress|array|int|string $data
-     *
-     * @return OrderE\OrderAddress
-     *
      * @see Fixture::fillAddress()
      */
-    public static function orderAddress($data = []): OrderE\OrderAddress
+    public static function orderAddress(OrderE\OrderAddress|array|int|string $data = []): OrderE\OrderAddress
     {
         /** @var OrderE\OrderAddress $address */
         [$address, $return] = self::create($data, OrderE\OrderAddress::class);
@@ -1493,30 +1442,26 @@ class Fixture
     /**
      * Creates a new order item.
      *
-     * Defaults : [
-     *     'order'       => null,
-     *     'parent'      => null,
-     *     'subject'     => null,
-     *     'tax_group'   => null,
-     *     'designation' => '',
-     *     'reference'   => '',
-     *     'price'       => 0.,
-     *     'weight'      => 0.,
-     *     'quantity'    => 1.,
-     *     'private'     => false,
-     *     'compound'    => false,
-     *     'immutable'   => false,
-     *     'discounts'   => [],
-     *     'taxes'       => [],
-     *     'children'    => [],
-     *     'assignments' => [],
-     * ]
-     *
-     * @param OrderE\OrderItem|array|int|string $data
-     *
-     * @return OrderE\OrderItem
+     * @psalm-param array{
+     *     order:       mixed,
+     *     parent:      mixed,
+     *     subject:     mixed,
+     *     tax_group:   mixed,
+     *     designation: string,
+     *     reference:   string,
+     *     price:       string|int|float,
+     *     weight:      string|int|float,
+     *     quantity:    string|int|float,
+     *     private:     bool,
+     *     compound:    bool,
+     *     immutable:   bool,
+     *     discounts:   array,
+     *     taxes:       array,
+     *     children:    array,
+     *     assignments: array,
+     * } $data
      */
-    public static function orderItem($data = []): OrderE\OrderItem
+    public static function orderItem(OrderE\OrderItem|array|int|string $data = []): OrderE\OrderItem
     {
         /** @var OrderE\OrderItem $item */
         [$item, $return] = self::create($data, OrderE\OrderItem::class);
@@ -1532,9 +1477,9 @@ class Fixture
             'tax_group'   => null,
             'designation' => '',
             'reference'   => '',
-            'price'       => 0.,
-            'weight'      => 0.,
-            'quantity'    => 1.,
+            'price'       => 0,
+            'weight'      => 0,
+            'quantity'    => 1,
             'private'     => false,
             'compound'    => false,
             'immutable'   => false,
@@ -1547,9 +1492,9 @@ class Fixture
         $item
             ->setDesignation($data['designation'])
             ->setReference($data['reference'])
-            ->setNetPrice(new Decimal((string)$data['price']))
-            ->setWeight(new Decimal((string)$data['weight']))
-            ->setQuantity(new Decimal((string)$data['quantity']))
+            ->setNetPrice(self::decimal($data['price']))
+            ->setWeight(self::decimal($data['weight']))
+            ->setQuantity(self::decimal($data['quantity']))
             ->setPrivate($data['private'])
             ->setCompound($data['compound'])
             ->setImmutable($data['immutable']);
@@ -1606,12 +1551,16 @@ class Fixture
     /**
      * Creates a new order item adjustment.
      *
-     * @param OrderE\OrderItemAdjustment|array|int|string $data
-     *
-     * @return OrderE\OrderItemAdjustment
+     * @psalm-param array{
+     *     type:    string,
+     *     mode:    string,
+     *     item:    mixed,
+     *     ammount: string|int|float,
+     *     source:  string,
+     * } $data
      */
-    public static function orderItemAdjustment($data = []): OrderE\OrderItemAdjustment
-    {
+    public static function orderItemAdjustment(OrderE\OrderItemAdjustment|array|int|string $data = []
+    ): OrderE\OrderItemAdjustment {
         /** @var OrderE\OrderItemAdjustment $adjustment */
         [$adjustment, $return] = self::create($data, OrderE\OrderItemAdjustment::class);
 
@@ -1635,7 +1584,7 @@ class Fixture
             ->setType($data['type'])
             ->setMode($data['mode'])
             ->setDesignation(self::adjustmentDesignation($data))
-            ->setAmount(new Decimal((string)$data['amount']))
+            ->setAmount(self::decimal($data['amount']))
             ->setSource($data['source']);
 
         return $adjustment;
@@ -1644,11 +1593,15 @@ class Fixture
     /**
      * Creates a new order adjustment.
      *
-     * @param OrderE\OrderAdjustment|array|int|string $data
-     *
-     * @return OrderE\OrderAdjustment
+     * @psalm-param array{
+     *     type:    string,
+     *     mode:    string,
+     *     order:    mixed,
+     *     ammount: string|int|float,
+     *     source:  string,
+     * }
      */
-    public static function orderAdjustment($data = []): OrderE\OrderAdjustment
+    public static function orderAdjustment(OrderE\OrderAdjustment|array|int|string $data = []): OrderE\OrderAdjustment
     {
         /** @var OrderE\OrderAdjustment $adjustment */
         [$adjustment, $return] = self::create($data, OrderE\OrderAdjustment::class);
@@ -1661,7 +1614,7 @@ class Fixture
             'type'   => CommonM\AdjustmentTypes::TYPE_TAXATION,
             'mode'   => CommonM\AdjustmentModes::MODE_PERCENT,
             'order'  => null,
-            'amount' => 0.0,
+            'amount' => 0,
             'source' => null,
         ], $data);
 
@@ -1673,7 +1626,7 @@ class Fixture
             ->setType($data['type'])
             ->setMode($data['mode'])
             ->setDesignation(self::adjustmentDesignation($data))
-            ->setAmount(new Decimal((string)$data['amount']))
+            ->setAmount(self::decimal($data['amount']))
             ->setSource($data['source']);
 
         return $adjustment;
@@ -1727,16 +1680,14 @@ class Fixture
     /**
      * Creates a new shipment.
      *
-     * Defaults : [
-     *     'order' => null,
-     *     'items' => [],
-     * ]
-     *
-     * @param OrderE\OrderShipment|array|int|string $data
-     *
-     * @return OrderE\OrderShipment
+     * @psalm-param array{
+     *     order:  mixed,
+     *     method: mixed,
+     *     return: bool,
+     *     items:  array,
+     * } $data
      */
-    public static function shipment($data = []): OrderE\OrderShipment
+    public static function shipment(OrderE\OrderShipment|array|int|string $data = []): OrderE\OrderShipment
     {
         /** @var OrderE\OrderShipment $shipment */
         [$shipment, $return] = self::create($data, OrderE\OrderShipment::class);
@@ -1770,10 +1721,6 @@ class Fixture
     /**
      * Creates a new address.
      *
-     * @param array $data
-     *
-     * @return CommonM\Address
-     *
      * @see Fixture::fillAddress()
      */
     public static function address(array $data = []): CommonM\Address
@@ -1796,17 +1743,13 @@ class Fixture
     /**
      * Creates a new shipment item.
      *
-     * Defaults : [
-     *     'shipment' => null,
-     *     'item'     => null,
-     *     'quantity' => 1.,
-     * ]
-     *
-     * @param OrderE\OrderShipmentItem|array|int|string $data
-     *
-     * @return OrderE\OrderShipmentItem
+     * @psalm-param array{
+     *     shipment: mixed,
+     *     item:     mixed,
+     *     quantity: string|int|float,
+     * } $data
      */
-    public static function shipmentItem($data = []): OrderE\OrderShipmentItem
+    public static function shipmentItem(OrderE\OrderShipmentItem|array|int|string $data = []): OrderE\OrderShipmentItem
     {
         /** @var OrderE\OrderShipmentItem $item */
         [$item, $return] = self::create($data, OrderE\OrderShipmentItem::class);
@@ -1818,7 +1761,7 @@ class Fixture
         $data = array_replace([
             'shipment' => null,
             'item'     => null,
-            'quantity' => 1.,
+            'quantity' => 1,
         ], $data);
 
         if (null !== $datum = $data['shipment']) {
@@ -1829,26 +1772,26 @@ class Fixture
             $item->setOrderItem(self::orderItem($datum));
         }
 
-        $item->setQuantity($data['quantity']);
+        $item->setQuantity(self::decimal($data['quantity']));
 
         return $item;
     }
 
     /**
-     * Creates a payment.
+     * Creates a shipment method.
      *
-     * Defaults : [
-     *     'manual'      => false,
-     *     'outstanding' => false,
-     *     'credit'      => false,
-     * ]
-     *
-     * @param ShipmentE\ShipmentMethod|array|int|string $data
-     *
-     * @return ShipmentE\ShipmentMethod
+     * @psalm-param array{
+     *     tax_group: mixed,
+     *     name:      string,
+     *     enabled:   bool,
+     *     available: bool,
+     *     platform:  string,
+     *     gateway:   string,
+     *     prices:    array,
+     * } $data
      */
-    public static function shipmentMethod($data = []): ShipmentE\ShipmentMethod
-    {
+    public static function shipmentMethod(ShipmentE\ShipmentMethod|array|int|string $data = []
+    ): ShipmentE\ShipmentMethod {
         self::loadShipping();
 
         /** @var ShipmentE\ShipmentMethod $method */
@@ -1889,18 +1832,14 @@ class Fixture
     /**
      * Creates a new shipment price.
      *
-     * Defaults : [
-     *     'method' => null,
-     *     'zone'   => null,
-     *     'weight' => 0.,
-     *     'price'  => 0.,
-     * ]
-     *
-     * @param ShipmentE\ShipmentPrice|array|int|string $data
-     *
-     * @return ShipmentE\ShipmentPrice
+     * @psalm-param array{
+     *     method: mixed,
+     *     zone:   mixed,
+     *     weight: string|int|float,
+     *     price:  string|int|float,
+     * } $data
      */
-    public static function shipmentPrice($data = []): ShipmentE\ShipmentPrice
+    public static function shipmentPrice(ShipmentE\ShipmentPrice|array|int|string $data = []): ShipmentE\ShipmentPrice
     {
         self::loadShipping();
 
@@ -1914,13 +1853,13 @@ class Fixture
         $data = array_replace([
             'method' => null,
             'zone'   => null,
-            'weight' => 0.,
-            'price'  => 0.,
+            'weight' => 0,
+            'price'  => 0,
         ], $data);
 
         $price
-            ->setWeight(new Decimal((string)$data['weight']))
-            ->setNetPrice(new Decimal((string)$data['price']));
+            ->setWeight(self::decimal($data['weight']))
+            ->setNetPrice(self::decimal($data['price']));
 
         if (null !== $datum = $data['method']) {
             $price->setMethod(self::shipmentMethod($datum));
@@ -1936,18 +1875,19 @@ class Fixture
     /**
      * Creates a new shipment rule.
      *
-     * Defaults : [
-     *     'method' => null,
-     *     'zone'   => null,
-     *     'weight' => 0.,
-     *     'rule'  => 0.,
-     * ]
-     *
-     * @param ShipmentE\ShipmentRule|array|int|string $data
-     *
-     * @return ShipmentE\ShipmentRule
+     * @psalm-param array{
+     *     name:            string,
+     *     methods:          array,
+     *     countries:        array,
+     *     customer_groups:  array,
+     *     base_total:       string|int|float,
+     *     vat_mode:         string,
+     *     start_at:         DateTimeInterface|string,
+     *     end_at:           DateTimeInterface|string,
+     *     price:            string|int|float,
+     * } $data
      */
-    public static function shipmentRule($data = []): ShipmentE\ShipmentRule
+    public static function shipmentRule(ShipmentE\ShipmentRule|array|int|string $data = []): ShipmentE\ShipmentRule
     {
         self::loadShipping();
 
@@ -1963,20 +1903,20 @@ class Fixture
             'methods'         => [],
             'countries'       => [],
             'customer_groups' => [],
-            'base_total'      => 0.,
+            'base_total'      => 0,
             'vat_mode'        => VatDisplayModes::MODE_NET,
             'start_at'        => null,
             'end_at'          => null,
-            'price'           => 0.,
+            'price'           => 0,
         ], $data);
 
         $rule
             ->setName($data['name'])
-            ->setBaseTotal($data['base_total'])
+            ->setBaseTotal(self::decimal($data['base_total']))
             ->setVatMode($data['vat_mode'])
             ->setStartAt(self::date($data['start_at']))
             ->setEndAt(self::date($data['end_at']))
-            ->setNetPrice($data['price']);
+            ->setNetPrice(self::decimal($data['price']));
 
         foreach ($data['methods'] as $datum) {
             $rule->addMethod(self::shipmentMethod($datum));
@@ -1996,17 +1936,13 @@ class Fixture
     /**
      * Creates a new shipment zone.
      *
-     * Defaults : [
-     *     'name'      => 'foo',
-     *     'countries' => [],
-     *     'prices'    => [],
-     * ]
-     *
-     * @param ShipmentE\ShipmentZone|array|int|string $data
-     *
-     * @return ShipmentE\ShipmentZone
+     * @psalm-param array{
+     *     name:      string,
+     *     countries: array,
+     *     prices:    array,
+     * } $data
      */
-    public static function shipmentZone($data = []): ShipmentE\ShipmentZone
+    public static function shipmentZone(ShipmentE\ShipmentZone|array|int|string $data = []): ShipmentE\ShipmentZone
     {
         self::loadShipping();
 
@@ -2039,20 +1975,16 @@ class Fixture
     /**
      * Creates a new invoice.
      *
-     * Defaults : [
-     *     'order'        => null,
-     *     'credit'       => false,
-     *     'ignore_stock' => false,
-     *     'currency'     => self::CURRENCY_EUR
-     *     'grand_total'  => 0.,
-     *     'lines'        => [],
-     * ]
-     *
-     * @param OrderE\OrderInvoice|array|int|string $data
-     *
-     * @return OrderE\OrderInvoice
+     * @psalm-param array{
+     *     order:        mixed,
+     *     credit:       bool,
+     *     ignore_stock: bool,
+     *     currency:     string,
+     *     grand_total:  string|int|float,
+     *     lines:        array,
+     * } $data
      */
-    public static function invoice($data = []): OrderE\OrderInvoice
+    public static function invoice(OrderE\OrderInvoice|array|int|string $data = []): OrderE\OrderInvoice
     {
         /** @var OrderE\OrderInvoice $invoice */
         [$invoice, $return] = self::create($data, OrderE\OrderInvoice::class);
@@ -2066,7 +1998,7 @@ class Fixture
             'credit'       => false,
             'ignore_stock' => false,
             'currency'     => self::CURRENCY_EUR,
-            'grand_total'  => 0.,
+            'grand_total'  => 0,
             'lines'        => [],
         ], $data);
 
@@ -2082,7 +2014,7 @@ class Fixture
             ->setCredit($data['credit'])
             ->setIgnoreStock($data['ignore_stock'])
             ->setCurrency($data['currency'])
-            ->setGrandTotal($data['grand_total']);
+            ->setGrandTotal(self::decimal($data['grand_total']));
 
         foreach ($data['lines'] as $datum) {
             $invoice->addLine(self::invoiceLine($datum));
@@ -2094,17 +2026,16 @@ class Fixture
     /**
      * Creates a new invoice item.
      *
-     * Defaults : [
-     *     'invoice'  => null,
-     *     'target'   => null,
-     *     'quantity' => 1.,
-     * ]
-     *
-     * @param OrderE\OrderInvoiceLine|array|int|string $data
-     *
-     * @return OrderE\OrderInvoiceLine
+     * @psalm-param array{
+     *     invoice:    mixed,
+     *     item:       mixed,
+     *     order:      mixed,
+     *     adjustment: mixed,
+     *     target:     mixed,
+     *     quantity:   string|int|float,
+     * } $data
      */
-    public static function invoiceLine($data = []): OrderE\OrderInvoiceLine
+    public static function invoiceLine(OrderE\OrderInvoiceLine|array|int|string $data = []): OrderE\OrderInvoiceLine
     {
         /** @var OrderE\OrderInvoiceLine $line */
         [$line, $return] = self::create($data, OrderE\OrderInvoiceLine::class);
@@ -2119,15 +2050,14 @@ class Fixture
             'order'      => null,
             'adjustment' => null,
             'target'     => null,
-            'quantity'   => 1.,
+            'quantity'   => 1,
         ], $data);
 
         if (null !== $data['invoice']) {
-            //$data['invoice'] = self::invoice($data['invoice']);
             $line->setInvoice(self::invoice($data['invoice']));
         }
 
-        $line->setQuantity($data['quantity']);
+        $line->setQuantity(self::decimal($data['quantity']));
 
         if (!isset($data['target'])) {
             if (isset($data['item'])) {
@@ -2168,18 +2098,15 @@ class Fixture
     /**
      * Creates a new warehouse.
      *
-     * Defaults : [
-     *     'name'      => 'Foo warehouse',
-     *     'countries' => [self::COUNTRY_FR],
-     *     'office'    => true,
-     *     'priority'  => 0,
-     * ]
-     *
-     * @param StockE\Warehouse|array|int|string $data
-     *
-     * @return StockE\Warehouse
+     * @psalm-param array{
+     *     name:      string,
+     *     country:   mixed,
+     *     countries: array,
+     *     office:    bool,
+     *     priority:  int,
+     * } $data
      */
-    public static function warehouse($data = []): StockE\Warehouse
+    public static function warehouse(StockE\Warehouse|array|int|string $data = []): StockE\Warehouse
     {
         /** @var StockE\Warehouse $warehouse */
         [$warehouse, $return] = self::create($data, StockE\Warehouse::class);
@@ -2270,14 +2197,10 @@ class Fixture
 
     /**
      * Creates a date.
-     *
-     * @param $data
-     *
-     * @return DateTime
      */
-    private static function date($data): DateTime
+    private static function date(DateTimeInterface|string $data): DateTimeInterface
     {
-        if ($data instanceof DateTime) {
+        if ($data instanceof DateTimeInterface) {
             return $data;
         }
 
@@ -2286,14 +2209,11 @@ class Fixture
 
     /**
      * Assigns the subject to the relative.
-     *
-     * @param SubjectRelativeInterface          $relative
-     * @param SubjectInterface|array|string|int $subject
-     *
-     * @return SubjectInterface
      */
-    private static function assignSubject(SubjectRelativeInterface $relative, $subject): SubjectInterface
-    {
+    private static function assignSubject(
+        SubjectRelativeInterface          $relative,
+        SubjectInterface|array|string|int $subject
+    ): void {
         if (!$subject instanceof SubjectInterface) {
             $subject = self::subject($subject);
         }
@@ -2323,16 +2243,10 @@ class Fixture
         } else {
             $relative->setTaxGroup($subject->getTaxGroup());
         }
-
-        return $subject;
     }
 
     /**
      * Builds the adjustment designation.
-     *
-     * @param array $data
-     *
-     * @return string
      */
     private static function adjustmentDesignation(array $data): string
     {
@@ -2362,8 +2276,19 @@ class Fixture
     /**
      * Fills the given address.
      *
-     * @param CommonM\AddressInterface $address
-     * @param array                    $data
+     * @psalm-param array{
+     *     company:     string,
+     *     street:      string,
+     *     complement:  string,
+     *     supplement:  string,
+     *     extra:       string,
+     *     postal_code: string,
+     *     city:        string,
+     *     country:     mixed,
+     *     state:       mixed,
+     *     phone:       string,
+     *     mobile:      string,
+     * } $data
      */
     private static function fillAddress(CommonM\AddressInterface $address, array $data): void
     {
@@ -2416,16 +2341,20 @@ class Fixture
         }
     }
 
+    private static function decimal(string|int|float $number): Decimal
+    {
+        return new Decimal((string)$number);
+    }
+
     /**
-     * @param object|array|int|string $data
-     * @param string                  $class
-     *
-     * @return array [object, bool]
+     * @return array{object, bool}
      */
-    private static function create($data, string $class): array
+    private static function create(object|array|int|string $data, string $class): array
     {
         if ($data instanceof $class) {
             return [$data, true];
+        } elseif (is_object($data)) {
+            throw new UnexpectedTypeException($data, $class);
         }
 
         if (!empty($data) && (is_int($data) || is_string($data))) {
@@ -2468,9 +2397,6 @@ class Fixture
 
     /**
      * Registers the fixture object.
-     *
-     * @param object $object
-     * @param array  $data
      */
     private static function register(object $object, array $data): void
     {
@@ -2492,6 +2418,7 @@ class Fixture
             if (!isset(self::$ids[$class])) {
                 $r = new ReflectionClass($class);
                 $p = $r->getProperty('id');
+                /** @noinspection PhpExpressionResultUnusedInspection */
                 $p->setAccessible(true);
 
                 self::$ids[$class] = [
@@ -2533,13 +2460,8 @@ class Fixture
 
     /**
      * Returns the registered fixture entity by its id and class, of reference.
-     *
-     * @param int|string  $id    The id or the reference
-     * @param string|null $class The class if searching by id
-     *
-     * @return object
      */
-    public static function get($id, string $class = null): object
+    public static function get(int|string $id, string $class = null): object
     {
         if (is_int($id)) {
             if (empty($class)) {
@@ -2566,7 +2488,7 @@ class Fixture
                 self::load($id);
 
                 return self::$references[$id];
-            } catch (Throwable $t) {
+            } catch (Throwable) {
             }
 
             throw new RuntimeException("No fixtures found for reference '$id'.");

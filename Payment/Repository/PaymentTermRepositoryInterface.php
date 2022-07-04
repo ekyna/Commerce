@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Payment\Repository;
 
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface PaymentTermRepositoryInterface
  * @package Ekyna\Component\Commerce\Payment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<PaymentTermInterface>
  */
 interface PaymentTermRepositoryInterface extends TranslatableRepositoryInterface
 {

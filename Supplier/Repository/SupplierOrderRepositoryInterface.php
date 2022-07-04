@@ -12,6 +12,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface SupplierOrderRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<Model\SupplierOrderInterface>
  */
 interface SupplierOrderRepositoryInterface extends ResourceRepositoryInterface
 {

@@ -11,6 +11,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Class AccountingRepositoryInterface
  * @package Ekyna\Component\Commerce\Accounting\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<AccountingInterface>
  */
 interface AccountingRepositoryInterface extends ResourceRepositoryInterface
 {

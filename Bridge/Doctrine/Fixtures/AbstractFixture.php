@@ -181,9 +181,9 @@ abstract class AbstractFixture extends BaseFixture implements OrderedFixtureInte
             $builtValue = [];
             foreach ($value as $childData) {
                 if (is_string($childData) && '#' === substr($childData, 0, 1)) {
-                    array_push($builtValue, $this->getReference(substr($childData, 1)));
+                    $builtValue[] = $this->getReference(substr($childData, 1));
                 } elseif (is_array($value)) {
-                    array_push($builtValue, $this->buildEntity($childMetadata, $childData));
+                    $builtValue[] = $this->buildEntity($childMetadata, $childData);
                 } else {
                     throw new \Exception("Unexpected value for association '$propertyPath'.");
                 }

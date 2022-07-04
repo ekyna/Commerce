@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Stock\Repository\StockAdjustmentRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
@@ -16,7 +16,7 @@ use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
  */
 class StockAdjustmentRepository extends ResourceRepository implements StockAdjustmentRepositoryInterface
 {
-    public function findByMonth(DateTime $month): array
+    public function findByMonth(DateTimeInterface $month): array
     {
         $start = clone $month;
         $start

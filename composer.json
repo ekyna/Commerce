@@ -15,24 +15,24 @@
     "homepage": "https://github.com/ekyna/Commerce",
     "license": "MIT",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.1",
         "ext-zip": "*",
         "psr/http-message": "^1.0",
         "doctrine/collections": "^1.3",
         "symfony/intl": "^5.0",
         "symfony/expression-language": "^5.0",
         "symfony/stopwatch": "^5.0",
-        "ekyna/resource": "0.8.x-dev",
+        "ekyna/resource": "0.9.x-dev",
         "giggsey/libphonenumber-for-php": "^8.0",
         "antalaron/vat-number-validator": "^1.2",
         "phpoffice/phpspreadsheet": "^1.18",
-        "ozdemirburak/iris": "^2.3"
+        "ozdemirburak/iris": "^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0",
         "gedmo/doctrine-extensions": "^3.4",
         "doctrine/orm": "^2.10",
-        "doctrine/data-fixtures": "^1.1",
+        "doctrine/data-fixtures": "^1.5",
         "symfony/property-access": "^5.0",
         "odolbeau/phone-number-bundle": "^3.1"
     },

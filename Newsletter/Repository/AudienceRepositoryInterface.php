@@ -8,12 +8,15 @@ use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Exception\CommerceExceptionInterface;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Cache\ResultCacheAwareInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface AudienceRepositoryInterface
  * @package Ekyna\Component\Commerce\Newsletter\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<AudienceRepositoryInterface>
  */
 interface AudienceRepositoryInterface extends TranslatableRepositoryInterface, ResultCacheAwareInterface
 {

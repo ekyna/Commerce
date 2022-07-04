@@ -56,14 +56,12 @@ class SessionCountryProvider extends CountryProvider
         try {
             $session = $this->requestStack->getSession();
 
-            if ($session->has($this->key)) {
-                if (!empty($country = $session->get($this->key))) {
-                    parent::setCountry($country);
+            if ($session->has($this->key) && !empty($country = $session->get($this->key))) {
+                parent::setCountry($country);
 
-                    return $this->currentCountry;
-                }
+                return $this->currentCountry;
             }
-        } catch (SessionNotFoundException $exception) {
+        } catch (SessionNotFoundException) {
         }
 
         parent::getCurrentCountry();
@@ -83,7 +81,7 @@ class SessionCountryProvider extends CountryProvider
                 ->requestStack
                 ->getSession()
                 ->set($this->key, $this->currentCountry);
-        } catch (SessionNotFoundException $exception) {
+        } catch (SessionNotFoundException) {
         }
     }
 }

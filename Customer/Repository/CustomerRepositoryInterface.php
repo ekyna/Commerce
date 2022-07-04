@@ -11,6 +11,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface CustomerRepositoryInterface
  * @package Ekyna\Component\Commerce\Customer\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<CustomerInterface>
  */
 interface CustomerRepositoryInterface extends ResourceRepositoryInterface
 {

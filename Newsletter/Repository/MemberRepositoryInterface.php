@@ -11,6 +11,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface MemberRepositoryInterface
  * @package Ekyna\Component\Commerce\Newsletter\Repository
  * @author  Étienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<MemberInterface>
  */
 interface MemberRepositoryInterface extends ResourceRepositoryInterface
 {

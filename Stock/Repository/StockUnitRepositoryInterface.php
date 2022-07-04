@@ -13,33 +13,29 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface StockUnitRepositoryInterface
  * @package Ekyna\Component\Commerce\Stock\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<StockUnitInterface>
  */
 interface StockUnitRepositoryInterface extends StockUnitFinderInterface, ResourceRepositoryInterface
 {
     /**
      * Returns the stock units having real stock.
      *
-     * @return StockUnitInterface[]
+     * @return array<StockUnitInterface>
      */
     public function findInStock(): array;
 
     /**
      * Returns the latest not closed stock units.
      *
-     * @param StockSubjectInterface $subject
-     * @param int                   $limit
-     *
-     * @return StockUnitInterface[]
+     * @return array<StockUnitInterface>
      */
     public function findLatestNotClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array;
 
     /**
      * Returns the latest closed stock units.
      *
-     * @param StockSubjectInterface $subject
-     * @param int                   $limit
-     *
-     * @return StockUnitInterface[]
+     * @return array<StockUnitInterface>
      */
     public function findLatestClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array;
 }

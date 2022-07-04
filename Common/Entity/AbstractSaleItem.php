@@ -8,9 +8,12 @@ use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
+
+use function json_encode;
+use function md5;
 
 /**
  * Class AbstractSaleItem
@@ -24,7 +27,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     use SubjectRelativeTrait;
 
     protected ?Model\SaleItemInterface $parent = null;
-    /** @var Collection|Model\SaleItemInterface[] */
+    /** @var Collection<Model\SaleItemInterface> */
     protected Collection $children;
     protected ?string    $description  = null;
     protected Decimal    $quantity;
@@ -273,52 +276,38 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return false;
     }
 
-    public function hasData(?string $key): bool
+    public function getData(): array
     {
-        if (!empty($key)) {
-            return array_key_exists($key, $this->data) && !empty($this->data[$key]);
-        }
-
-        return !empty($this->data);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getData($key = null)
-    {
-        if (!empty($key)) {
-            if (array_key_exists($key, $this->data)) {
-                return $this->data[$key];
-            }
-
-            return null;
-        }
-
         return $this->data;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setData($keyOrData, $data = null): Model\SaleItemInterface
+    public function setData(array $data): SaleItemInterface
     {
-        if (is_array($keyOrData) && null === $data) {
-            $this->data = $keyOrData;
-        } elseif (is_string($keyOrData) && !empty($keyOrData)) {
-            $this->data[$keyOrData] = $data;
-        } else {
-            throw new InvalidArgumentException(sprintf('Bad usage of %s::setData', static::class));
-        }
+        $this->data = $data;
 
         return $this;
     }
 
-    public function unsetData(string $key): Model\SaleItemInterface
+    public function hasDatum(string $key): bool
     {
-        if (array_key_exists($key, $this->data)) {
-            unset($this->data[$key]);
-        }
+        return array_key_exists($key, $this->data);
+    }
+
+    public function getDatum(string $key): string|int|null
+    {
+        return $this->data[$key] ?? null;
+    }
+
+    public function setDatum(string $key, string|int $data): Model\SaleItemInterface
+    {
+        $this->data[$key] = $data;
+
+        return $this;
+    }
+
+    public function unsetDatum(string $key): Model\SaleItemInterface
+    {
+        unset($this->data[$key]);
 
         return $this;
     }
@@ -387,10 +376,12 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this->position === $this->getRootSale()->getItems()->last()->getPosition();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getHash(bool $encode = true)
+    public function getHash(): string
+    {
+        return md5(json_encode($this->getHashData()));
+    }
+
+    private function getHashData(): array
     {
         $data = [
             'r' => $this->reference,
@@ -406,18 +397,14 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         }
 
         if (null !== $this->parent) {
-            $data['q'] = $this->quantity; // TODO Packaging format
+            $data['q'] = $this->quantity->toFixed(3); // TODO Packaging format
         }
 
         if (0 < $this->children->count()) {
             $data['c'] = [];
             foreach ($this->children as $child) {
-                $data['c'][] = $child->getHash(false);
+                $data['c'][] = $child->getHashData();
             }
-        }
-
-        if ($encode) {
-            return md5(json_encode($data));
         }
 
         return $data;

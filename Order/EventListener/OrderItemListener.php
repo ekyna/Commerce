@@ -5,21 +5,13 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
 use Ekyna\Component\Commerce\Common\EventListener\AbstractSaleItemListener;
-use Ekyna\Component\Commerce\Common\Helper\QuantityChangeHelper;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
-use Ekyna\Component\Commerce\Order\Message\OrderItemAdd;
-use Ekyna\Component\Commerce\Order\Message\OrderItemQuantityChange;
-use Ekyna\Component\Commerce\Order\Message\OrderItemSubjectChange;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
-use Ekyna\Component\Resource\Message\MessageQueueAwareTrait;
-
-use function array_fill;
 
 /**
  * Class OrderItemListener
@@ -28,8 +20,6 @@ use function array_fill;
  */
 class OrderItemListener extends AbstractSaleItemListener
 {
-    use MessageQueueAwareTrait;
-
     private StockUnitAssignerInterface $stockAssigner;
 
     public function setStockAssigner(StockUnitAssignerInterface $stockAssigner): void
@@ -47,17 +37,6 @@ class OrderItemListener extends AbstractSaleItemListener
         if (OrderStates::isStockableState($item->getRootSale()->getState())) {
             $this->stockAssigner->assignSaleItem($item);
 
-            $this->messageQueue->addMessage(function () use ($item) {
-                $identity = $item->getSubjectIdentity();
-
-                return new OrderItemAdd(
-                    $item->getId(),
-                    $item->getQuantity()->toFixed(5),
-                    $identity->getProvider(),
-                    $identity->getIdentifier()
-                );
-            });
-
             return;
         }
 
@@ -70,7 +49,11 @@ class OrderItemListener extends AbstractSaleItemListener
 
         $item = $this->getSaleItemFromEvent($event);
 
-        if (!$this->persistenceHelper->isChanged($item, ['quantity', 'subjectIdentity.provider', 'subjectIdentity.identifier'])) {
+        if (!$this->persistenceHelper->isChanged($item, [
+            'quantity',
+            'subjectIdentity.provider',
+            'subjectIdentity.identifier',
+        ])) {
             return;
         }
 
@@ -122,12 +105,8 @@ class OrderItemListener extends AbstractSaleItemListener
         if ($this->persistenceHelper->isChanged($item, ['subjectIdentity.provider', 'subjectIdentity.identifier'])) {
             $this->stockAssigner->detachSaleItem($item);
             $this->stockAssigner->assignSaleItem($item);
-
-            $this->enqueueSubjectChangeMessage($item);
         } else {
             $this->stockAssigner->applySaleItem($item);
-
-            $this->enqueueQuantityChangeMessage($item);
         }
 
         foreach ($item->getChildren() as $child) {
@@ -135,7 +114,11 @@ class OrderItemListener extends AbstractSaleItemListener
                 $this->persistenceHelper->isScheduledForInsert($child)
                 || (
                     $this->persistenceHelper->isScheduledForUpdate($child)
-                    && $this->persistenceHelper->isChanged($child, ['quantity', 'subjectIdentity.provider', 'subjectIdentity.identifier'])
+                    && $this->persistenceHelper->isChanged($child, [
+                        'quantity',
+                        'subjectIdentity.provider',
+                        'subjectIdentity.identifier',
+                    ])
                 )
             ) {
                 // Skip this item as the listener will be called on it.
@@ -145,49 +128,6 @@ class OrderItemListener extends AbstractSaleItemListener
 
             $this->applySaleItemRecursively($child);
         }
-    }
-
-    private function enqueueSubjectChangeMessage(Model\SaleItemInterface $item): void
-    {
-        $providers = $this->persistenceHelper->getChangeSet($item, 'subjectIdentity.provider');
-        $identifiers = $this->persistenceHelper->getChangeSet($item, 'subjectIdentity.identifier');
-
-        if (empty($providers) && empty($identifiers)) {
-            throw new LogicException('Unchanged order item subject.');
-        }
-
-        if (empty($providers)) {
-            $providers = array_fill(0, 2, $item->getSubjectIdentity()->getProvider());
-        }
-        if (empty($identifiers)) {
-            $identifiers = array_fill(0, 2, $item->getSubjectIdentity()->getIdentifier());
-        }
-
-        $helper = new QuantityChangeHelper($this->persistenceHelper);
-        $quantities = $helper->getTotalQuantityChangeSet($item);
-        if (empty($quantities)) {
-            $quantities = array_fill(0, 2, $item->getTotalQuantity());
-        }
-
-        $message = new OrderItemSubjectChange($item->getId(), $quantities[0]->toFixed(5), $quantities[1]->toFixed(5));
-        $message->setFromSubject($providers[0], $identifiers[0]);
-        $message->setToSubject($providers[1], $identifiers[1]);
-
-        $this->messageQueue->addMessage($message);
-    }
-
-    private function enqueueQuantityChangeMessage(Model\SaleItemInterface $item): void
-    {
-        $helper = new QuantityChangeHelper($this->persistenceHelper);
-        $quantities = $helper->getTotalQuantityChangeSet($item);
-
-        if (empty($quantities)) {
-            throw new LogicException('Unchanged order item quantities.');
-        }
-
-        $message = new OrderItemQuantityChange($item->getId(), $quantities[0]->toFixed(5), $quantities[1]->toFixed(5));
-
-        $this->messageQueue->addMessage($message);
     }
 
     /**

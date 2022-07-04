@@ -17,6 +17,7 @@
         <unique-constraints>
             <unique-constraint columns="number" name="unique_commerce_order_number"/>
             <unique-constraint columns="secret" name="unique_commerce_order_secret"/>
+            <unique-constraint columns="customer_id,voucher_number" name="unique_commerce_order_voucher_number"/>
         </unique-constraints>
 
         <entity-listeners>

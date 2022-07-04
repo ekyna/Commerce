@@ -12,15 +12,13 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface SupplierOrderItemRepository
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<SupplierOrderItemInterface>
  */
 interface SupplierOrderItemRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the last ordered supplier order item by subject.
-     *
-     * @param SubjectInterface $subject
-     *
-     * @return SupplierOrderItemInterface|null
      */
     public function findLatestOrderedBySubject(SubjectInterface $subject): ?SupplierOrderItemInterface;
 

@@ -15,9 +15,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
  * @package Ekyna\Component\Commerce\Order\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderInterface|null findOneById(int $id)
- * @method OrderInterface|null findOneByKey(string $key)
- * @method OrderInterface|null findOneByNumber(string $number)
+ * @implements SaleRepositoryInterface<OrderInterface>
  */
 interface OrderRepositoryInterface extends SaleRepositoryInterface
 {
@@ -33,9 +31,6 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
 
     /**
      * Finds the sales by origin customer, optionally filtered by states.
-     *
-     * @param CustomerInterface $customer
-     * @param array             $states
      *
      * @return array<OrderInterface>
      */
@@ -58,7 +53,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     /**
      * Finds orders having revenue total or margin total set to null.
      *
-     * @return int[]
+     * @return array<int>
      */
     public function findWithNullRevenueOrMargin(): array;
 

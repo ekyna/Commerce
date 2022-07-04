@@ -20,10 +20,7 @@ class OpeningHours extends JsonType
 {
     public const NAME = 'opening_hours';
 
-    /**
-     * @inheritDoc
-     */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): mixed
     {
         $data = [];
 
@@ -54,10 +51,7 @@ class OpeningHours extends JsonType
         return parent::convertToDatabaseValue($data, $platform);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue(mixed $value, AbstractPlatform $platform): mixed
     {
         $val = parent::convertToPHPValue($value, $platform);
 

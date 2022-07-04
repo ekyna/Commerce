@@ -14,13 +14,13 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface TicketRepositoryInterface
  * @package Ekyna\Component\Commerce\Support\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<TicketRepositoryInterface>
  */
 interface TicketRepositoryInterface extends ResourceRepositoryInterface
 {
     /**
      * Finds the oldest opened tickets.
-     *
-     * @param int $limit
      *
      * @return array<TicketInterface>
      */
@@ -29,17 +29,12 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Finds the oldest not closed tickets.
      *
-     * @param int $limit
-     *
      * @return array<TicketInterface>
      */
     public function findNotClosed(int $limit = 10): array;
 
     /**
      * Finds tickets by customer.
-     *
-     * @param CustomerInterface $customer
-     * @param bool              $admin
      *
      * @return array<TicketInterface>
      */
@@ -48,18 +43,12 @@ interface TicketRepositoryInterface extends ResourceRepositoryInterface
     /**
      * Finds tickets by order.
      *
-     * @param OrderInterface $order
-     * @param bool           $admin
-     *
      * @return array<TicketInterface>
      */
     public function findByOrder(OrderInterface $order, bool $admin): array;
 
     /**
      * Finds tickets by quote.
-     *
-     * @param QuoteInterface $quote
-     * @param bool           $admin
      *
      * @return array<TicketInterface>
      */

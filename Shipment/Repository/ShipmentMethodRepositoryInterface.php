@@ -8,12 +8,15 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
 
 /**
  * Interface ShipmentMethodRepositoryInterface
  * @package Ekyna\Component\Commerce\Shipment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<ShipmentMethodRepositoryInterface>
  */
 interface ShipmentMethodRepositoryInterface extends TranslatableRepositoryInterface
 {

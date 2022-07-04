@@ -125,7 +125,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
      *
      * @return array
      */
-    public function getDetails()
+    public function getDetails(): array
     {
         return $this->details;
     }
@@ -177,17 +177,15 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->details[$offset]);
     }
 
     /**
      * @inheritDoc
-     *
-     * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         if ($this->details[$offset]) {
             return $this->details[$offset];
@@ -199,7 +197,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if (is_null($offset)) {
             $this->details[] = $value;
@@ -211,7 +209,7 @@ abstract class AbstractPayment extends AbstractResource implements Payment\Payme
     /**
      * @inheritDoc
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->details[$offset]);
     }

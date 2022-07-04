@@ -11,6 +11,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface CurrencyRepositoryInterface
  * @package Ekyna\Component\Commerce\Common\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<CurrencyInterface>
  */
 interface CurrencyRepositoryInterface extends ResourceRepositoryInterface
 {

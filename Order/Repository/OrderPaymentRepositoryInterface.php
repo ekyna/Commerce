@@ -17,11 +17,11 @@ use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Order\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderPaymentInterface findOneByKey(string $key)
+ * @implements PaymentRepositoryInterface<OrderPaymentInterface>
  */
 interface OrderPaymentRepositoryInterface extends PaymentRepositoryInterface
 {
-    public function findOneByOrderAndKey(OrderInterface $quote, string $key): ?OrderPaymentInterface;
+    public function findOneByOrderAndKey(OrderInterface $order, string $key): ?OrderPaymentInterface;
 
     /**
      * Finds payments for the given customer and date range.

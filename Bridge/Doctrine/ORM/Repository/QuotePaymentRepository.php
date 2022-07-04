@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use Ekyna\Component\Commerce\Payment\Repository\PaymentRepositoryInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface;
 use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
@@ -13,7 +14,7 @@ use Ekyna\Component\Commerce\Quote\Repository\QuotePaymentRepositoryInterface;
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method QuotePaymentInterface findOneByKey(string $key)
+ * @implements PaymentRepositoryInterface<QuotePaymentInterface>
  */
 class QuotePaymentRepository extends AbstractPaymentRepository implements QuotePaymentRepositoryInterface
 {

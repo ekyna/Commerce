@@ -14,6 +14,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface ShipmentPriceRepositoryInterface
  * @package Ekyna\Component\Commerce\Shipment\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<ShipmentPriceInterface>
  */
 interface ShipmentPriceRepositoryInterface extends ResourceRepositoryInterface
 {

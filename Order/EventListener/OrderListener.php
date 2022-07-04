@@ -16,14 +16,12 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
-use Ekyna\Component\Commerce\Order\Message\OrderStateChange;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
-use Ekyna\Component\Resource\Message\MessageQueueAwareTrait;
 
 use function in_array;
 
@@ -34,13 +32,11 @@ use function in_array;
  */
 class OrderListener extends AbstractSaleListener
 {
-    use MessageQueueAwareTrait;
-
-    protected StockUnitAssignerInterface      $stockAssigner;
-    protected OrderRepositoryInterface        $orderRepository;
-    protected CouponRepositoryInterface       $couponRepository;
-    protected InvoicePaymentResolverInterface $invoicePaymentResolver;
-    protected OrderUpdaterInterface           $orderUpdater;
+    protected readonly StockUnitAssignerInterface      $stockAssigner;
+    protected readonly OrderRepositoryInterface        $orderRepository;
+    protected readonly CouponRepositoryInterface       $couponRepository;
+    protected readonly InvoicePaymentResolverInterface $invoicePaymentResolver;
+    protected readonly OrderUpdaterInterface           $orderUpdater;
 
     public function setStockAssigner(StockUnitAssignerInterface $assigner): void
     {
@@ -277,26 +273,13 @@ class OrderListener extends AbstractSaleListener
     {
         parent::handleStateChange($sale);
 
-        $changeSet = $this->persistenceHelper->getChangeSet($sale, [
-            'state',
-            'paymentState',
-            'shipmentState',
-            'invoiceState',
-        ]);
+        $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
 
-        if (empty($changeSet)) {
+        if (empty($stateCs)) {
             return;
         }
 
-        $this->messageQueue->addMessage(static function () use ($sale, $changeSet) {
-            return OrderStateChange::create($sale, $changeSet);
-        });
-
-        if (!isset($changeSet['state'])) {
-            return;
-        }
-
-        if (OrderStates::hasChangedToStockable($changeSet['state'])) {
+        if (OrderStates::hasChangedToStockable($stateCs)) {
             // Order state has changed from non stockable to stockable
             foreach ($sale->getItems() as $item) {
                 $this->assignSaleItemRecursively($item);
@@ -305,7 +288,7 @@ class OrderListener extends AbstractSaleListener
             return;
         }
 
-        if (OrderStates::hasChangedFromStockable($changeSet['state'])) {
+        if (OrderStates::hasChangedFromStockable($stateCs)) {
             // Order state has changed from stockable to non stockable
             foreach ($sale->getItems() as $item) {
                 $this->detachSaleItemRecursively($item);

@@ -15,6 +15,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  * Interface SupplierProductRepositoryInterface
  * @package Ekyna\Component\Commerce\Supplier\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements ResourceRepositoryInterface<SupplierProductInterface>
  */
 interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
 {
@@ -56,8 +58,8 @@ interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
      * Finds the supplier product by subject and supplier.
      */
     public function findOneBySubjectAndSupplier(
-        SubjectInterface $subject,
-        SupplierInterface $supplier,
+        SubjectInterface         $subject,
+        SupplierInterface        $supplier,
         SupplierProductInterface $exclude = null
     ): ?SupplierProductInterface;
 }

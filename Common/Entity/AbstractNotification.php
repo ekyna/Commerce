@@ -6,7 +6,6 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use DateTimeInterface;
 use Ekyna\Component\Commerce\Common\Model\NotificationInterface;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
@@ -33,47 +32,23 @@ abstract class AbstractNotification extends AbstractResource implements Notifica
         return $this;
     }
 
-    public function hasData(?string $key): bool
+    public function hasData(string $key): bool
     {
-        if (!is_null($key)) {
-            return isset($this->data[$key]);
-        }
-
-        return !empty($this->data);
+        return isset($this->data[$key]);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getData(?string $key = null)
+    public function getData(string $key): ?string
     {
-        if (!is_null($key)) {
-            if (isset($this->data[$key])) {
-                return $this->data[$key];
-            }
-
+        if (!$this->hasData($key)) {
             return null;
         }
 
-        return $this->data;
+        return $this->data[$key];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setData($data, string $key = null): NotificationInterface
+    public function setData(string $key, string $data): NotificationInterface
     {
-        if (!is_null($key)) {
-            if (!is_scalar($data)) {
-                throw new InvalidArgumentException('Expected scalar data.');
-            }
-
-            $this->data[$key] = $data;
-        } elseif (!is_array($data)) {
-            throw new InvalidArgumentException('Expected array data.');
-        } else {
-            $this->data = $data;
-        }
+        $this->data[$key] = $data;
 
         return $this;
     }

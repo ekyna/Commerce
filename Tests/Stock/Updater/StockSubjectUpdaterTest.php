@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Tests\Stock\Updater;
 
 use Acme\Product\Entity\Product;
-use Acme\Product\Entity\StockUnit;
+use DateTime;
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model\StockComponent;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
@@ -11,6 +14,8 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockSubjectUpdater;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
+use Ekyna\Component\Commerce\Tests\Fixture;
+use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -21,21 +26,9 @@ use PHPUnit\Framework\TestCase;
  */
 class StockSubjectUpdaterTest extends TestCase
 {
-    /**
-     * @var StockUnitResolverInterface|MockObject
-     */
-    private $stockUnitResolver;
-
-    /**
-     * @var SupplierProductRepositoryInterface|MockObject
-     */
-    private $supplierProductRepository;
-
-    /**
-     * @var StockSubjectUpdater
-     */
-    private $updater;
-
+    private StockUnitResolverInterface|MockObject|null         $stockUnitResolver;
+    private SupplierProductRepositoryInterface|MockObject|null $supplierProductRepository;
+    private StockSubjectUpdater|null                           $updater;
 
     protected function setUp(): void
     {
@@ -52,21 +45,15 @@ class StockSubjectUpdaterTest extends TestCase
     }
 
     /**
-     * @param array          $result
-     * @param Product        $subject
-     * @param array          $units
-     * @param \DateTime|null $eda
-     * @param float          $available
-     *
-     * @dataProvider provide_update
+     * @dataProvider provideUpdate
      */
-    public function test_update(
-        array $result,
-        Product $subject,
-        array $units = [],
-        \DateTime $eda = null,
-        float $available = .0
-    ) {
+    public function testUpdate(
+        array      $result,
+        Product    $subject,
+        array      $units = [],
+        DateTime   $eda = null,
+        string|int $available = 0
+    ): void {
         $this
             ->stockUnitResolver
             ->expects(self::any())
@@ -86,209 +73,256 @@ class StockSubjectUpdaterTest extends TestCase
             ->expects(self::any())
             ->method('getAvailableQuantitySumBySubject')
             ->with($subject)
-            ->willReturn($available);
+            ->willReturn(new Decimal($available));
+
+        $this
+            ->supplierProductRepository
+            ->expects(self::any())
+            ->method('getOrderedQuantitySumBySubject')
+            ->with($subject)
+            ->willReturn(new Decimal(0));
 
         $this->updater->update($subject);
 
-        $this->assertEquals($result['mode'], $subject->getStockMode());
-        $this->assertEquals($result['state'], $subject->getStockState());
-        $this->assertEquals($result['in'], $subject->getInStock());
-        $this->assertEquals($result['available'], $subject->getAvailableStock());
-        $this->assertEquals($result['virtual'], $subject->getVirtualStock());
-        $this->assertEquals($result['eda'], $subject->getEstimatedDateOfArrival());
+        $result = array_replace([
+            'mode'      => null,
+            'state'     => null,
+            'in'        => 0,
+            'available' => 0,
+            'virtual'   => 0,
+            'eda'       => null,
+        ], $result);
+
+        self::assertEquals($result['mode'], $subject->getStockMode());
+        self::assertEquals($result['state'], $subject->getStockState());
+        self::assertEquals(new Decimal($result['in']), $subject->getInStock());
+        self::assertEquals(new Decimal($result['available']), $subject->getAvailableStock());
+        self::assertEquals(new Decimal($result['virtual']), $subject->getVirtualStock());
+        self::assertEquals($result['eda'], $subject->getEstimatedDateOfArrival());
     }
 
-    public function provide_update(): \Generator
+    public function provideUpdate(): Generator
     {
-        $subject = $this->createSubject(StockSubjectModes::MODE_DISABLED);
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         yield 'Simple 1' => [
             [
-                'mode'      => StockSubjectModes::MODE_DISABLED,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'mode'  => StockSubjectModes::MODE_DISABLED,
+                'state' => StockSubjectStates::STATE_IN_STOCK,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_AUTO]);
         yield 'Simple 2' => [
             [
-                'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_OUT_OF_STOCK,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => -10.0,
-                'eda'       => null,
+                'mode'    => StockSubjectModes::MODE_AUTO,
+                'state'   => StockSubjectStates::STATE_OUT_OF_STOCK,
+                'virtual' => -10,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_NEW, 10),
+                Fixture::stockUnit([
+                    'state' => StockUnitStates::STATE_NEW,
+                    'sold'  => 10,
+                ]),
             ],
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_AUTO]);
         yield 'Simple 3' => [
             [
-                'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_OUT_OF_STOCK,
-                'in'        => 5.0,
-                'available' => 0.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'mode'  => StockSubjectModes::MODE_AUTO,
+                'state' => StockSubjectStates::STATE_OUT_OF_STOCK,
+                'in'    => 5,
+                'eda'   => null,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_READY, 20, 10, 0, 20, 15, new \DateTime('+1 day')),
+                Fixture::stockUnit([
+                    'state'    => StockUnitStates::STATE_NEW,
+                    'sold'     => 20,
+                    'shipped'  => 10,
+                    'ordered'  => 20,
+                    'received' => 15,
+                    'eda'      => new DateTime('+1 day'),
+                ]),
             ],
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_AUTO]);
         yield 'Simple 4' => [
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
                 'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 10.0,
-                'available' => 10.0,
-                'virtual'   => 10.0,
+                'in'        => 10,
+                'available' => 10,
+                'virtual'   => 10,
                 'eda'       => null,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_READY, 10, 10, 0, 20, 20),
+                Fixture::stockUnit([
+                    'state'    => StockUnitStates::STATE_READY,
+                    'sold'     => 10,
+                    'shipped'  => 10,
+                    'ordered'  => 20,
+                    'received' => 20,
+                ]),
             ],
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
-        $eda = new \DateTime('+1 day');
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_AUTO]);
+        $eda = new DateTime('+1 day');
         yield 'Simple 5' => [
             [
-                'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_PRE_ORDER,
-                'in'        => 5.0,
-                'available' => 0.0,
-                'virtual'   => 5.0,
-                'eda'       => $eda,
+                'mode'    => StockSubjectModes::MODE_AUTO,
+                'state'   => StockSubjectStates::STATE_PRE_ORDER,
+                'in'      => 5,
+                'virtual' => 5,
+                'eda'     => $eda,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_READY, 15, 10, 0, 20, 15, $eda),
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 20, 0, 0, 20, 0, new \DateTime('+2 day')),
+                Fixture::stockUnit([
+                    'state'    => StockUnitStates::STATE_READY,
+                    'sold'     => 15,
+                    'shipped'  => 10,
+                    'ordered'  => 20,
+                    'received' => 15,
+                    'eda'      => $eda,
+                ]),
+                Fixture::stockUnit([
+                    'state'   => StockUnitStates::STATE_PENDING,
+                    'sold'    => 20,
+                    'ordered' => 20,
+                    'eda'     => new DateTime('+2 day'),
+                ]),
             ],
         ];
 
         // EDA from supplier data
-        $subject = $this->createSubject(StockSubjectModes::MODE_AUTO);
-        $eda = new \DateTime('+2 day');
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_AUTO]);
+        $eda = new DateTime('+2 day');
         yield 'Simple 6' => [
             [
-                'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_PRE_ORDER,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 0.0,
-                'eda'       => $eda,
+                'mode'  => StockSubjectModes::MODE_AUTO,
+                'state' => StockSubjectStates::STATE_PRE_ORDER,
+                'eda'   => $eda,
             ],
             $subject,
             [],
             $eda,
             10,
         ];
+        // TODO with eda and ordered stock
 
-        $subject =$this->createSubject(StockSubjectModes::MODE_JUST_IN_TIME);
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_JUST_IN_TIME]);
         yield 'Simple 7' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_PRE_ORDER,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'mode'  => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state' => StockSubjectStates::STATE_PRE_ORDER,
             ],
             $subject,
             [],
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_JUST_IN_TIME);
-        $eda = new \DateTime('+1 day');
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_JUST_IN_TIME]);
+        $eda = new DateTime('+1 day');
         yield 'Simple 8' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 20.0,
-                'eda'       => $eda,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
+                'virtual' => 20,
+                'eda'     => $eda,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 0, 0, 0, 20, 0, $eda),
+                Fixture::stockUnit([
+                    'state'   => StockUnitStates::STATE_PENDING,
+                    'ordered' => 20,
+                    'eda'     => $eda,
+                ]),
             ],
         ];
 
-        $subject = $this->createSubject(StockSubjectModes::MODE_JUST_IN_TIME);
-        $eda = new \DateTime('+15 day');
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_JUST_IN_TIME]);
+        $eda = new DateTime('+15 day');
         yield 'Simple 9' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 10.0,
-                'available' => 0.0,
-                'virtual'   => 50.0,
-                'eda'       => $eda,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
+                'in'      => 10,
+                'virtual' => 50,
+                'eda'     => $eda,
             ],
             $subject,
             [
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 30, 0, 10, 20, 0, new \DateTime('+5 day')),
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 50, 0, 0, 50, 0, new \DateTime('+10 day')),
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 20, 0, 0, 50, 0, $eda),
-                $this->createStockUnit(StockUnitStates::STATE_PENDING, 0, 0, 0, 20, 0, new \DateTime('+20 day')),
+                Fixture::stockUnit([
+                    'state'    => StockUnitStates::STATE_PENDING,
+                    'sold'     => 30,
+                    'adjusted' => 10,
+                    'ordered'  => 20,
+                    'eda'      => new DateTime('+5 day'),
+                ]),
+                Fixture::stockUnit([
+                    'state'   => StockUnitStates::STATE_PENDING,
+                    'sold'    => 50,
+                    'ordered' => 50,
+                    'eda'     => new DateTime('+10 day'),
+                ]),
+                Fixture::stockUnit([
+                    'state'   => StockUnitStates::STATE_PENDING,
+                    'sold'    => 20,
+                    'ordered' => 50,
+                    'eda'     => $eda,
+                ]),
+                Fixture::stockUnit([
+                    'state'   => StockUnitStates::STATE_PENDING,
+                    'ordered' => 20,
+                    'eda'     => new DateTime('+20 day'),
+                ]),
             ],
         ];
 
         // ---------------------------------------- COMPOUND ----------------------------------------
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(),
-                1
+                Fixture::subject(),
+                new Decimal(1)
             ),
         ]);
 
         yield 'Compound 1' => [
             [
-                'mode'      => StockSubjectModes::MODE_DISABLED,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'mode'  => StockSubjectModes::MODE_DISABLED,
+                'state' => StockSubjectStates::STATE_IN_STOCK,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_AUTO,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    20, 20, 0, null
-                ),
-                1
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_AUTO,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 20,
+                ]),
+                new Decimal(1)
             ),
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_AUTO,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    20, 20, 0
-                ),
-                2
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_AUTO,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 20,
+                ]),
+                new Decimal(2)
             ),
         ]);
 
@@ -296,32 +330,30 @@ class StockSubjectUpdaterTest extends TestCase
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
                 'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 10.0,
-                'available' => 10.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'in'        => 10,
+                'available' => 10,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_DISABLED,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    0, 0, 0, null
-                ),
-                1
+                Fixture::subject([
+                    'mode'  => StockSubjectModes::MODE_DISABLED,
+                    'state' => StockSubjectStates::STATE_IN_STOCK,
+                ]),
+                new Decimal(1)
             ),
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_AUTO,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    30, 30, 0, null
-                ),
-                3
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_AUTO,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 30,
+                    'available' => 30,
+                ]),
+                new Decimal(3)
             ),
         ]);
 
@@ -329,232 +361,195 @@ class StockSubjectUpdaterTest extends TestCase
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
                 'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 10.0,
-                'available' => 10.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'in'        => 10,
+                'available' => 10,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_JUST_IN_TIME,
-                    StockSubjectStates::STATE_PRE_ORDER,
-                    0, 0, 20, null
-                ),
-                1
+                Fixture::subject([
+                    'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'   => StockSubjectStates::STATE_PRE_ORDER,
+                    'virtual' => 20,
+                ]),
+                new Decimal(1)
             ),
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_JUST_IN_TIME,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    0, 0, 30, new \DateTime('+3 days')
-                ),
-                3
+                Fixture::subject([
+                    'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'   => StockSubjectStates::STATE_IN_STOCK,
+                    'virtual' => 30,
+                    'eda'     => new DateTime('+3 days'),
+                ]),
+                new Decimal(3)
             ),
         ]);
 
         yield 'Compound 4' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_PRE_ORDER,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 10.0,
-                'eda'       => null,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_PRE_ORDER,
+                'virtual' => 10,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_JUST_IN_TIME,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    0, 0, 30, new \DateTime('+2 days')
-                ),
-                1
+                Fixture::subject([
+                    'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'   => StockSubjectStates::STATE_IN_STOCK,
+                    'virtual' => 30,
+                    'eda'     => $eda = new DateTime('+3 days'),
+                ]),
+                new Decimal(1)
             ),
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_JUST_IN_TIME,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    0, 0, 30, $eda = new \DateTime('+3 days')
-                ),
-                2
+                Fixture::subject([
+                    'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'   => StockSubjectStates::STATE_IN_STOCK,
+                    'virtual' => 30,
+                    'eda'     => new DateTime('+2 days'),
+                ]),
+                new Decimal(2)
             ),
         ]);
 
         yield 'Compound 5' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 15.0,
-                'eda'       => $eda,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
+                'virtual' => 15,
+                'eda'     => $eda,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_MANUAL,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    20, 20, 0, null
-                ),
-                1
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'available' => 10,
+                    'virtual'   => 30,
+                    'eda'       => new DateTime('+3 days'),
+                ]),
+                new Decimal(1)
             ),
             new StockComponent(
-                $this->createSubject(
-                    StockSubjectModes::MODE_MANUAL,
-                    StockSubjectStates::STATE_IN_STOCK,
-                    50, 50, 0, null
-                ),
-                3
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'available' => 20,
+                    'virtual'   => 30,
+                    'eda'       => $eda = new DateTime('+2 days'),
+                ]),
+                new Decimal(2)
             ),
         ]);
 
         yield 'Compound 6' => [
             [
-                'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'in'        => 16.0,
-                'available' => 16.0,
-                'virtual'   => 0.0,
-                'eda'       => null,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
+                'virtual' => 15,
+                'eda'     => $eda,
             ],
             $subject,
         ];
 
-        $subject = $this->createSubject();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
         $subject->setStockCompound(true);
         $subject->setStockComposition([
-            [
-                new StockComponent(
-                    $this->createSubject(
-                        StockSubjectModes::MODE_DISABLED,
-                        StockSubjectStates::STATE_IN_STOCK,
-                        0, 0, 0, null
-                    ),
-                    1
-                ),
-                new StockComponent(
-                    $this->createSubject(
-                        StockSubjectModes::MODE_AUTO,
-                        StockSubjectStates::STATE_IN_STOCK,
-                        30, 30, 30, null
-                    ),
-                    3
-                ),
-            ],
-            [
-                new StockComponent(
-                    $this->createSubject(
-                        StockSubjectModes::MODE_JUST_IN_TIME,
-                        StockSubjectStates::STATE_IN_STOCK,
-                        0, 0, 10, $eda = new \DateTime('+2 days')
-                    ),
-                    1
-                ),
-                new StockComponent(
-                    $this->createSubject(
-                        StockSubjectModes::MODE_JUST_IN_TIME,
-                        StockSubjectStates::STATE_IN_STOCK,
-                        0, 0, 20, new \DateTime('+3 days')
-                    ),
-                    2
-                ),
-            ],
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_MANUAL,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 20,
+                ]),
+                new Decimal(1)
+            ),
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_MANUAL,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 50,
+                    'available' => 50,
+                ]),
+                new Decimal(3)
+            ),
         ]);
 
         yield 'Compound 7' => [
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
-                'state'     => StockSubjectStates::STATE_PRE_ORDER,
-                'in'        => 0.0,
-                'available' => 0.0,
-                'virtual'   => 10.0,
-                'eda'       => $eda,
+                'state'     => StockSubjectStates::STATE_IN_STOCK,
+                'in'        => 16,
+                'available' => 16,
+                'eda'       => null,
             ],
             $subject,
         ];
-    }
 
-    /**
-     * @param string         $state
-     * @param float          $sold
-     * @param float          $shipped
-     * @param float          $adjusted
-     * @param float          $ordered
-     * @param float          $received
-     * @param \DateTime|null $eda
-     *
-     * @return StockUnit
-     *
-     * @deprecated Use Fixtures::createStockUnit
-     */
-    private function createStockUnit(
-        string $state = StockUnitStates::STATE_NEW,
-        float $sold = .0,
-        float $shipped = .0,
-        float $adjusted = .0,
-        float $ordered = .0,
-        float $received = .0,
-        \DateTime $eda = null
-    ): StockUnit {
-        $unit = new StockUnit();
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
+        $subject->setStockCompound(true);
+        $subject->setStockComposition([
+            [
+                new StockComponent(
+                    Fixture::subject([
+                        'mode'  => StockSubjectModes::MODE_DISABLED,
+                        'state' => StockSubjectStates::STATE_IN_STOCK,
+                    ]),
+                    new Decimal(1)
+                ),
+                new StockComponent(
+                    Fixture::subject([
+                        'mode'      => StockSubjectModes::MODE_AUTO,
+                        'state'     => StockSubjectStates::STATE_IN_STOCK,
+                        'in'        => 40,
+                    ]),
+                    new Decimal(3)
+                ),
+            ],
+            [
+                new StockComponent(
+                    Fixture::subject([
+                        'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                        'state'   => StockSubjectStates::STATE_IN_STOCK,
+                        'virtual' => 10,
+                        'eda'     => $eda = new DateTime('+2 days'),
+                    ]),
+                    new Decimal(1)
+                ),
+                new StockComponent(
+                    Fixture::subject([
+                        'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                        'state'   => StockSubjectStates::STATE_IN_STOCK,
+                        'virtual' => 20,
+                        'eda'     => new DateTime('+3 days'),
+                    ]),
+                    new Decimal(2)
+                ),
+            ],
+        ]);
 
-        $unit
-            ->setState($state)
-            ->setSoldQuantity($sold)
-            ->setShippedQuantity($shipped)
-            ->setAdjustedQuantity($adjusted)
-            ->setOrderedQuantity($ordered)
-            ->setReceivedQuantity($received)
-            ->setEstimatedDateOfArrival($eda);
-
-        return $unit;
-    }
-
-    /**
-     * @param string         $mode
-     * @param string         $state
-     * @param float          $in
-     * @param float          $available
-     * @param float          $virtual
-     * @param \DateTime|null $eda
-     *
-     * @return Product
-     *
-     * @deprecated Use Fixtures::createSubject
-     */
-    private function createSubject(
-        string $mode = StockSubjectModes::MODE_DISABLED,
-        string $state = StockSubjectStates::STATE_IN_STOCK,
-        float $in = 0.0,
-        float $available = 0.0,
-        float $virtual = 0.0,
-        \DateTime $eda = null
-    ): Product {
-        $subject = new Product();
-        $subject
-            ->setStockMode($mode)
-            ->setStockState($state)
-            ->setInStock($in)
-            ->setAvailableStock($available)
-            ->setVirtualStock($virtual)
-            ->setEstimatedDateOfArrival($eda);
-
-        return $subject;
+        yield 'Compound 8' => [
+            [
+                'mode'    => StockSubjectModes::MODE_AUTO,
+                'state'   => StockSubjectStates::STATE_PRE_ORDER,
+                'virtual' => 10,
+                'eda'     => $eda,
+            ],
+            $subject,
+        ];
     }
 }
