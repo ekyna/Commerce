@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
@@ -15,20 +17,16 @@ class InvoiceNotifyListener extends AbstractNotifyListener
 {
     /**
      * Post persist event handler.
-     *
-     * @param OrderInvoiceInterface $invoice
      */
-    public function postPersist(OrderInvoiceInterface $invoice)
+    public function postPersist(OrderInvoiceInterface $invoice): void
     {
         $this->watch($invoice);
     }
 
     /**
      * Invoice watcher.
-     *
-     * @param OrderInvoiceInterface $invoice
      */
-    protected function watch(OrderInvoiceInterface $invoice)
+    protected function watch(OrderInvoiceInterface $invoice): void
     {
         $order = $invoice->getOrder();
 

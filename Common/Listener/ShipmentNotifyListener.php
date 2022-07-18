@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
@@ -15,30 +17,24 @@ class ShipmentNotifyListener extends AbstractNotifyListener
 {
     /**
      * Post persist event handler.
-     *
-     * @param OrderShipmentInterface $shipment
      */
-    public function postPersist(OrderShipmentInterface $shipment)
+    public function postPersist(OrderShipmentInterface $shipment): void
     {
         $this->watch($shipment);
     }
 
     /**
      * Post update event handler.
-     *
-     * @param OrderShipmentInterface $shipment
      */
-    public function postUpdate(OrderShipmentInterface $shipment)
+    public function postUpdate(OrderShipmentInterface $shipment): void
     {
         $this->watch($shipment);
     }
 
     /**
      * Shipment watcher.
-     *
-     * @param OrderShipmentInterface $shipment
      */
-    protected function watch(OrderShipmentInterface $shipment)
+    protected function watch(OrderShipmentInterface $shipment): void
     {
         $order = $shipment->getOrder();
 

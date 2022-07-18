@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
@@ -15,30 +17,24 @@ class OrderNotifyListener extends AbstractNotifyListener
 {
     /**
      * Post persist event handler.
-     *
-     * @param OrderInterface $order
      */
-    public function postPersist(OrderInterface $order)
+    public function postPersist(OrderInterface $order): void
     {
         $this->watch($order);
     }
 
     /**
      * Post update event handler.
-     *
-     * @param OrderInterface $order
      */
-    public function postUpdate(OrderInterface $order)
+    public function postUpdate(OrderInterface $order): void
     {
         $this->watch($order);
     }
 
     /**
      * Order watcher.
-     *
-     * @param OrderInterface $order
      */
-    protected function watch(OrderInterface $order)
+    protected function watch(OrderInterface $order): void
     {
         // Abort if notify disabled or sample order
         if (!$order->isAutoNotify() || $order->isSample()) {

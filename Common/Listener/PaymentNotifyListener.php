@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Model\NotificationTypes;
@@ -15,8 +17,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
 {
     /**
      * Post persist event handler.
-     *
-     * @param OrderPaymentInterface $payment
      */
     public function postPersist(OrderPaymentInterface $payment): void
     {
@@ -25,8 +25,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
 
     /**
      * Post update event handler.
-     *
-     * @param OrderPaymentInterface $payment
      */
     public function postUpdate(OrderPaymentInterface $payment): void
     {
@@ -35,8 +33,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
 
     /**
      * Payment watcher.
-     *
-     * @param OrderPaymentInterface $payment
      */
     protected function watch(OrderPaymentInterface $payment): void
     {
@@ -79,10 +75,6 @@ class PaymentNotifyListener extends AbstractNotifyListener
 
     /**
      * Sends the payment notification.
-     *
-     * @param OrderPaymentInterface $payment
-     * @param string                $type
-     * @param string                $state
      */
     protected function notifyState(OrderPaymentInterface $payment, string $type, string $state): void
     {

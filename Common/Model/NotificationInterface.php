@@ -18,20 +18,24 @@ interface NotificationInterface extends ResourceInterface
 
     public function setType(string $type): NotificationInterface;
 
+    public function getData(): array;
+
+    public function setData(array $data): NotificationInterface;
+
     /**
      * Returns whether the notification has data for the given key.
      */
-    public function hasData(string $key): bool;
+    public function hasDatum(string $key): bool;
 
     /**
      * Returns the data for the given key.
      */
-    public function getData(string $key): ?string;
+    public function getDatum(string $key): ?string;
 
     /**
      * Sets the data for the given key.
      */
-    public function setData(string $key, string $data): NotificationInterface;
+    public function setDatum(string $key, string $data): NotificationInterface;
 
     public function getSentAt(): ?DateTimeInterface;
 

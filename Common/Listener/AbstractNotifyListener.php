@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Listener;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -15,46 +17,16 @@ use Ekyna\Component\Resource\Persistence\PersistenceTrackerInterface;
  */
 abstract class AbstractNotifyListener
 {
-    /**
-     * @var PersistenceTrackerInterface
-     */
-    protected $tracker;
-
-    /**
-     * @var NotifyQueue
-     */
-    protected $queue;
-
-    /**
-     * @var NotifyBuilder
-     */
-    protected $builder;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceTrackerInterface $tracker
-     * @param NotifyQueue                 $queue
-     * @param NotifyBuilder               $builder
-     */
     public function __construct(
-        PersistenceTrackerInterface $tracker,
-        NotifyQueue $queue,
-        NotifyBuilder $builder
+        protected readonly PersistenceTrackerInterface $tracker,
+        protected readonly NotifyQueue $queue,
+        protected readonly NotifyBuilder $builder
     ) {
-        $this->tracker = $tracker;
-        $this->queue   = $queue;
-        $this->builder = $builder;
+
     }
 
     /**
      * Returns whether the state of the given resource changed to the given state.
-     *
-     * @param ResourceInterface $resource
-     * @param string            $state
-     *
-     * @return bool
      */
     protected function didStateChangeTo(ResourceInterface $resource, string $state): bool
     {
@@ -71,13 +43,6 @@ abstract class AbstractNotifyListener
 
     /**
      * Returns whether the sale has a notification with the given type and key number.
-     *
-     * @param SaleInterface $sale
-     * @param string        $type
-     * @param string        $key
-     * @param string        $number
-     *
-     * @return bool
      */
     protected function hasNotification(SaleInterface $sale, string $type, string $key, string $number): bool
     {
@@ -86,7 +51,7 @@ abstract class AbstractNotifyListener
                 continue;
             }
 
-            if ($n->getData($key) === $number) {
+            if ($n->getDatum($key) === $number) {
                 return true;
             }
         }
@@ -96,9 +61,6 @@ abstract class AbstractNotifyListener
 
     /**
      * Creates, build and enqueue a notify instance.
-     *
-     * @param string            $type
-     * @param ResourceInterface $resource
      */
     protected function notify(string $type, ResourceInterface $resource): void
     {

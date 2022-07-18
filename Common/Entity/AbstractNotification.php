@@ -32,21 +32,33 @@ abstract class AbstractNotification extends AbstractResource implements Notifica
         return $this;
     }
 
-    public function hasData(string $key): bool
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function setData(array $data): NotificationInterface
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
+    public function hasDatum(string $key): bool
     {
         return isset($this->data[$key]);
     }
 
-    public function getData(string $key): ?string
+    public function getDatum(string $key): ?string
     {
-        if (!$this->hasData($key)) {
+        if (!$this->hasDatum($key)) {
             return null;
         }
 
         return $this->data[$key];
     }
 
-    public function setData(string $key, string $data): NotificationInterface
+    public function setDatum(string $key, string $data): NotificationInterface
     {
         $this->data[$key] = $data;
 
