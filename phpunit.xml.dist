@@ -4,6 +4,10 @@
          backupGlobals="true"
          colors="true">
 
+    <extensions>
+        <extension class="Ekyna\Component\Resource\Tests\PhpUnit\DecimalExtension" />
+    </extensions>
+
     <coverage>
         <include>
             <directory>.</directory>

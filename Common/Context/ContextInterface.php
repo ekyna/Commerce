@@ -84,7 +84,7 @@ interface ContextInterface
     /**
      * Sets the VAT display mode.
      */
-    public function setVatDisplayMode(string $mode): ContextInterface;
+    public function setVatDisplayMode(?string $mode): ContextInterface;
 
     /**
      * Returns whether the context is business.

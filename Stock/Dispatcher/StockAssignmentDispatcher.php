@@ -20,18 +20,13 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
  */
 class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 {
-    protected StockAssignmentManagerInterface $assignmentManager;
-    protected StockUnitManagerInterface       $unitManager;
-    protected StockLoggerInterface            $logger;
-
+    // Cannot declare properties as readonly as this service is lazy.
+    // Would raise "Compile Error: Cannot redeclare readonly property"
     public function __construct(
-        StockAssignmentManagerInterface $assignmentManager,
-        StockUnitManagerInterface       $unitManager,
-        StockLoggerInterface            $logger
+        protected StockAssignmentManagerInterface $assignmentManager,
+        protected StockUnitManagerInterface       $unitManager,
+        protected StockLoggerInterface            $logger
     ) {
-        $this->assignmentManager = $assignmentManager;
-        $this->unitManager = $unitManager;
-        $this->logger = $logger;
     }
 
     public function moveAssignments(

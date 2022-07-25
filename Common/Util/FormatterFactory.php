@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Util;
 
 use Ekyna\Component\Commerce\Common\Context\ContextInterface;
@@ -13,44 +15,19 @@ use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
  */
 class FormatterFactory
 {
-    /**
-     * @var LocaleProviderInterface
-     */
-    protected $localeProvider;
+    /** @var array<int, Formatter> */
+    protected array $cache = [];
 
-    /**
-     * @var CurrencyProviderInterface
-     */
-    protected $currencyProvider;
-
-    /**
-     * @var Formatter[]
-     */
-    protected $cache;
-
-
-    /**
-     * Constructor.
-     *
-     * @param LocaleProviderInterface   $localeProvider
-     * @param CurrencyProviderInterface $currencyProvider
-     */
-    public function __construct(LocaleProviderInterface $localeProvider, CurrencyProviderInterface $currencyProvider)
-    {
-        $this->localeProvider = $localeProvider;
-        $this->currencyProvider = $currencyProvider;
-        $this->cache = [];
+    public function __construct(
+        private readonly LocaleProviderInterface   $localeProvider,
+        private readonly CurrencyProviderInterface $currencyProvider
+    ) {
     }
 
     /**
      * Creates a new formatter.
-     *
-     * @param string|null $locale
-     * @param string|null $currency
-     *
-     * @return Formatter
      */
-    public function create(string $locale = null, string $currency = null)
+    public function create(string $locale = null, string $currency = null): Formatter
     {
         $locale = $locale ?? $this->localeProvider->getCurrentLocale();
         $currency = $currency ?? $this->currencyProvider->getCurrentCurrency();
@@ -64,10 +41,8 @@ class FormatterFactory
 
     /**
      * Returns the default formatter.
-     *
-     * @return Formatter
      */
-    public function createDefault()
+    public function createDefault(): Formatter
     {
         return $this->create(
             $this->localeProvider->getFallbackLocale(),
@@ -77,12 +52,8 @@ class FormatterFactory
 
     /**
      * Returns the formatter for the given context.
-     *
-     * @param ContextInterface $context
-     *
-     * @return Formatter
      */
-    public function createFromContext(ContextInterface $context)
+    public function createFromContext(ContextInterface $context): Formatter
     {
         return $this->create($context->getLocale(), $context->getCurrency()->getCode());
     }

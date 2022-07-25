@@ -17,18 +17,15 @@ use NumberFormatter;
  */
 class Formatter
 {
-    private string             $locale;
-    private string             $currency;
     private ?IntlDateFormatter $dateFormatter     = null;
     private ?IntlDateFormatter $dateTimeFormatter = null;
     private ?NumberFormatter   $numberFormatter   = null;
     private ?NumberFormatter   $currencyFormatter = null;
 
-
-    public function __construct(string $locale = 'FR', string $currency = 'EUR')
-    {
-        $this->locale = $locale;
-        $this->currency = $currency;
+    public function __construct(
+        private readonly string $locale = 'FR',
+        private readonly string $currency = 'EUR'
+    ) {
     }
 
     public function getLocale(): string
@@ -59,10 +56,8 @@ class Formatter
 
     /**
      * Formats the given number for display.
-     *
-     * @param string|float|int|Decimal $number
      */
-    public function number($number, int $scale = null): string
+    public function number(Decimal|string|int|float $number, int $scale = null): string
     {
         if ($number instanceof Decimal) {
             $number = $number->toFloat();
@@ -80,24 +75,27 @@ class Formatter
 
     /**
      * Formats the given currency number for display.
-     *
-     * @param string|float|int|Decimal $number
      */
-    public function currency($number, string $currency = null): string
+    public function currency(Decimal|string|int|float $number, string $currency = null, int $scale = null): string
     {
         if ($number instanceof Decimal) {
             $number = $number->toFloat();
         }
 
-        return $this->getCurrencyFormatter()->formatCurrency($number, $currency ?? $this->currency);
+        $formatter = $this->getCurrencyFormatter();
+
+        if ($scale) {
+            $formatter = clone $formatter;
+            $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, $scale);
+        }
+
+        return $formatter->formatCurrency($number, $currency ?? $this->currency);
     }
 
     /**
      * Formats the given percent number for display.
-     *
-     * @param string|float|int|Decimal $number
      */
-    public function percent($number): string
+    public function percent(Decimal|string|int|float $number): string
     {
         if ($number instanceof Decimal) {
             $number = $number->toFloat();
@@ -131,8 +129,7 @@ class Formatter
             $this->locale,
             IntlDateFormatter::SHORT,
             IntlDateFormatter::NONE,
-            ini_get('date.timezone'),
-            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
+            null,
             IntlDateFormatter::GREGORIAN
         );
     }
@@ -150,8 +147,7 @@ class Formatter
             $this->locale,
             IntlDateFormatter::SHORT,
             IntlDateFormatter::SHORT,
-            ini_get('date.timezone'),
-            //PHP_VERSION_ID >= 50500 ? $date->getTimezone() : $date->getTimezone()->getName(),
+            null,
             IntlDateFormatter::GREGORIAN
         );
     }

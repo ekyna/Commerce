@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Manager;
 
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitStateResolverInterface;
+use Ekyna\Component\Resource\Persistence\PersistenceEventQueueInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -14,37 +17,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitManager implements StockUnitManagerInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-    /**
-     * @var StockUnitStateResolverInterface
-     */
-    protected $stateResolver;
-
-    /**
-     * @var StockUnitCacheInterface
-     */
-    protected $unitCache;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface      $persistenceHelper
-     * @param StockUnitStateResolverInterface $stateResolver
-     * @param StockUnitCacheInterface         $unitCache
-     */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
-        StockUnitStateResolverInterface $stateResolver,
-        StockUnitCacheInterface $unitCache
+        protected readonly PersistenceHelperInterface      $persistenceHelper,
+        protected readonly StockUnitStateResolverInterface $stateResolver,
+        protected readonly StockUnitCacheInterface         $unitCache
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->stateResolver = $stateResolver;
-        $this->unitCache = $unitCache;
     }
 
     /**
@@ -59,6 +36,9 @@ class StockUnitManager implements StockUnitManagerInterface
         if ($stockUnit->isEmpty()) {
             // Remove the stock unit from the cache
             $this->unitCache->remove($stockUnit);
+
+            // This will raise an error if an update event is already scheduled for this stock unit
+            $this->persistenceHelper->clearEvent($stockUnit, PersistenceEventQueueInterface::UPDATE);
 
             // Remove and schedule event
             $this->persistenceHelper->remove($stockUnit, true);

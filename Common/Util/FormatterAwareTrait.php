@@ -14,22 +14,11 @@ trait FormatterAwareTrait
     protected FormatterFactory $formatterFactory;
     private ?Formatter         $formatter = null;
 
-
-    /**
-     * Sets the formatter factory.
-     *
-     * @param FormatterFactory $formatterFactory
-     */
-    public function setFormatterFactory(FormatterFactory $formatterFactory)
+    public function setFormatterFactory(FormatterFactory $formatterFactory): void
     {
         $this->formatterFactory = $formatterFactory;
     }
 
-    /**
-     * Returns the formatter.
-     *
-     * @return Formatter
-     */
     protected function getFormatter(): Formatter
     {
         if ($this->formatter) {

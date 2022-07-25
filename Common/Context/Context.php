@@ -113,7 +113,7 @@ class Context implements ContextInterface
         return $this->vatDisplayMode;
     }
 
-    public function setVatDisplayMode(string $mode): ContextInterface
+    public function setVatDisplayMode(?string $mode): ContextInterface
     {
         $this->vatDisplayMode = $mode;
 

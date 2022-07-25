@@ -25,11 +25,9 @@ final class Money
     /**
      * Rounds the amount to currency's precision.
      *
-     * @param Decimal|string|int|float $amount
-     *
      * @see \Symfony\Component\Intl\NumberFormatter\NumberFormatter::roundCurrency()
      */
-    public static function round($amount, string $currency = null): Decimal
+    public static function round(Decimal|string|int|float $amount, string $currency = null): Decimal
     {
         if (is_null($currency)) {
             $precision = 5;
@@ -76,12 +74,8 @@ final class Money
 
     /**
      * Returns the currency rounding increment.
-     *
-     * @param string $currency
-     *
-     * @return float|int|null
      */
-    public static function getRoundingIncrement(string $currency)
+    public static function getRoundingIncrement(string $currency): int
     {
         if (array_key_exists($currency, self::$increments)) {
             return self::$increments[$currency];

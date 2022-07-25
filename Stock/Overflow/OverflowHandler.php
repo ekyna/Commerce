@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Overflow;
 
 use Ekyna\Component\Commerce\Exception\StockLogicException;
@@ -15,37 +17,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class OverflowHandler implements OverflowHandlerInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-    /**
-     * @var StockUnitResolverInterface
-     */
-    protected $unitResolver;
-
-    /**
-     * @var StockAssignmentDispatcherInterface
-     */
-    protected $assignmentDispatcher;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     * @param StockUnitResolverInterface $unitResolver
-     * @param StockAssignmentDispatcherInterface $assignmentDispatcher
-     */
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
-        StockUnitResolverInterface $unitResolver,
-        StockAssignmentDispatcherInterface $assignmentDispatcher
+        protected readonly PersistenceHelperInterface $persistenceHelper,
+        protected readonly StockUnitResolverInterface $unitResolver,
+        protected readonly StockAssignmentDispatcherInterface $assignmentDispatcher
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->unitResolver = $unitResolver;
-        $this->assignmentDispatcher = $assignmentDispatcher;
     }
 
     /**
@@ -111,13 +87,13 @@ class OverflowHandler implements OverflowHandlerInterface
             }
 
             if (0 != $overflow) {
-                throw new StockLogicException("Failed to fix stock unit sold quantity overflow.");
+                throw new StockLogicException('Failed to fix stock unit sold quantity overflow.');
             }
 
             return true;
         }
 
-        // Don't move assignment to a non linked stock unit
+        // Don't move assignment to a non-linked stock unit
         if (!$stockUnit->getSupplierOrderItem()) {
             return false;
         }
@@ -127,7 +103,7 @@ class OverflowHandler implements OverflowHandlerInterface
             if ($sourceUnit === $stockUnit) {
                 return false;
             }
-            if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, -$overflow, SORT_ASC)) {
+            if (0 != $this->assignmentDispatcher->moveAssignments($sourceUnit, $stockUnit, $overflow->negate(), SORT_ASC)) {
                 return true;
             }
         }
