@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Subject\Provider\SubjectProviderInterface as Subjec
 use Ekyna\Component\Commerce\Exception\SubjectException;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
 
 /**
  * Interface SubjectHelperInterface
@@ -38,11 +37,4 @@ interface SubjectHelperInterface
      * Finds the subject by its provider and identifier.
      */
     public function find(string $provider, int $identifier): ?SubjectInterface;
-
-    /**
-     * Syncs the relative with its subject data.
-     *
-     * @return bool Whether the relative has been changed.
-     */
-    public function sync(SubjectRelativeInterface $relative): bool;
 }
