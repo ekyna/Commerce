@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Document\Model;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
@@ -15,19 +17,19 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 final class DocumentTypes
 {
     // Sale
-    public const TYPE_FORM           = 'form';
-    public const TYPE_VOUCHER        = 'voucher';
-    public const TYPE_QUOTE          = 'quote';
-    public const TYPE_PROFORMA       = 'proforma';
-    public const TYPE_CONFIRMATION   = 'confirmation';
+    public const TYPE_FORM         = 'form';
+    public const TYPE_VOUCHER      = 'voucher';
+    public const TYPE_QUOTE        = 'quote';
+    public const TYPE_PROFORMA     = 'proforma';
+    public const TYPE_CONFIRMATION = 'confirmation';
 
     // Invoice
-    public const TYPE_INVOICE        = 'invoice';
-    public const TYPE_CREDIT         = 'credit';
+    public const TYPE_INVOICE = 'invoice';
+    public const TYPE_CREDIT  = 'credit';
 
     // Shipment
-    public const TYPE_SHIPMENT_FORM  = 'shipment_form';
-    public const TYPE_SHIPMENT_BILL  = 'shipment_bill';
+    public const TYPE_SHIPMENT_FORM = 'shipment_form';
+    public const TYPE_SHIPMENT_BILL = 'shipment_bill';
 
     // Supplier order
     public const TYPE_SUPPLIER_ORDER = 'supplier_order';
@@ -38,7 +40,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getTypes(): array
+    public static function getTypes(): array
     {
         return [
             self::TYPE_FORM,
@@ -61,9 +63,9 @@ final class DocumentTypes
      *
      * @return bool
      */
-    static public function isValid(string $type, bool $throw = true): bool
+    public static function isValid(string $type, bool $throw = true): bool
     {
-        if (in_array($type, static::getTypes(), true)) {
+        if (in_array($type, self::getTypes(), true)) {
             return true;
         }
 
@@ -79,7 +81,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getSaleTypes(): array
+    public static function getSaleTypes(): array
     {
         return [
             self::TYPE_FORM,
@@ -97,7 +99,7 @@ final class DocumentTypes
      *
      * @return bool
      */
-    static public function isValidSaleType(string $type): bool
+    public static function isValidSaleType(string $type): bool
     {
         return in_array($type, self::getSaleTypes(), true);
     }
@@ -107,7 +109,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getInvoiceTypes(): array
+    public static function getInvoiceTypes(): array
     {
         return [
             self::TYPE_INVOICE,
@@ -122,7 +124,7 @@ final class DocumentTypes
      *
      * @return bool
      */
-    static public function isValidInvoiceType(string $type): bool
+    public static function isValidInvoiceType(string $type): bool
     {
         return in_array($type, self::getInvoiceTypes(), true);
     }
@@ -132,7 +134,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getSaleAndInvoiceTypes(): array
+    public static function getSaleAndInvoiceTypes(): array
     {
         return array_merge(self::getSaleTypes(), self::getInvoiceTypes());
     }
@@ -142,7 +144,7 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getShipmentTypes(): array
+    public static function getShipmentTypes(): array
     {
         return [
             self::TYPE_SHIPMENT_FORM,
@@ -157,7 +159,7 @@ final class DocumentTypes
      *
      * @return bool
      */
-    static public function isValidShipmentType(string $type): bool
+    public static function isValidShipmentType(string $type): bool
     {
         return in_array($type, self::getShipmentTypes(), true);
     }
@@ -169,22 +171,15 @@ final class DocumentTypes
      *
      * @return array
      */
-    static public function getClasses(string $type): array
+    public static function getClasses(string $type): array
     {
-        switch ($type) {
-            case self::TYPE_FORM:
-                return [CartInterface::class];
-            case self::TYPE_QUOTE:
-                return [QuoteInterface::class];
-            case self::TYPE_PROFORMA:
-                return [QuoteInterface::class, OrderInterface::class];
-            case self::TYPE_CONFIRMATION:
-                return [OrderInterface::class];
-            case self::TYPE_VOUCHER:
-                return [];
-            default:
-                throw new InvalidArgumentException("Unexpected type '$type'.");
-        }
+        return match ($type) {
+            self::TYPE_FORM => [CartInterface::class],
+            self::TYPE_QUOTE, self::TYPE_PROFORMA => [QuoteInterface::class, OrderInterface::class],
+            self::TYPE_CONFIRMATION => [OrderInterface::class],
+            self::TYPE_VOUCHER => [],
+            default => throw new InvalidArgumentException("Unexpected type '$type'."),
+        };
     }
 
     /**

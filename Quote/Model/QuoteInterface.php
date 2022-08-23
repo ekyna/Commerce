@@ -12,7 +12,7 @@ use Ekyna\Component\Commerce\Common\Model as Common;
  * @package Ekyna\Component\Commerce\Quote\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface QuoteInterface extends Common\SaleInterface
+interface QuoteInterface extends Common\SaleInterface, Common\InitiatorSubjectInterface
 {
     /**
      * Returns whether this quote can be modified by the customer.

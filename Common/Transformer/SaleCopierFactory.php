@@ -14,12 +14,8 @@ use Ekyna\Component\Commerce\Common\Model;
  */
 class SaleCopierFactory implements SaleCopierFactoryInterface
 {
-    protected FactoryHelperInterface $factoryHelper;
-
-
-    public function __construct(FactoryHelperInterface $factoryHelper)
+    public function __construct(protected readonly FactoryHelperInterface $factoryHelper)
     {
-        $this->factoryHelper = $factoryHelper;
     }
 
     public function create(Model\SaleInterface $source, Model\SaleInterface $target): SaleCopierInterface

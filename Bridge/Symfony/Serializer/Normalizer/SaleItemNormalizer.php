@@ -88,7 +88,7 @@ class SaleItemNormalizer extends ResourceNormalizer
                     'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($object),
                     'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($object),
                     'available'          => $this->shipmentCalculator->calculateAvailableQuantity($object),
-                    'in_stock'           => $this->getInStock($object)->toFixed(3),
+                    'in_stock'           => $this->getInStock($object),
                     'availability_class' => null,
                 ];
 

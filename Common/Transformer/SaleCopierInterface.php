@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 /**
@@ -11,71 +13,41 @@ interface SaleCopierInterface
 {
     /**
      * Copies the whole source sale into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copySale();
+    public function copySale(): SaleCopierInterface;
 
     /**
      * Copies the source sale's data into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyData();
+    public function copyData(): SaleCopierInterface;
 
     /**
      * Copies the source sale's addresses into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyAddresses();
+    public function copyAddresses(): SaleCopierInterface;
 
     /**
      * Copies the source sale's attachments into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyAttachments();
+    public function copyAttachments(): SaleCopierInterface;
 
     /**
      * Copies the source sale's notifications into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyNotifications();
+    public function copyNotifications(): SaleCopierInterface;
 
     /**
      * Copies the source sale's adjustments into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyAdjustments();
+    public function copyAdjustments(): SaleCopierInterface;
 
     /**
      * Copies the source sale's items into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyItems();
+    public function copyItems(): SaleCopierInterface;
 
     /**
      * Copies the source sale's payments into the target sale.
-     *
-     * @return SaleCopierInterface
      */
-    public function copyPayments();
-
-    /**
-     * Copies the source sale's shipments into the target sale.
-     *
-     * @return SaleCopierInterface
-     */
-    //public function copyShipments();
-
-    /**
-     * Copies the source sale's invoices into the target sale.
-     *
-     * @return SaleCopierInterface
-     */
-    //public function copyInvoices();
+    public function copyPayments(): SaleCopierInterface;
 }

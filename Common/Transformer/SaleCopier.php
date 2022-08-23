@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
@@ -7,7 +9,7 @@ use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * Class SaleCopier
@@ -16,46 +18,23 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  *
  * Must be kept in sync with all mapped properties of AbstractSale.
  * @see     \Ekyna\Component\Commerce\Common\Entity\AbstractSale
- *
  */
 class SaleCopier implements SaleCopierInterface
 {
-    /**
-     * @var FactoryHelperInterface
-     */
-    protected $factoryHelper;
-
-    /**
-     * @var Model\SaleInterface
-     */
-    protected $source;
-
-    /**
-     * @var Model\SaleInterface
-     */
-    protected $target;
-
-    /**
-     * @var PropertyAccessorInterface
-     */
-    protected $accessor;
+    protected PropertyAccessor $accessor;
 
     public function __construct(
-        FactoryHelperInterface $factoryHelper,
-        Model\SaleInterface    $source,
-        Model\SaleInterface    $target
+        protected readonly FactoryHelperInterface $factoryHelper,
+        protected readonly Model\SaleInterface    $source,
+        protected readonly Model\SaleInterface    $target
     ) {
-        $this->factoryHelper = $factoryHelper;
-        $this->source = $source;
-        $this->target = $target;
-
         $this->accessor = PropertyAccess::createPropertyAccessor();
     }
 
     /**
      * @inheritDoc
      */
-    public function copySale()
+    public function copySale(): SaleCopierInterface
     {
         $this
             ->copyData()
@@ -65,12 +44,14 @@ class SaleCopier implements SaleCopierInterface
             ->copyItems()
             ->copyAdjustments()
             ->copyPayments();
+
+        return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function copyData()
+    public function copyData(): SaleCopierInterface
     {
         $fields = [
             'currency',
@@ -121,13 +102,18 @@ class SaleCopier implements SaleCopierInterface
             }
         }
 
+        if ($this->target instanceof Model\InitiatorSubjectInterface
+            && $this->source instanceof Model\InitiatorSubjectInterface) {
+            $this->target->setInitiatorCustomer($this->source->getInitiatorCustomer());
+        }
+
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function copyAddresses()
+    public function copyAddresses(): SaleCopierInterface
     {
         // Invoice address
         if ($sourceInvoiceAddress = $this->source->getInvoiceAddress()) {
@@ -147,7 +133,7 @@ class SaleCopier implements SaleCopierInterface
     /**
      * @inheritDoc
      */
-    public function copyAdjustments()
+    public function copyAdjustments(): SaleCopierInterface
     {
         foreach ($this->source->getAdjustments() as $sourceAdjustment) {
             $targetAdjustment = $this->factoryHelper->createAdjustmentForSale($this->target);
@@ -161,7 +147,7 @@ class SaleCopier implements SaleCopierInterface
     /**
      * @inheritDoc
      */
-    public function copyAttachments()
+    public function copyAttachments(): SaleCopierInterface
     {
         foreach ($this->source->getAttachments() as $sourceAttachment) {
             $targetAttachment = $this->factoryHelper->createAttachmentForSale($this->target);
@@ -175,7 +161,7 @@ class SaleCopier implements SaleCopierInterface
     /**
      * @inheritDoc
      */
-    public function copyNotifications()
+    public function copyNotifications(): SaleCopierInterface
     {
         foreach ($this->source->getNotifications() as $sourceNotification) {
             $targetNotification = $this->factoryHelper->createNotificationForSale($this->target);
@@ -189,7 +175,7 @@ class SaleCopier implements SaleCopierInterface
     /**
      * @inheritDoc
      */
-    public function copyItems()
+    public function copyItems(): SaleCopierInterface
     {
         foreach ($this->source->getItems() as $sourceItem) {
             $targetItem = $this->factoryHelper->createItemForSale($this->target);
@@ -203,7 +189,7 @@ class SaleCopier implements SaleCopierInterface
     /**
      * @inheritDoc
      */
-    public function copyPayments()
+    public function copyPayments(): SaleCopierInterface
     {
         foreach ($this->source->getPayments() as $sourcePayment) {
             $targetPayment = $this->factoryHelper->createPaymentForSale($this->target);
@@ -215,54 +201,9 @@ class SaleCopier implements SaleCopierInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    /*public function copyShipments()
-    {
-        if (!$this->source instanceof ShipmentSubjectInterface) {
-            return $this;
-        }
-        if (!$this->target instanceof ShipmentSubjectInterface) {
-            return $this;
-        }
-
-        foreach ($this->source->getShipments() as $sourceShipment) {
-            $targetShipment = $this->saleFactory->createShipmentForSale($this->target);
-            $this->target->addShipment($targetShipment);
-            $this->copyShipment($sourceShipment, $targetShipment);
-        }
-
-        return $this;
-    }*/
-
-    /**
-     * @inheritDoc
-     */
-    /*public function copyInvoices()
-    {
-        if (!$this->source instanceof InvoiceSubjectInterface) {
-            return $this;
-        }
-        if (!$this->target instanceof InvoiceSubjectInterface) {
-            return $this;
-        }
-
-        foreach ($this->source->getPayments() as $sourceInvoice) {
-            $targetInvoice = $this->saleFactory->createInvoiceForSale($this->target);
-            $this->target->addInvoice($targetInvoice);
-            $this->copyInvoice($sourceInvoice, $targetInvoice);
-        }
-
-        return $this;
-    }*/
-
-    /**
      * Copies the source adjustment into the target adjustment.
-     *
-     * @param Model\AdjustmentInterface $source
-     * @param Model\AdjustmentInterface $target
      */
-    private function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target)
+    private function copyAdjustment(Model\AdjustmentInterface $source, Model\AdjustmentInterface $target): void
     {
         $this->copy($source, $target, [
             'designation',
@@ -275,11 +216,8 @@ class SaleCopier implements SaleCopierInterface
 
     /**
      * Copies the source attachment into the target attachment.
-     *
-     * @param Model\SaleAttachmentInterface $source
-     * @param Model\SaleAttachmentInterface $target
      */
-    private function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target)
+    private function copyAttachment(Model\SaleAttachmentInterface $source, Model\SaleAttachmentInterface $target): void
     {
         $this->copy($source, $target, [
             'path',
@@ -294,12 +232,11 @@ class SaleCopier implements SaleCopierInterface
 
     /**
      * Copies the source notification into the target notification.
-     *
-     * @param Model\SaleNotificationInterface $source
-     * @param Model\SaleNotificationInterface $target
      */
-    private function copyNotification(Model\SaleNotificationInterface $source, Model\SaleNotificationInterface $target)
-    {
+    private function copyNotification(
+        Model\SaleNotificationInterface $source,
+        Model\SaleNotificationInterface $target
+    ): void {
         $this->copy($source, $target, [
             'type',
             'data',
@@ -310,11 +247,8 @@ class SaleCopier implements SaleCopierInterface
 
     /**
      * Copy the source item into the target item.
-     *
-     * @param Model\SaleItemInterface $source
-     * @param Model\SaleItemInterface $target
      */
-    private function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target)
+    private function copyItem(Model\SaleItemInterface $source, Model\SaleItemInterface $target): void
     {
         $this->copy($source, $target, [
             'designation',
@@ -355,11 +289,8 @@ class SaleCopier implements SaleCopierInterface
 
     /**
      * Copy the source payment into the target payment.
-     *
-     * @param PaymentInterface $source
-     * @param PaymentInterface $target
      */
-    private function copyPayment(PaymentInterface $source, PaymentInterface $target)
+    private function copyPayment(PaymentInterface $source, PaymentInterface $target): void
     {
         $this->copy($source, $target, [
             'refund',
@@ -382,12 +313,8 @@ class SaleCopier implements SaleCopierInterface
 
     /**
      * Copies the given properties from the source object to the target object.
-     *
-     * @param object $source
-     * @param object $target
-     * @param array  $properties
      */
-    private function copy($source, $target, array $properties)
+    private function copy(object $source, object $target, array $properties): void
     {
         foreach ($properties as $property) {
             $this->accessor->setValue($target, $property, $this->accessor->getValue($source, $property));

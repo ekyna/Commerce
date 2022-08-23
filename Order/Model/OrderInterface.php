@@ -16,7 +16,11 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInterface extends Common\SaleInterface, ShipmentSubjectInterface, InvoiceSubjectInterface
+interface OrderInterface
+    extends Common\SaleInterface,
+            ShipmentSubjectInterface,
+            InvoiceSubjectInterface,
+            Common\InitiatorSubjectInterface
 {
     /**
      * Sets whether the order contains sample items.

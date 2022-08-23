@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Quote\Repository;
 
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 
 /**
@@ -16,5 +17,10 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
  */
 interface QuoteRepositoryInterface extends SaleRepositoryInterface
 {
-
+    /**
+     * Finds quotes initiated by the given customer or its children.
+     *
+     * @return array<QuoteInterface>
+     */
+    public function findByInitiatorCustomer(CustomerInterface $initiator): array;
 }

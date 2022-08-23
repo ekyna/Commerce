@@ -21,6 +21,8 @@ use Ekyna\Component\Commerce\Quote\Model;
  */
 class Quote extends AbstractSale implements Model\QuoteInterface
 {
+    use Common\InitiatorSubjectTrait;
+
     protected bool               $editable  = false;
     protected ?DateTimeInterface $expiresAt = null;
 

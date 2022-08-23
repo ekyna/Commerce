@@ -120,6 +120,27 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
+    public function findByInitiatorCustomer(CustomerInterface $initiator): array
+    {
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        $qb->where($ex->eq('o.initiatorCustomer', ':initiator'));
+
+        if ($initiator->hasChildren()) {
+            $qb
+                ->join('o.initiatorCustomer', 'i')
+                ->orWhere($ex->eq('i.parent', ':initiator'));
+        }
+
+        return $qb
+            ->getQuery()
+            ->setParameters([
+                'initiator' => $initiator,
+            ])
+            ->getResult();
+    }
+
     public function findCompletedYesterday(): array
     {
         $start = (new DateTime('-1 day'))->setTime(0, 0);

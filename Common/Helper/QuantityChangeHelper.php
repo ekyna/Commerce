@@ -39,10 +39,6 @@ class QuantityChangeHelper
             $new *= $parentNew;
         }
 
-        if ($old->equals($new)) {
-            return [];
-        }
-
         return [$old, $new];
     }
 

@@ -29,7 +29,7 @@ class SupplierProductNormalizer extends ResourceNormalizer
             $data = array_replace($data, [
                 'designation' => $object->getDesignation(),
                 'reference'   => $object->getReference(),
-                'net_price'   => $object->getNetPrice(),
+                'net_price'   => $object->getNetPrice()->toFixed(5),
                 'currency'    => $supplier->getCurrency()->getCode(),
                 'supplier'    => [
                     'id'   => $supplier->getId(),

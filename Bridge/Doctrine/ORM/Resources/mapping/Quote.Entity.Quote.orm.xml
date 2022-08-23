@@ -93,6 +93,10 @@
             </order-by>
         </one-to-many>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="initiatorCustomer">
+            <join-column name="initiator_customer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+        </many-to-one>
+
     </mapped-superclass>
 
 </doctrine-mapping>

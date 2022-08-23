@@ -43,7 +43,7 @@ trait StockSubjectTrait
     protected int                $packageWidth;
     protected int                $packageDepth;
 
-    protected function initializeStock()
+    protected function initializeStock(): void
     {
         $this->initializeSubject();
 
