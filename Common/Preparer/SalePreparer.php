@@ -12,9 +12,9 @@ use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Builder\ShipmentBuilderInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+use Ekyna\Component\Commerce\Stock\Prioritizer\PrioritizeCheckerInterface;
 use Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizerInterface;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 
@@ -27,21 +27,13 @@ use function is_null;
  */
 class SalePreparer implements SalePreparerInterface
 {
-    private ResourceEventDispatcherInterface $eventDispatcher;
-    private StockPrioritizerInterface $stockPrioritizer;
-    private ShipmentBuilderInterface $shipmentBuilder;
-    private FactoryHelperInterface $factoryHelper;
-
     public function __construct(
-        ResourceEventDispatcherInterface $eventDispatcher,
-        StockPrioritizerInterface        $stockPrioritizer,
-        ShipmentBuilderInterface         $shipmentBuilder,
-        FactoryHelperInterface           $factoryHelper
+        private readonly ResourceEventDispatcherInterface $eventDispatcher,
+        private readonly PrioritizeCheckerInterface       $prioritizeChecker,
+        private readonly StockPrioritizerInterface        $stockPrioritizer,
+        private readonly ShipmentBuilderInterface         $shipmentBuilder,
+        private readonly FactoryHelperInterface           $factoryHelper
     ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->stockPrioritizer = $stockPrioritizer;
-        $this->shipmentBuilder = $shipmentBuilder;
-        $this->factoryHelper = $factoryHelper;
     }
 
     public function prepare(SaleInterface $sale): ?ShipmentInterface
@@ -60,7 +52,7 @@ class SalePreparer implements SalePreparerInterface
             return null;
         }
 
-        if ($this->stockPrioritizer->canPrioritizeSale($sale)) {
+        if ($this->prioritizeChecker->canPrioritizeSale($sale)) {
             $this->stockPrioritizer->prioritizeSale($sale);
         }
 
@@ -86,7 +78,7 @@ class SalePreparer implements SalePreparerInterface
     /**
      * Purges the shipment by removing items which are not available.
      */
-    protected function purge(ShipmentInterface $shipment):void
+    protected function purge(ShipmentInterface $shipment): void
     {
         foreach ($shipment->getItems() as $item) {
             if (is_null($available = $item->getAvailability()) || $available->getAssigned()->isZero()) {

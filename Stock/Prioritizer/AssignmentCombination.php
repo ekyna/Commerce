@@ -11,38 +11,26 @@ use Decimal\Decimal;
  * @package Ekyna\Component\Commerce\Stock\Prioritizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AssignmentCombination
+final class AssignmentCombination
 {
-    /**
-     * [assignment id => releasable quantity]
-     *
-     * @var array<int, Decimal>
-     */
-    public array $map;
-
-    /**
-     * The difference between sum and aimed quantity.
-     */
-    public Decimal $diff;
-
     /**
      * The sum of releasable quantity.
      */
-    public Decimal $sum;
+    public readonly Decimal $sum;
 
     /**
      * The size of the map.
      */
-    public int $size;
-
+    public readonly int $size;
 
     /**
-     * @param array<int, Decimal> $map
+     * @param array<int, Decimal> $map  [assignment id => releasable quantity]
+     * @param Decimal             $diff The difference between sum and aimed quantity.
      */
-    public function __construct(array $map, Decimal $diff)
-    {
-        $this->map = $map;
-        $this->diff = $diff;
+    public function __construct(
+        public readonly array $map,
+        public readonly Decimal $diff
+    ) {
         $this->sum = Decimal::sum($map);
         $this->size = count($map);
     }

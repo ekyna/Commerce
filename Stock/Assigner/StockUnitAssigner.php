@@ -16,8 +16,6 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockAssignmentUpdaterInterface;
@@ -35,27 +33,17 @@ use function sprintf;
  */
 class StockUnitAssigner implements StockUnitAssignerInterface
 {
-    protected PersistenceHelperInterface      $persistenceHelper;
-    protected SubjectHelperInterface          $subjectHelper;
-    protected StockUnitResolverInterface      $unitResolver;
-    protected StockAssignmentManagerInterface $assignmentManager;
-    protected StockAssignmentUpdaterInterface $assignmentUpdater;
-    protected FactoryHelperInterface          $factoryHelper;
+    use AssignmentSupportTrait;
 
     public function __construct(
-        PersistenceHelperInterface      $persistenceHelper,
+        protected readonly PersistenceHelperInterface      $persistenceHelper,
+        protected readonly StockUnitResolverInterface      $unitResolver,
+        protected readonly StockAssignmentManagerInterface $assignmentManager,
+        protected readonly StockAssignmentUpdaterInterface $assignmentUpdater,
+        protected readonly FactoryHelperInterface          $factoryHelper,
         SubjectHelperInterface          $subjectHelper,
-        StockUnitResolverInterface      $unitResolver,
-        StockAssignmentManagerInterface $assignmentManager,
-        StockAssignmentUpdaterInterface $assignmentUpdater,
-        FactoryHelperInterface          $factoryHelper
     ) {
-        $this->persistenceHelper = $persistenceHelper;
         $this->subjectHelper = $subjectHelper;
-        $this->unitResolver = $unitResolver;
-        $this->assignmentManager = $assignmentManager;
-        $this->assignmentUpdater = $assignmentUpdater;
-        $this->factoryHelper = $factoryHelper;
     }
 
     public function assignSaleItem(SaleItemInterface $item): void
@@ -580,37 +568,6 @@ class StockUnitAssigner implements StockUnitAssignerInterface
             'Failed to detach invoice line "%s".',
             $line->getDesignation()
         ));
-    }
-
-    public function supportsAssignment(SaleItemInterface $item): bool
-    {
-        // TODO Check if sale is in stockable state
-
-        if ($item->isCompound()) {
-            return false;
-        }
-
-        if (!$item instanceof StockAssignmentsInterface) {
-            return false;
-        }
-
-        if (null === $subject = $this->subjectHelper->resolve($item, false)) {
-            return false;
-        }
-
-        if (!$subject instanceof StockSubjectInterface) {
-            return false;
-        }
-
-        if ($subject->isStockCompound()) {
-            return false;
-        }
-
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

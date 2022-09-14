@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -36,7 +38,7 @@ interface StockUnitAssignerInterface
 
     /**
      * Assigns the shipment item to stock units
-     * by updating the stock assignments's shipped quantities.
+     * by updating the stock assignment's shipped quantities.
      *
      * @param ShipmentItemInterface $item
      */
@@ -60,7 +62,7 @@ interface StockUnitAssignerInterface
 
     /**
      * Assigns the invoice line to stock units
-     * by updating the stock assignments's sold quantities.
+     * by updating the stock assignment's sold quantities.
      *
      * @param InvoiceLineInterface $line
      */
@@ -83,7 +85,7 @@ interface StockUnitAssignerInterface
     public function detachInvoiceLine(InvoiceLineInterface $line): void;
 
     /**
-     * Returns whether or not the given item supports assignments.
+     * Returns whether the given item supports assignments.
      *
      * @param SaleItemInterface $item
      *

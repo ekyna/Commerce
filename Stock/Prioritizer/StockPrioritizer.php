@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
@@ -13,12 +14,13 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
-use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
+
+use function min;
 
 /**
  * Class StockPrioritizer
@@ -27,76 +29,15 @@ use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
  */
 class StockPrioritizer implements StockPrioritizerInterface
 {
-    protected StockUnitResolverInterface         $unitResolver;
-    protected StockUnitAssignerInterface         $unitAssigner;
-    protected StockUnitManagerInterface          $unitManager;
-    protected StockUnitCacheInterface            $unitCache;
-    protected StockAssignmentManagerInterface    $assignmentManager;
-    protected StockAssignmentDispatcherInterface $assignmentDispatcher;
-    protected StockLoggerInterface               $logger;
-
     public function __construct(
-        StockUnitResolverInterface         $unitResolver,
-        StockUnitAssignerInterface         $unitAssigner,
-        StockUnitManagerInterface          $unitManager,
-        StockUnitCacheInterface            $unitCache,
-        StockAssignmentManagerInterface    $assignmentManager,
-        StockAssignmentDispatcherInterface $assignmentDispatcher,
-        StockLoggerInterface               $logger
+        protected readonly StockUnitResolverInterface         $unitResolver,
+        protected readonly StockUnitAssignerInterface         $unitAssigner,
+        protected readonly StockUnitManagerInterface          $unitManager,
+        protected readonly StockUnitCacheInterface            $unitCache,
+        protected readonly StockAssignmentManagerInterface    $assignmentManager,
+        protected readonly StockAssignmentDispatcherInterface $assignmentDispatcher,
+        protected readonly PrioritizeCheckerInterface         $prioritizeChecker,
     ) {
-        $this->unitResolver = $unitResolver;
-        $this->unitAssigner = $unitAssigner;
-        $this->unitManager = $unitManager;
-        $this->unitCache = $unitCache;
-        $this->assignmentManager = $assignmentManager;
-        $this->assignmentDispatcher = $assignmentDispatcher;
-        $this->logger = $logger;
-    }
-
-    public function canPrioritizeSale(Common\SaleInterface $sale): bool
-    {
-        if (!$this->checkSale($sale)) {
-            return false;
-        }
-
-        foreach ($sale->getItems() as $item) {
-            if ($this->canPrioritizeSaleItem($item, false)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true): bool
-    {
-        if ($checkSale && !$this->checkSale($item->getRootSale())) {
-            return false;
-        }
-
-        foreach ($item->getChildren() as $child) {
-            if ($this->canPrioritizeSaleItem($child, false)) {
-                return true;
-            }
-        }
-
-        if (!$item instanceof StockAssignmentsInterface) {
-            return false;
-        }
-
-        $assignments = $item->getStockAssignments();
-
-        if (0 === $assignments->count()) {
-            return $this->unitAssigner->supportsAssignment($item);
-        }
-
-        foreach ($assignments as $assignment) {
-            if (!$assignment->isFullyShipped() && !$assignment->isFullyShippable()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function prioritizeSale(Common\SaleInterface $sale): bool
@@ -108,7 +49,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($sale->getItems() as $item) {
-            $changed = $this->prioritizeSaleItem($item, null, false) || $changed;
+            $changed = $this->prioritize($item, null, false, false) || $changed;
         }
 
         return $changed;
@@ -117,7 +58,22 @@ class StockPrioritizer implements StockPrioritizerInterface
     public function prioritizeSaleItem(
         Common\SaleItemInterface $item,
         Decimal                  $quantity = null,
-        bool                     $checkSale = true
+        bool                     $sameSale = false
+    ): bool {
+        $changed = $this->prioritize($item, $quantity, true, false);
+
+        if ($sameSale && $quantity && $this->can($item, $quantity)) {
+            $changed = $this->prioritize($item, $quantity, true, true) || $changed;
+        }
+
+        return $changed;
+    }
+
+    protected function prioritize(
+        Common\SaleItemInterface $item,
+        ?Decimal                 $quantity,
+        bool                     $checkSale,
+        bool                     $allowSameSale
     ): bool {
         if ($checkSale && !$this->checkSale($item->getRootSale())) {
             return false;
@@ -126,8 +82,8 @@ class StockPrioritizer implements StockPrioritizerInterface
         $changed = false;
 
         foreach ($item->getChildren() as $child) {
-            $q = $quantity ? $quantity->mul($child->getQuantity()) : null;
-            $changed = $this->prioritizeSaleItem($child, $quantity ? $q : null, false) || $changed;
+            $qty = $quantity?->mul($child->getQuantity());
+            $changed = $this->prioritize($child, $qty, false, $allowSameSale) || $changed;
         }
 
         if (!$item instanceof StockAssignmentsInterface) {
@@ -147,7 +103,7 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         foreach ($item->getStockAssignments() as $assignment) {
-            $changed = $this->prioritizeAssignment($assignment, $quantity) || $changed;
+            $changed = $this->prioritizeAssignment($assignment, $quantity, $allowSameSale) || $changed;
         }
 
         return $changed;
@@ -178,8 +134,11 @@ class StockPrioritizer implements StockPrioritizerInterface
      *
      * @return bool Whether the assignment has been prioritized.
      */
-    protected function prioritizeAssignment(Assignment $assignment, Decimal $quantity = null): bool
-    {
+    protected function prioritizeAssignment(
+        Assignment $assignment,
+        ?Decimal   $quantity,
+        bool       $sameSale = false,
+    ): bool {
         if ($assignment->isFullyShipped() || $assignment->isFullyShippable()) {
             return false;
         }
@@ -200,7 +159,7 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         $changed = false;
 
-        $helper = new PrioritizeHelper($this->unitResolver, $this->unitCache);
+        $helper = new PrioritizeUnitResolver($this->unitResolver, $this->unitCache, $sameSale);
 
         $sourceUnit = $assignment->getStockUnit();
 
@@ -243,5 +202,32 @@ class StockPrioritizer implements StockPrioritizerInterface
         }
 
         return $changed;
+    }
+
+    protected function can(SaleItemInterface $item, Decimal $quantity): bool
+    {
+        foreach ($item->getChildren() as $child) {
+            if ($this->can($child, $quantity->mul($child->getQuantity()))) {
+                return true;
+            }
+        }
+
+        if (!$item instanceof StockAssignmentsInterface) {
+            return false;
+        }
+
+        $assignments = $item->getStockAssignments();
+
+        if (0 === $assignments->count()) {
+            return $this->unitAssigner->supportsAssignment($item);
+        }
+
+        $quantity = min($quantity, $item->getTotalQuantity());
+        $sum = new Decimal(0);
+        foreach ($assignments as $assignment) {
+            $sum = $sum->add($assignment->getShippedQuantity())->add($assignment->getShippableQuantity());
+        }
+
+        return $quantity > $sum;
     }
 }

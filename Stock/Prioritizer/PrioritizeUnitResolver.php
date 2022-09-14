@@ -10,20 +10,17 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
 /**
- * Class PrioritizeHelper
+ * Class PrioritizeUnitResolver
  * @package Ekyna\Component\Commerce\Stock\Prioritizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
- * @TODO rename to PrioritizeUnitGuesser ? or PrioritizeUnitResolver ?
  */
-class PrioritizeHelper
+final class PrioritizeUnitResolver
 {
-    protected StockUnitResolverInterface $unitResolver;
-    protected StockUnitCacheInterface $unitCache;
-
-    public function __construct(StockUnitResolverInterface $unitResolver, StockUnitCacheInterface $unitCache)
-    {
-        $this->unitResolver = $unitResolver;
-        $this->unitCache    = $unitCache;
+    public function __construct(
+        private readonly StockUnitResolverInterface $unitResolver,
+        private readonly StockUnitCacheInterface    $unitCache,
+        private readonly bool                       $sameSale
+    ) {
     }
 
     /**
@@ -39,7 +36,7 @@ class PrioritizeHelper
             return null;
         }
 
-        $sale = $assignment->getSaleItem()->getRootSale();
+        $item = $assignment->getSaleItem();
 
         $candidates = [];
 
@@ -50,14 +47,13 @@ class PrioritizeHelper
 
             $this->unitCache->add($unit);
 
-            $candidate = UnitCandidate::build($unit, $sale, $quantity);
+            $candidate = UnitCandidate::build($unit, $item, $quantity, $this->sameSale);
 
             // Skip if no reservable and no releasable quantity
             if ((0 >= $candidate->reservable) && (0 >= $candidate->releasable)) {
                 continue;
             }
 
-            $add = false;
             $diff = $quantity - $candidate->reservable;
             if (0 < $candidate->reservable) {
                 // Unit has enough reservable quantity
@@ -65,27 +61,31 @@ class PrioritizeHelper
                     return $candidate;
                 }
 
-                $add = true;
-            }
-
-            if (0 < $release = min($diff, $candidate->releasable)) {
-                if (null !== $combination = $candidate->getCombination($release)) {
-                    // Unit has enough reservable + releasable quantity
-                    if (empty($candidates) && $combination->sum->equals($diff)) {
-                        return $candidate;
-                    }
-                    $add = true;
-                }
-            }
-
-            if ($add) {
                 $candidates[] = $candidate;
+
+                continue;
             }
+
+            if (0 >= $release = min($diff, $candidate->releasable)) {
+                continue;
+            }
+
+            if (null === $combination = $candidate->getCombination($release)) {
+                continue;
+            }
+
+            // Unit has enough reservable + releasable quantity
+            if (empty($candidates) && $combination->sum->equals($diff)) {
+                return $candidate;
+            }
+
+            $candidates[] = $candidate;
         }
 
         if (1 === count($candidates)) {
             return reset($candidates);
         }
+
         if (0 === count($candidates)) {
             return null;
         }
@@ -118,18 +118,19 @@ class PrioritizeHelper
                     return $b->{$property} - $a->{$property};
                 }
             }
+
             return 0;
 
             // Prefer units with assignments combination's releasable quantity (sum) that
             // equals or is greater than (prefer closest) aimed quantity.
-            if ($a->combination->sum == $b->combination->sum) {
+            /* TODO (?) if ($a->combination->sum == $b->combination->sum) {
                 return 0;
             }
             if (0 <= $a->combination->sum) {
                 return intval(0 > $b->combination->sum ? -1 : $a->combination->sum - $b->combination->sum);
             }
 
-            return intval(0 < $b->combination->sum ? 1 : $b->combination->sum - $a->combination->sum);
+            return intval(0 < $b->combination->sum ? 1 : $b->combination->sum - $a->combination->sum);*/
         });
 
         return reset($candidates);

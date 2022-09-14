@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Util\Combination;
 use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -17,18 +17,32 @@ use const SORT_NUMERIC;
  * @package Ekyna\Component\Commerce\Stock\Prioritizer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class UnitCandidate
+final class UnitCandidate
 {
     /**
      * Builds a new unit candidate.
      */
-    public static function build(StockUnitInterface $unit, SaleInterface $sale, $quantity): self
-    {
+    public static function build(
+        StockUnitInterface $unit,
+        SaleItemInterface  $item,
+        Decimal            $quantity,
+        bool               $sameSale
+    ): UnitCandidate {
+        $sale = $item->getRootSale();
+
         /** @var array<int, Decimal> $map */
         $map = [];
-        $greaterFound = false;
+        $greater = null;
         foreach ($unit->getStockAssignments() as $a) {
-            if ($sale === $a->getSaleItem()->getRootSale()) {
+            if ($sameSale) {
+                $i = $a->getSaleItem();
+                if ($item === $i) {
+                    continue;
+                }
+                if ($sale !== $i->getRootSale()) {
+                    continue;
+                }
+            } elseif ($sale === $a->getSaleItem()->getRootSale()) {
                 continue;
             }
 
@@ -37,13 +51,21 @@ class UnitCandidate
                 continue;
             }
 
-            if ($d > $quantity) {
-                if ($greaterFound) {
-                    // Skip if we already have assignment with enough quantity
-                    continue;
+            // Perfect assigment
+            if ($d->equals($quantity)) {
+                // Keep as greater
+                $greater = ['id' => $a->getId(), 'quantity' => $d];
+                // Clear map
+                $map = [];
+
+                break;
+            } elseif ($d > $quantity) {
+                // Keep greater as separate map
+                if (null === $greater || $greater['quantity'] > $d) {
+                    $greater = ['id' => $a->getId(), 'quantity' => $d];
                 }
 
-                $greaterFound = true;
+                continue;
             }
 
             $map[$a->getId()] = $d;
@@ -51,25 +73,35 @@ class UnitCandidate
 
         arsort($map, SORT_NUMERIC);
 
-        $candidate = new static();
+        $releasable = Decimal::sum($map);
+        if ($greater && $releasable < $greater['quantity']) {
+            $releasable = $greater['quantity'];
+        }
+
+        $candidate = new UnitCandidate();
 
         $candidate->unit = $unit;
         $candidate->shippable = $unit->getShippableQuantity();
         $candidate->reservable = $unit->getReservableQuantity();
-        $candidate->releasable = Decimal::sum($map);
+        $candidate->releasable = $releasable;
         $candidate->map = $map;
+        $candidate->greater = $greater;
 
         return $candidate;
     }
 
-    public StockUnitInterface    $unit;
-    public Decimal               $shippable;
-    public Decimal               $reservable;
-    public Decimal               $releasable;
-    /** @var array<int, Decimal>  */
-    public array                 $map;
-    public ?AssignmentCombination $combination = null;
-    private Decimal              $combinationQty;
+    public readonly StockUnitInterface $unit;
+    public readonly Decimal            $shippable;
+    public readonly Decimal            $reservable;
+    public readonly Decimal            $releasable;
+
+    /** @var array<int, Decimal> $map */
+    private readonly array $map;
+    /** @var array{id: int, quantity: Decimal}|null $greater */
+    private readonly ?array $greater;
+
+    private ?AssignmentCombination $combination = null;
+    private Decimal                $combinationQty;
 
 
     /**
@@ -108,23 +140,15 @@ class UnitCandidate
      */
     private function buildCombinations(Decimal $quantity): array
     {
-        if (empty($this->map)) {
-            return [];
-        }
-
         $combinations = [];
 
-        // Size max
-        $combination = new AssignmentCombination($this->map, $diff = Decimal::sum($this->map)->sub($quantity));
-
-        // Perfect combination or not enough assignments : no need to calculate more combinations
-        if ($diff <= 0) {
-            return [$combination];
+        if ($this->greater) {
+            $map = [$this->greater['id'] => $qty = $this->greater['quantity']];
+            $combinations[] = new AssignmentCombination($map, $qty->sub($quantity));
         }
 
-        $combinations[] = $combination;
-
-        if (2 >= count($this->map)) {
+        // Map may be empty if greater is a perfect match
+        if (empty($this->map)) {
             return $combinations;
         }
 
@@ -145,7 +169,7 @@ class UnitCandidate
             }
         }
 
-        // Size 1 < size < max
+        // Size 1 < size <= max
         for ($length = 2; $length < count($this->map); $length++) {
             foreach (Combination::generateAssoc($this->map, $length) as $map) {
                 $combination = new AssignmentCombination($map, $diff = Decimal::sum($map)->sub($quantity));

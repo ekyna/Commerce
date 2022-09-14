@@ -15,21 +15,6 @@ use Ekyna\Component\Commerce\Common\Model as Common;
 interface StockPrioritizerInterface
 {
     /**
-     * Returns whether the sale can be prioritized.
-     */
-    public function canPrioritizeSale(Common\SaleInterface $sale): bool;
-
-    /**
-     * Returns whether the sale item can be prioritized.
-     *
-     * @param Common\SaleItemInterface $item
-     * @param bool                     $checkSale Whether to check if sale can be prioritized.
-     *
-     * @return bool
-     */
-    public function canPrioritizeSaleItem(Common\SaleItemInterface $item, bool $checkSale = true): bool;
-
-    /**
      * Prioritizes a sale by trying to move stock assignments
      * to make all items shippable.
      *
@@ -44,13 +29,13 @@ interface StockPrioritizerInterface
      *
      * @param Common\SaleItemInterface $item
      * @param Decimal|null             $quantity  The quantity to prioritize
-     * @param bool                     $checkSale Whether to check if sale can be prioritized.
+     * @param bool                     $sameSale Whether to allow to pick quantity from same sale's assignments.
      *
      * @return bool Whether the sale item has been prioritized.
      */
     public function prioritizeSaleItem(
         Common\SaleItemInterface $item,
         Decimal                  $quantity = null,
-        bool                     $checkSale = true
+        bool                     $sameSale = false
     ): bool;
 }
