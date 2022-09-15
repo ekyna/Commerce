@@ -22,7 +22,7 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 {
-    use Common\LockingHelperAwareTrait;
+    use Common\LockCheckerAwareTrait;
 
     protected InvoiceBuilderInterface           $invoiceBuilder;
     protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
@@ -58,7 +58,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
         $invoice = $shipment->getInvoice();
 
         // Abort if invoice has an id.
-        if ($invoice && $invoice->getId() && !($force && !$this->lockingHelper->isLocked($invoice))) {
+        if ($invoice && $invoice->getId() && !($force && !$this->lockChecker->isLocked($invoice))) {
             return;
         }
 

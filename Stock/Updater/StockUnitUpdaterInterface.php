@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use DateTimeInterface;
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
 
 /**
@@ -19,44 +19,44 @@ interface StockUnitUpdaterInterface
     /**
      * Updates the ordered quantity (to supplier).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateOrdered(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateOrdered(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the received quantity (from supplier).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateReceived(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateReceived(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the adjusted quantity (from administrators).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateAdjusted(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateAdjusted(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the sold quantity (from customers).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateSold(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateSold(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the shipped quantity (to customers).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateShipped(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateShipped(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the locked quantity (for customers).
      *
-     * @throws InvalidArgumentException
+     * @throws StockLogicException
      */
-    public function updateLocked(Unit $unit, Decimal $quantity, bool $relative = true): void;
+    public function updateLocked(Unit $unit, Decimal $quantity, bool $relative): void;
 
     /**
      * Updates the estimated date of arrival.

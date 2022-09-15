@@ -6,13 +6,14 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
-use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
+use Ekyna\Component\Commerce\Common\Model\LockCheckerAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * Class AbstractInvoiceItemListener
@@ -21,11 +22,12 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractInvoiceItemListener
 {
-    use LockingHelperAwareTrait;
+    use LockCheckerAwareTrait;
 
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected ContextProviderInterface $contextProvider;
-    protected TaxResolverInterface $taxResolver;
+    protected readonly PersistenceHelperInterface    $persistenceHelper;
+    protected readonly ContextProviderInterface      $contextProvider;
+    protected readonly TaxResolverInterface          $taxResolver;
+    protected readonly AuthorizationCheckerInterface $authorizationChecker;
 
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
@@ -40,6 +42,11 @@ abstract class AbstractInvoiceItemListener
     public function setTaxResolver(TaxResolverInterface $taxResolver): void
     {
         $this->taxResolver = $taxResolver;
+    }
+
+    public function setAuthorizationChecker(AuthorizationCheckerInterface $authorizationChecker): void
+    {
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     public function onInsert(ResourceEventInterface $event): void
@@ -79,7 +86,7 @@ abstract class AbstractInvoiceItemListener
             $invoice = $this->persistenceHelper->getChangeSet($item, 'invoice')[0];
         }
 
-        if ($this->lockingHelper->isLocked($invoice)) {
+        if ($this->lockChecker->isLocked($invoice) && !$this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
             throw new Exception\IllegalOperationException(
                 'This invoice is locked.'
             );
@@ -152,12 +159,21 @@ abstract class AbstractInvoiceItemListener
      */
     protected function preventForbiddenChange(Model\InvoiceItemInterface $item): void
     {
-        $cs = $this->persistenceHelper->getChangeSet($item);
-        if (!empty($cs) && $this->lockingHelper->isLocked($item->getInvoice())) {
-            throw new Exception\IllegalOperationException(
-                'This invoice is locked.'
-            );
+        if (empty($this->persistenceHelper->getChangeSet($item))) {
+            return;
         }
+
+        if ($this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
+            return;
+        }
+
+        if (!$this->lockChecker->isLocked($item->getInvoice())) {
+            return;
+        }
+
+        throw new Exception\IllegalOperationException(
+            'This invoice is locked.'
+        );
     }
 
     /**

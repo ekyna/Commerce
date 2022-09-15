@@ -21,24 +21,15 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitUpdater implements StockUnitUpdaterInterface
 {
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected StockUnitResolverInterface $unitResolver;
-    protected StockUnitManagerInterface $unitManager;
-    protected OverflowHandlerInterface $overflowHandler;
-
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
-        StockUnitResolverInterface $unitResolver,
-        StockUnitManagerInterface $unitManager,
-        OverflowHandlerInterface $overflowHandler
+        protected readonly PersistenceHelperInterface $persistenceHelper,
+        protected readonly StockUnitResolverInterface $unitResolver,
+        protected readonly StockUnitManagerInterface  $unitManager,
+        protected readonly OverflowHandlerInterface   $overflowHandler
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->unitResolver = $unitResolver;
-        $this->unitManager = $unitManager;
-        $this->overflowHandler = $overflowHandler;
     }
 
-    public function updateOrdered(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateOrdered(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -63,7 +54,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    public function updateReceived(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateReceived(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -90,7 +81,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    public function updateAdjusted(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateAdjusted(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -114,7 +105,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    public function updateSold(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateSold(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -138,7 +129,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    public function updateShipped(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateShipped(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity
@@ -167,7 +158,7 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
         $this->unitManager->persistOrRemove($unit);
     }
 
-    public function updateLocked(Unit $unit, Decimal $quantity, bool $relative = true): void
+    public function updateLocked(Unit $unit, Decimal $quantity, bool $relative): void
     {
         if ($relative) {
             // Turn into absolute quantity

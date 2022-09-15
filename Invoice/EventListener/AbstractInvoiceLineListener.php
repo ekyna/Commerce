@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
-use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
+use Ekyna\Component\Commerce\Common\Model\LockCheckerAwareTrait;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Invoice\Model;
 use Ekyna\Component\Commerce\Stock\Assigner\StockUnitAssignerInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * Class AbstractInvoiceLineListener
@@ -18,10 +19,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractInvoiceLineListener
 {
-    use LockingHelperAwareTrait;
+    use LockCheckerAwareTrait;
 
     protected PersistenceHelperInterface $persistenceHelper;
     protected StockUnitAssignerInterface $stockUnitAssigner;
+    protected readonly AuthorizationCheckerInterface $authorizationChecker;
 
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
@@ -31,6 +33,11 @@ abstract class AbstractInvoiceLineListener
     public function setStockUnitAssigner(StockUnitAssignerInterface $stockUnitAssigner): void
     {
         $this->stockUnitAssigner = $stockUnitAssigner;
+    }
+
+    public function setAuthorizationChecker(AuthorizationCheckerInterface $authorizationChecker): void
+    {
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     public function onInsert(ResourceEventInterface $event): void
@@ -65,7 +72,7 @@ abstract class AbstractInvoiceLineListener
             $invoice = $this->persistenceHelper->getChangeSet($line, 'invoice')[0];
         }
 
-        if ($this->lockingHelper->isLocked($invoice)) {
+        if ($this->lockChecker->isLocked($invoice) && !$this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
             throw new Exception\IllegalOperationException(
                 'This invoice is locked.'
             );
@@ -85,22 +92,23 @@ abstract class AbstractInvoiceLineListener
             return;
         }
 
-        if ($this->lockingHelper->isLocked($line->getInvoice())) {
-            throw new Exception\IllegalOperationException(
-                'This invoice is locked.'
-            );
-        }
-
-        if (!isset($cs['type'])) {
-            return;
-        }
-
-        [$old, $new] = $cs['type'];
-        if ($old !== $new) {
+        if (isset($cs['type']) && ($cs['type'][0] !== $cs['type'][1])) {
             throw new Exception\IllegalOperationException(
                 'Changing the invoice line\'s type is not supported.'
             );
         }
+
+        if ($this->authorizationChecker->isGranted('ROLE_SUPER_ADMIN')) {
+            return;
+        }
+
+        if (!$this->lockChecker->isLocked($line->getInvoice())) {
+            return;
+        }
+
+        throw new Exception\IllegalOperationException(
+            'This invoice is locked.'
+        );
     }
 
     /**

@@ -19,19 +19,19 @@ interface StockAssignmentUpdaterInterface
      *
      * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
+    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative): Decimal;
 
     /**
      * Updates the assignment's shipped quantity.
      *
      * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
+    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative): Decimal;
 
     /**
      * Updates the assignment's locked quantity.
      *
      * @return Decimal The resulting updated quantity (relative).
      */
-    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal;
+    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative): Decimal;
 }

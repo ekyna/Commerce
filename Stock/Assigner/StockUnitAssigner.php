@@ -41,7 +41,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
         protected readonly StockAssignmentManagerInterface $assignmentManager,
         protected readonly StockAssignmentUpdaterInterface $assignmentUpdater,
         protected readonly FactoryHelperInterface          $factoryHelper,
-        SubjectHelperInterface          $subjectHelper,
+        SubjectHelperInterface                             $subjectHelper,
     ) {
         $this->subjectHelper = $subjectHelper;
     }
@@ -473,11 +473,9 @@ class StockUnitAssigner implements StockUnitAssignerInterface
                         ->negate();
                 };
             }
-        } elseif (!$invoice->isIgnoreStock()) {
+        } elseif (!$invoice->isIgnoreStock() && !empty($quantityCs)) {
             // Ignore stock disabled -> Debit sold quantity (use previous quantity)
-            $quantity = !empty($quantityCs)
-                ? ($quantityCs[1] ?? new Decimal(0))->sub($quantityCs[0] ?? new Decimal(0))
-                : $line->getQuantity();
+            $quantity = ($quantityCs[1] ?? new Decimal(0))->sub($quantityCs[0] ?? new Decimal(0));
 
             $callable = function (StockAssignmentInterface $assignment, Decimal $quantity): Decimal {
                 return $this->assignmentUpdater->updateSold($assignment, $quantity->negate(), true);
@@ -573,18 +571,12 @@ class StockUnitAssigner implements StockUnitAssignerInterface
     /**
      * Returns the item's stock assignments, or null if not supported.
      *
-     * @param mixed $item
-     *
-     * @return null|array<StockAssignmentInterface>
+     * @return array<StockAssignmentInterface>|null
      */
-    protected function getAssignments($item): ?array
+    protected function getAssignments(SaleItemInterface|ShipmentItemInterface|InvoiceLineInterface $item): ?array
     {
-        if ($item instanceof ShipmentItemInterface) {
-            $item = $item->getSaleItem();
-        } elseif ($item instanceof InvoiceLineInterface) {
-            if (!$item = $item->getSaleItem()) {
-                return null;
-            }
+        if (!$item instanceof SaleItemInterface && null === $item = $item->getSaleItem()) {
+            return null;
         }
 
         if (!$this->supportsAssignment($item)) {

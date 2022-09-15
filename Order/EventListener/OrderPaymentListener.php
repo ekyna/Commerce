@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Order\EventListener;
 
-use Ekyna\Component\Commerce\Common\Model\LockingHelperAwareTrait;
+use Ekyna\Component\Commerce\Common\Model\LockCheckerAwareTrait;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
@@ -19,7 +19,7 @@ use Ekyna\Component\Resource\Event\ResourceEventInterface;
  */
 class OrderPaymentListener extends AbstractPaymentListener
 {
-    use LockingHelperAwareTrait;
+    use LockCheckerAwareTrait;
 
     /**
      * @inheritDoc
@@ -40,7 +40,7 @@ class OrderPaymentListener extends AbstractPaymentListener
     {
         $payment = $this->getPaymentFromEvent($event);
 
-        if ($this->lockingHelper->isLocked($payment)) {
+        if ($this->lockChecker->isLocked($payment)) {
             throw new Exception\IllegalOperationException(sprintf(
                 'Payment %s is locked',
                 $payment->getNumber()
@@ -94,7 +94,7 @@ class OrderPaymentListener extends AbstractPaymentListener
     protected function preventForbiddenChange(PaymentInterface $payment): void
     {
         // Abort if not locked
-        if (!$this->lockingHelper->isLocked($payment)) {
+        if (!$this->lockChecker->isLocked($payment)) {
             return;
         }
 

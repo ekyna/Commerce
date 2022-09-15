@@ -15,18 +15,13 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
  */
 class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
 {
-    protected StockUnitUpdaterInterface $stockUnitUpdater;
-    protected StockAssignmentManagerInterface $assignmentManager;
-
     public function __construct(
-        StockUnitUpdaterInterface $stockUnitUpdater,
-        StockAssignmentManagerInterface $assignmentManager
+        protected readonly StockUnitUpdaterInterface       $stockUnitUpdater,
+        protected readonly StockAssignmentManagerInterface $assignmentManager
     ) {
-        $this->stockUnitUpdater  = $stockUnitUpdater;
-        $this->assignmentManager = $assignmentManager;
     }
 
-    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
+    public function updateSold(Assignment $assignment, Decimal $quantity, bool $relative): Decimal
     {
         // TODO use Packaging format
 
@@ -41,8 +36,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         if (0 < $quantity) {
             // Sold quantity can't be greater than stock unit ordered + adjusted
             $quantity = min($quantity, $unit->getReservableQuantity());
-        }
-        // Negative update
+        } // Negative update
         elseif (0 > $quantity) {
             // Sold quantity can't be lower than shipped quantity or zero
             $quantity = max(
@@ -50,14 +44,13 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
                 $assignment->getShippedQuantity() - $assignment->getSoldQuantity(),
                 $unit->getShippedQuantity() - $unit->getSoldQuantity()
             );
-        }
-        // No update
+        } // No update
         else {
             return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateSold($unit, $quantity);
+        $this->stockUnitUpdater->updateSold($unit, $quantity, true);
 
         // Assignment update
         $assignment->setSoldQuantity($assignment->getSoldQuantity() + $quantity);
@@ -66,7 +59,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         return $quantity;
     }
 
-    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
+    public function updateShipped(Assignment $assignment, Decimal $quantity, bool $relative): Decimal
     {
         // TODO use Packaging format
 
@@ -81,19 +74,17 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         if (0 < $quantity) {
             // Shipped quantity can't be greater than received or sold quantity
             $quantity = min($quantity, $assignment->getShippableQuantity());
-        }
-        // Negative update
+        } // Negative update
         elseif (0 > $quantity) {
             // Shipped quantity can't be lower than zero
             $quantity = max($quantity, -$assignment->getShippedQuantity(), -$unit->getShippedQuantity());
-        }
-        // No update
+        } // No update
         else {
             return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateShipped($unit, $quantity);
+        $this->stockUnitUpdater->updateShipped($unit, $quantity, true);
 
         // Assignment update
         $assignment->setShippedQuantity($assignment->getShippedQuantity() + $quantity);
@@ -102,7 +93,7 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         return $quantity;
     }
 
-    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative = true): Decimal
+    public function updateLocked(Assignment $assignment, Decimal $quantity, bool $relative): Decimal
     {
         // TODO use Packaging format
 
@@ -117,19 +108,17 @@ class StockAssignmentUpdater implements StockAssignmentUpdaterInterface
         if (0 < $quantity) {
             // Shipped quantity can't be greater than received or sold quantity
             $quantity = min($quantity, $assignment->getShippableQuantity());
-        }
-        // Negative update
+        } // Negative update
         elseif (0 > $quantity) {
             // Shipped quantity can't be lower than zero
             $quantity = max($quantity, -$assignment->getLockedQuantity(), -$unit->getLockedQuantity());
-        }
-        // No update
+        } // No update
         else {
             return new Decimal(0);
         }
 
         // Stock unit update
-        $this->stockUnitUpdater->updateLocked($unit, $quantity);
+        $this->stockUnitUpdater->updateLocked($unit, $quantity, true);
 
         // Assignment update
         $assignment->setLockedQuantity($assignment->getLockedQuantity() + $quantity);

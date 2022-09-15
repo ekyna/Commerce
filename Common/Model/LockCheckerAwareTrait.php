@@ -11,13 +11,12 @@ use Ekyna\Component\Commerce\Common\Locking\LockChecker;
  * @package Ekyna\Component\Commerce\Common\EventListener
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-trait LockingHelperAwareTrait
+trait LockCheckerAwareTrait
 {
-    protected LockChecker $lockingHelper;
+    protected readonly LockChecker $lockChecker;
 
-
-    public function setLockingHelper(LockChecker $lockingHelper): void
+    public function setLockChecker(LockChecker $lockingHelper): void
     {
-        $this->lockingHelper = $lockingHelper;
+        $this->lockChecker = $lockingHelper;
     }
 }
