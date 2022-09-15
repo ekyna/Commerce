@@ -257,4 +257,13 @@
         </property>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerPosition">
+        <property name="name">
+            <constraint name="NotBlank"/>
+            <constraint name="Length">
+                <option name="max">64</option>
+            </constraint>
+        </property>
+    </class>
+
 </constraint-mapping>

@@ -36,13 +36,14 @@ class Customer extends AbstractResource implements Model\CustomerInterface
     use RM\TimestampableTrait;
     use VatNumberSubjectTrait;
 
-    protected ?string                  $company       = null;
-    protected ?string                  $companyNumber = null;
-    protected ?string                  $email         = null;
-    protected ?PhoneNumber             $phone         = null;
-    protected ?PhoneNumber             $mobile        = null;
-    protected ?DateTimeInterface       $birthday      = null;
-    protected ?Model\CustomerInterface $parent        = null;
+    protected ?string                  $company          = null;
+    protected ?string                  $companyNumber    = null;
+    protected ?string                  $email            = null;
+    protected ?PhoneNumber             $phone            = null;
+    protected ?PhoneNumber             $mobile           = null;
+    protected ?CustomerPosition        $customerPosition = null;
+    protected ?DateTimeInterface       $birthday         = null;
+    protected ?Model\CustomerInterface $parent           = null;
     /** @var Collection<Model\CustomerInterface> */
     protected Collection                    $children;
     protected ?Model\CustomerGroupInterface $customerGroup = null;
@@ -177,6 +178,18 @@ class Customer extends AbstractResource implements Model\CustomerInterface
     public function setMobile(?PhoneNumber $mobile): Model\CustomerInterface
     {
         $this->mobile = $mobile;
+
+        return $this;
+    }
+
+    public function getCustomerPosition(): ?CustomerPosition
+    {
+        return $this->customerPosition;
+    }
+
+    public function setCustomerPosition(?CustomerPosition $position): Model\CustomerInterface
+    {
+        $this->customerPosition = $position;
 
         return $this;
     }

@@ -100,6 +100,11 @@
             <join-column name="customer_group_id" referenced-column-name="id" on-delete="RESTRICT"/>
         </many-to-one>
 
+        <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Entity\CustomerPosition"
+                     field="customerPosition">
+            <join-column name="customer_position_id" referenced-column-name="id" on-delete="RESTRICT"/>
+        </many-to-one>
+
         <many-to-one target-entity="Ekyna\Component\Commerce\Common\Entity\Currency" field="currency">
             <join-column name="currency_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Customer\Model;
 
-use DateTime;
 use DateTimeInterface;
 use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerContact;
 use Ekyna\Component\Commerce\Customer\Entity\CustomerLogo;
+use Ekyna\Component\Commerce\Customer\Entity\CustomerPosition;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing\Model\VatNumberSubjectInterface;
 use Ekyna\Component\Resource\Model as Resource;
@@ -52,6 +52,10 @@ interface CustomerInterface extends
     public function getMobile(): ?PhoneNumber;
 
     public function setMobile(?PhoneNumber $mobile): CustomerInterface;
+
+    public function getCustomerPosition(): ?CustomerPosition;
+
+    public function setCustomerPosition(?CustomerPosition $position): CustomerInterface;
 
     public function getBirthday(): ?DateTimeInterface;
 
