@@ -354,7 +354,7 @@
 
 {% block sale %}
 {% apply spaceless %}
-    <div class="sale-view">
+    <div{% with {attr: view.vars.attr} %} {{ block('attributes') }}{% endwith %}>
         <div class="table-responsive">
             <table class="table table-alt-head sale-detail">
                 {{ block('lines') }}

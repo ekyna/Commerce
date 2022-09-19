@@ -190,7 +190,7 @@
 
 {% block sale %}
 {% apply spaceless %}
-    <div class="sale-view">
+    <div{% with {attr: view.vars.attr} %} {{ block('attributes') }}{% endwith %}>
         {{ form_start(view.vars.quantities_form) }}
             {{ form_errors(view.vars.quantities_form) }}
             <div class="table-responsive">
