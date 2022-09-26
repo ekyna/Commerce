@@ -20,34 +20,16 @@ use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
  */
 class MarginCalculatorFactory
 {
-    protected AmountCalculatorFactory           $calculatorFactory;
-    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    protected CurrencyConverterInterface        $currencyConverter;
-    protected SubjectHelperInterface            $subjectHelper;
-    protected PurchaseCostGuesserInterface      $purchaseCostGuesser;
-    protected ShipmentAddressResolverInterface  $shipmentAddressResolver;
-    protected WeightCalculatorInterface         $weightCalculator;
-    protected ShipmentPriceResolverInterface    $shipmentPriceResolver;
-
-
     public function __construct(
-        AmountCalculatorFactory $calculatorFactory,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator,
-        CurrencyConverterInterface $currencyConverter,
-        SubjectHelperInterface $subjectHelper,
-        PurchaseCostGuesserInterface $purchaseCostGuesser,
-        ShipmentAddressResolverInterface $shipmentAddressResolver,
-        WeightCalculatorInterface $weightCalculator,
-        ShipmentPriceResolverInterface $shipmentPriceResolver
+        private readonly AmountCalculatorFactory           $calculatorFactory,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        private readonly CurrencyConverterInterface        $currencyConverter,
+        private readonly SubjectHelperInterface            $subjectHelper,
+        private readonly PurchaseCostGuesserInterface      $purchaseCostGuesser,
+        private readonly ShipmentAddressResolverInterface  $shipmentAddressResolver,
+        private readonly WeightCalculatorInterface         $weightCalculator,
+        private readonly ShipmentPriceResolverInterface    $shipmentPriceResolver
     ) {
-        $this->calculatorFactory = $calculatorFactory;
-        $this->invoiceCalculator = $invoiceCalculator;
-        $this->currencyConverter = $currencyConverter;
-        $this->subjectHelper = $subjectHelper;
-        $this->purchaseCostGuesser = $purchaseCostGuesser;
-        $this->shipmentAddressResolver = $shipmentAddressResolver;
-        $this->weightCalculator = $weightCalculator;
-        $this->shipmentPriceResolver = $shipmentPriceResolver;
     }
 
     /**
@@ -59,8 +41,8 @@ class MarginCalculatorFactory
      * @param StatFilter|null $filter   The item filter
      */
     public function create(
-        string $currency = null,
-        bool $profit = false,
+        string     $currency = null,
+        bool       $profit = false,
         StatFilter $filter = null
     ): MarginCalculatorInterface {
         $currency = $currency ?? $this->currencyConverter->getDefaultCurrency();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -13,20 +15,9 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  */
 class SaleCsvExporter implements SaleExporterInterface
 {
-    /**
-     * @var View\ViewBuilder
-     */
-    private $viewBuilder;
-
-
-    /**
-     * Constructor.
-     *
-     * @param View\ViewBuilder $viewBuilder
-     */
-    public function __construct(View\ViewBuilder $viewBuilder)
-    {
-        $this->viewBuilder = $viewBuilder;
+    public function __construct(
+        private readonly View\ViewBuilder $viewBuilder
+    ) {
     }
 
     /**
@@ -47,12 +38,12 @@ class SaleCsvExporter implements SaleExporterInterface
         if (!empty($discounts = $view->getDiscounts())) {
             $this->buildGrossTotalsRow($view, $rows);
             $rows[] = []; // TODO Spacer
-            $this->buildDiscountsRows($view, $view->getDiscounts(), $rows);
+            $this->buildDiscountsRows($view, $discounts, $rows);
         }
 
-        if ($shipment = $view->getShipment()) {
+        if (null !== $view->shipment) {
             $rows[] = []; // TODO Spacer
-            $this->buildShipmentRow($view, $shipment, $rows);
+            $this->buildShipmentRow($view, $view->shipment, $rows);
         }
 
         $rows[] = []; // TODO Spacer
@@ -64,10 +55,6 @@ class SaleCsvExporter implements SaleExporterInterface
 
     /**
      * Builds the header row.
-     *
-     * @param View\SaleView $view
-     *
-     * @return array
      */
     private function buildHeaderRow(View\SaleView $view): array
     {
@@ -83,7 +70,7 @@ class SaleCsvExporter implements SaleExporterInterface
             $row[] = $trans['availability'];
         }
 
-        $row[] = $view->isAti() ? $trans['unit_ati_price'] : $trans['unit_net_price'];
+        $row[] = $view->ati ? $trans['unit_ati_price'] : $trans['unit_net_price'];
 
         if ($view->vars['show_taxes']) {
             $row[] = $trans['tax_rate'];
@@ -92,12 +79,12 @@ class SaleCsvExporter implements SaleExporterInterface
         $row[] = $trans['quantity'];
 
         if ($view->vars['show_discounts']) {
-            $row[] = $view->isAti() ? $trans['ati_gross'] : $trans['net_gross'];
+            $row[] = $view->ati ? $trans['ati_gross'] : $trans['net_gross'];
             $row[] = $trans['discount']; // TODO Percent
-            $row[] = ''; // TODO Amount
+            $row[] = '';                 // TODO Amount
         }
 
-        $row[] = $view->isAti() ? $trans['ati_total'] : $trans['net_total'];
+        $row[] = $view->ati ? $trans['ati_total'] : $trans['net_total'];
 
         if ($view->vars['show_margin']) {
             $row[] = $trans['margin'];
@@ -109,9 +96,8 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the items rows.
      *
-     * @param View\SaleView   $view
-     * @param View\LineView[] $lines
-     * @param array           $rows
+     * @param array<View\LineView> $lines
+     * @param array<array>         $rows
      */
     private function buildItemsRows(View\SaleView $view, array $lines, array &$rows): void
     {
@@ -123,46 +109,44 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Build the item row.
      *
-     * @param View\SaleView $view
-     * @param View\LineView $line
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildItemRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
-        if ($line->isPrivate()) {
+        if ($line->private) {
             return;
         }
 
         $row = [
-            $line->getNumber(),
-            implode('', array_fill(0, $line->getLevel(), ' - ')) . $line->getDesignation(),
+            $line->number,
+            implode('', array_fill(0, $line->level, ' - ')) . $line->designation,
             // TODO prefix with tree symbols
             // TODO Description (?)
-            $line->getReference(),
+            $line->reference,
         ];
 
         if ($view->vars['show_availability']) {
-            $row[] = strip_tags($line->getAvailability() ?? '');
+            $row[] = strip_tags($line->availability ?? '');
         }
 
-        $row[] = $line->getUnit();
+        $row[] = $line->unit;
 
         if ($view->vars['show_taxes']) {
-            $row[] = $line->getTaxRates();
+            $row[] = $line->taxRates;
         }
 
-        $row[] = $line->getQuantity();
+        $row[] = $line->quantity;
 
         if ($view->vars['show_discounts']) {
-            $row[] = $line->getGross();
-            $row[] = $line->getDiscountRates();
-            $row[] = $line->getDiscountAmount() ? '-' . $line->getDiscountAmount() : '';
+            $row[] = $line->gross;
+            $row[] = $line->discountRates;
+            $row[] = $line->discountAmount ? '-' . $line->discountAmount : '';
         }
 
-        $row[] = $line->getBase();
+        $row[] = $line->base;
 
         if ($view->vars['show_margin']) {
-            $row[] = $line->getMargin();
+            $row[] = $line->margin;
         }
 
         $rows[] = $row;
@@ -175,8 +159,7 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the gross totals row.
      *
-     * @param View\SaleView $view
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildGrossTotalsRow(View\SaleView $view, array &$rows): void
     {
@@ -187,11 +170,11 @@ class SaleCsvExporter implements SaleExporterInterface
         $row = array_fill(0, $offset, null);
 
         if ($view->vars['show_discounts']) {
-            $row[] = $view->getGross()->getBase();
-            $row[] = $view->getGross()->getAdjustment();
+            $row[] = $view->gross->base;
+            $row[] = $view->gross->adjustment;
         }
 
-        $row[] = $view->getGross()->getTotal();
+        $row[] = $view->gross->total;
 
         $rows[] = $row;
     }
@@ -199,9 +182,7 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the discounts rows.
      *
-     * @param View\SaleView $view
-     * @param array         $discounts
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildDiscountsRows(View\SaleView $view, array $discounts, array &$rows): void
     {
@@ -213,27 +194,25 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the discount row.
      *
-     * @param View\SaleView $view
-     * @param View\LineView $line
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildDiscountRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
         $row = [
             null,
-            $line->getDesignation(),
+            $line->designation,
             // TODO Description (?)
         ];
 
         $row += array_fill(sizeof($row), $view->vars['show_availability'] ? 3 : 2, null);
 
         if ($view->vars['show_taxes']) {
-            $row[] = $line->getTaxRates();
+            $row[] = $line->taxRates;
         }
 
         $row += array_fill(sizeof($row), $view->vars['show_discounts'] ? 4 : 1, null);
 
-        $row[] = '-' . ($view->isAti() ? $line->getTotal() : $line->getBase());
+        $row[] = '-' . ($view->ati ? $line->total : $line->base);
 
         $rows[] = $row;
     }
@@ -241,27 +220,25 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the shipment row.
      *
-     * @param View\SaleView $view
-     * @param View\LineView $line
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildShipmentRow(View\SaleView $view, View\LineView $line, array &$rows): void
     {
         $row = [
             null,
-            $line->getDesignation(),
+            $line->designation,
             // TODO Description (?)
         ];
 
         $row += array_fill(sizeof($row), $view->vars['show_availability'] ? 3 : 2, null);
 
         if ($view->vars['show_taxes']) {
-            $row[] = $line->getTaxRates();
+            $row[] = $line->taxRates;
         }
 
         $row += array_fill(sizeof($row), $view->vars['show_discounts'] ? 4 : 1, null);
 
-        $row[] = ($view->isAti() ? $line->getTotal() : $line->getBase());
+        $row[] = $view->ati ? $line->total : $line->base;
 
         $rows[] = $row;
     }
@@ -269,8 +246,7 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * Builds the grand total rows.
      *
-     * @param View\SaleView $view
-     * @param array         $rows
+     * @param array<array> $rows
      */
     private function buildGranTotalsRows(View\SaleView $view, array &$rows): void
     {
@@ -279,38 +255,33 @@ class SaleCsvExporter implements SaleExporterInterface
         $base = array_fill(0, $view->vars['columns_count'] - ($view->vars['show_margin'] ? 3 : 2), null);
 
         $row = $base;
-        $row[] = $view->isAti() ? $trans['ati_total'] : $trans['net_total'];
-        $row[] = $view->isAti() ? $view->getFinal()->getTotal() : $view->getFinal()->getBase();
+        $row[] = $view->ati ? $trans['ati_total'] : $trans['net_total'];
+        $row[] = $view->ati ? $view->final->total : $view->final->base;
         $rows[] = $row;
 
         $row = $base;
         $row[] = $trans['tax_total'];
-        $row[] = $view->getFinal()->getAdjustment();
+        $row[] = $view->final->adjustment;
         $rows[] = $row;
 
-        if (!$view->isAti()) {
+        if (!$view->ati) {
             $row = $base;
             $row[] = $trans['ati_total'];
-            $row[] = $view->getFinal()->getTotal();
+            $row[] = $view->final->total;
             $rows[] = $row;
         }
     }
 
     /**
      * Builds the CSV file.
-     *
-     * @param string $name
-     * @param array  $rows
-     *
-     * @return string
      */
     private function buildCsv(string $name, array $rows): string
     {
         if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
-            throw new RuntimeException("Failed to create temporary file.");
+            throw new RuntimeException('Failed to create temporary file.');
         }
 
-        if (false === $handle = fopen($path, "w")) {
+        if (false === $handle = fopen($path, 'w')) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 

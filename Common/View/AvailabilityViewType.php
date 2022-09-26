@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Stock\Helper\AvailabilityHelperInterface;
-use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
+
+use function implode;
+use function max;
+use function sprintf;
 
 /**
  * Class AvailabilityViewType
@@ -16,29 +22,10 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
  */
 class AvailabilityViewType extends AbstractViewType
 {
-    /**
-     * @var SubjectHelperInterface
-     */
-    protected $subjectHelper;
-
-    /**
-     * @var AvailabilityHelperInterface
-     */
-    protected $availabilityHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SubjectHelperInterface      $subjectHelper
-     * @param AvailabilityHelperInterface $availabilityHelper
-     */
     public function __construct(
-        SubjectHelperInterface $subjectHelper,
-        AvailabilityHelperInterface $availabilityHelper
+        private readonly SubjectHelperInterface      $subjectHelper,
+        private readonly AvailabilityHelperInterface $availabilityHelper
     ) {
-        $this->subjectHelper = $subjectHelper;
-        $this->availabilityHelper = $availabilityHelper;
     }
 
     /**
@@ -67,8 +54,11 @@ class AvailabilityViewType extends AbstractViewType
             ->getAvailability($subject, is_null($item->getParent()), $options['private']);
 
         $messages = $availability->getMessagesForQuantity($quantity);
-        $view->setAvailability(
-            '<span class="availability-' . max(count($messages), 1) . '">' . implode('<br>', $messages) . '</span>'
+
+        $view->availability = sprintf(
+            '<span class="availability-%d">%s</span>',
+            max(count($messages), 1),
+            implode('<br>', $messages)
         );
 
         if ($quantity > $availability->getMaximumQuantity()) {
@@ -90,9 +80,6 @@ class AvailabilityViewType extends AbstractViewType
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getName(): string
     {
         return 'ekyna_commerce_availability';

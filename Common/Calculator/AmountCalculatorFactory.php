@@ -15,33 +15,27 @@ use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
  */
 class AmountCalculatorFactory
 {
-    private CurrencyConverterInterface $currencyConverter;
-    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
-
-
     public function __construct(
-        CurrencyConverterInterface $currencyConverter,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator
+        private readonly CurrencyConverterInterface        $currencyConverter,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator
     ) {
-        $this->currencyConverter = $currencyConverter;
-        $this->invoiceCalculator = $invoiceCalculator;
     }
 
     /**
      * Creates the amount calculator.
      *
      * @param string|null     $currency The currency
-     * @param bool            $revenue  Whether to use revenue mode
+     * @param bool            $profit   Whether to use revenue mode
      * @param StatFilter|null $filter   The item filter
      */
     public function create(
-        string $currency = null,
-        bool $revenue = false,
+        string     $currency = null,
+        bool       $profit = false,
         StatFilter $filter = null
     ): AmountCalculatorInterface {
         $currency = $currency ?: $this->currencyConverter->getDefaultCurrency();
 
-        $calculator = new AmountCalculator($currency, $revenue, $filter);
+        $calculator = new AmountCalculator($currency, $profit, $filter);
 
         $calculator->setCurrencyConverter($this->currencyConverter);
         $calculator->setInvoiceCalculator($this->invoiceCalculator);

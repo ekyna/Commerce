@@ -70,37 +70,51 @@ class ViewBuilder
     {
         $this->initialize($sale, $options);
 
-        $c = $this->view->getCurrency();
+        $c = $this->view->currency;
 
         $this->amountCalculator = $this->amountCalculatorFactory->create($c);
-        $this->marginCalculator = $this->marginCalculatorFactory->create($c, true);
+        $this->marginCalculator = $this->marginCalculatorFactory->create($c);
 
         // Gross total view
         $grossResult = $this->amountCalculator->calculateSale($sale, true);
-        $this->view->setGross(new TotalView(
-            $this->currency($grossResult->getGross($this->view->isAti())),
-            $this->currency($grossResult->getDiscount($this->view->isAti())),
-            $this->currency($grossResult->getBase($this->view->isAti()))
-        ));
+        $this->view->gross = new TotalView(
+            $this->currency($grossResult->getGross($this->view->ati)),
+            $this->currency($grossResult->getDiscount($this->view->ati)),
+            $this->currency($grossResult->getBase($this->view->ati))
+        );
 
         // Final total view
         $finalResult = $this->amountCalculator->calculateSale($sale);
-        $this->view->setFinal(new TotalView(
+        $this->view->final = new TotalView(
             $this->currency($finalResult->getBase()),
             $this->currency($finalResult->getTax()),
             $this->currency($finalResult->getTotal())
-        ));
+        );
 
-        if ($this->options['private'] && $margin = $this->marginCalculator->calculateSale($sale)) {
+        if ($this->options['private'] && ($margin = $this->marginCalculator->calculateSale($sale))) {
+            $this->view->vars['show_margin'] = true;
+
+            // Commercial margin
             $prefix = $margin->isAverage() ? '~' : '';
 
             $amount = $this->currencyConverter->convertWithSubject($margin->getAmount(), $sale, $c);
 
-            $this->view->setMargin(new MarginView(
+            $this->view->commercialMargin = new MarginView(
                 $this->currency($amount, $prefix),
                 $this->percent($margin->getPercent(), $prefix)
-            ));
-            $this->view->vars['show_margin'] = true;
+            );
+
+            // Profit margin
+            if ($margin = $this->marginCalculatorFactory->create($c, true)->calculateSale($sale)) {
+                $prefix = $margin->isAverage() ? '~' : '';
+
+                $amount = $this->currencyConverter->convertWithSubject($margin->getAmount(), $sale, $c);
+
+                $this->view->profitMargin = new MarginView(
+                    $this->currency($amount, $prefix),
+                    $this->percent($margin->getPercent(), $prefix)
+                );
+            }
         }
 
         // Items lines
@@ -161,12 +175,10 @@ class ViewBuilder
 
         $this->options = $this->getOptionsResolver()->resolve($options);
 
-        $this
-            ->view
-            ->setTemplate($this->options['template'])
-            ->setAti($this->options['ati'])
-            ->setLocale($this->options['locale'])
-            ->setCurrency($this->options['currency']);
+        $this->view->locale = $this->options['locale'];
+        $this->view->currency = $this->options['currency'];
+        $this->view->template = $this->options['template'];
+        $this->view->ati = $this->options['ati'];
 
         $this->formatter = $this->formatterFactory->create($this->options['locale'], $this->options['currency']);
 
@@ -248,7 +260,7 @@ class ViewBuilder
         $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
-            $ati = $this->view->isAti();
+            $ati = $this->view->ati;
             $unit = $this->currency($result->getUnit($ati));
             $gross = $this->currency($result->getGross($ati));
             $discountRates = $this->rates(...$result->getDiscountAdjustments());
@@ -278,42 +290,39 @@ class ViewBuilder
             $this->options['private']
             || !($item->isConfigurable() && $item->isCompound() && !$item->hasPrivateChildren())
         ) {
-            $view->setReference($item->getReference());
+            $view->reference = $item->getReference();
         }
 
-        $view
-            ->setDesignation($item->getDesignation())
-            ->setDescription($item->getDescription())
-            ->setUnit($unit)
-            ->setQuantity($quantity)
-            ->setGross($gross)
-            ->setDiscountRates($discountRates)
-            ->setDiscountAmount($discountAmount)
-            ->setBase($base)
-            ->setTaxRates($taxRates)
-            ->setTaxAmount($taxAmount)
-            ->setTotal($total)
-            ->setSource($item);
+        $view->designation = $item->getDesignation();
+        $view->description = $item->getDescription();
+        $view->unit = $unit;
+        $view->quantity = $quantity;
+        $view->gross = $gross;
+        $view->discountRates = $discountRates;
+        $view->discountAmount = $discountAmount;
+        $view->base = $base;
+        $view->taxRates = $taxRates;
+        $view->taxAmount = $taxAmount;
+        $view->total = $total;
+        $view->source = $item;
 
-        if ($item->isPrivate()) {
-            $view->setPrivate(true)->addClass('private');
+        if ($view->private = $item->isPrivate()) {
+            $view->addClass('private');
         } else {
-            $view->setPrivate(false)->removeClass('private');
+            $view->removeClass('private');
         }
 
         foreach ($this->types as $type) {
             $type->buildItemView($item, $view, $this->options);
         }
 
-        if (!empty($view->getAvailability())) {
+        if (!empty($view->availability)) {
             $this->view->vars['show_availability'] = true;
         }
 
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
             if ($margin = $this->marginCalculator->calculateSaleItem($item)) {
-                $view->setMargin(
-                    $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '')
-                );
+                $view->margin = $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '');
             }
         }
 
@@ -331,7 +340,7 @@ class ViewBuilder
     /**
      * Builds the sale discount line view.
      */
-    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment, int $level = 0): LineView
+    private function buildDiscountLine(Model\SaleAdjustmentInterface $adjustment): LineView
     {
         if (Model\AdjustmentTypes::TYPE_DISCOUNT !== $adjustment->getType()) {
             throw new InvalidArgumentException('Unexpected adjustment type.');
@@ -343,7 +352,7 @@ class ViewBuilder
             'adjustment_' . ($lineNumber - 1),
             'adjustment_' . $adjustment->getId(),
             $lineNumber,
-            $level
+            0
         );
 
         if (empty($designation = $adjustment->getDesignation())) {
@@ -355,12 +364,11 @@ class ViewBuilder
 
         $result = $this->amountCalculator->calculateSaleDiscount($adjustment);
 
-        $view
-            ->setDesignation($designation)
-            ->setBase($this->currency($result->getBase()))
-            ->setTaxAmount($this->currency($result->getTax()))
-            ->setTotal($this->currency($result->getTotal()))
-            ->setSource($adjustment);
+        $view->designation = $designation;
+        $view->base = $this->currency($result->getBase());
+        $view->taxAmount = $this->currency($result->getTax());
+        $view->total = $this->currency($result->getTotal());
+        $view->source = $adjustment;
 
         foreach ($this->types as $type) {
             $type->buildAdjustmentView($adjustment, $view, $this->options);
@@ -375,6 +383,8 @@ class ViewBuilder
     private function buildShipmentLine(Model\SaleInterface $sale): void
     {
         if (null === $sale->getShipmentMethod() && !$this->options['private']) {
+            $this->view->shipment = null;
+
             return;
         }
 
@@ -400,19 +410,22 @@ class ViewBuilder
 
         $result = $this->amountCalculator->calculateSaleShipment($sale);
 
-        $view
-            ->setDesignation($designation)
-            ->setBase($this->currency($result->getBase()))
-            ->setTaxRates($this->rates(...$result->getTaxAdjustments()))
-            ->setTaxAmount($this->currency($result->getTax()))
-            ->setTotal($this->currency($result->getTotal()))
-            ->setSource($sale);
+        $view->designation = $designation;
+        $view->base = $this->currency($result->getBase());
+        $view->taxRates = $this->rates(...$result->getTaxAdjustments());
+        $view->taxAmount = $this->currency($result->getTax());
+        $view->total = $this->currency($result->getTotal());
+        $view->source = $sale;
 
         foreach ($this->types as $type) {
             $type->buildShipmentView($sale, $view, $this->options);
         }
 
-        $this->view->setShipment($view);
+        if ($this->view->vars['show_margin'] && $margin = $this->marginCalculator->calculateSaleShipment($sale)) {
+            $view->margin = $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '');
+        }
+
+        $this->view->shipment = $view;
     }
 
     /**

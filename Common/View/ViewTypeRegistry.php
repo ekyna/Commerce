@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
+use function array_key_exists;
+use function usort;
 
 /**
  * Class ViewTypeRegistry
@@ -13,18 +18,9 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 class ViewTypeRegistry implements ViewTypeRegistryInterface
 {
     /**
-     * @var array|ViewTypeInterface[]
+     * @var array<ViewTypeInterface>
      */
-    private $types;
-
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        $this->types = [];
-    }
+    private array $types = [];
 
     /**
      * @inheritDoc
@@ -32,7 +28,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
     public function addType(ViewTypeInterface $type): void
     {
         if (array_key_exists($name = $type->getName(), $this->types)) {
-            throw new InvalidArgumentException("The view type '{$name}' is already registered.");
+            throw new InvalidArgumentException("The view type '$name' is already registered.");
         }
 
         $this->types[$name] = $type;
@@ -51,7 +47,7 @@ class ViewTypeRegistry implements ViewTypeRegistryInterface
             }
         }
 
-        usort($types, function(ViewTypeInterface $a, ViewTypeInterface $b) {
+        usort($types, function (ViewTypeInterface $a, ViewTypeInterface $b) {
             return $a->getPriority() - $b->getPriority();
         });
 

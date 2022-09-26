@@ -16,16 +16,16 @@
 {% block actions %}
 {% apply spaceless %}
     <td class="sale-detail-actions">
-    {% if line.vars.actions is defined -%}
-        {% if 2 < line.vars.actions|length -%}
+    {% if line.actions is defined -%}
+        {% if 2 < line.actions|length -%}
             <div>
         {%- endif %}
-        {% for action in line.vars.actions -%}
+        {% for action in line.actions -%}
         <a href="{{ action.path }}"{% with {attr: action.attributes} %} {{ block('attributes') }}{% endwith %}>
             <i class="{{ action.icon }}"></i>
         </a>
         {%- endfor %}
-        {% if 2 < line.vars.actions|length -%}
+        {% if 2 < line.actions|length -%}
             <a href="javascript: void(0)" class="text-muted">
                 <i class="fa fa-ellipsis-h"></i>
             </a>
@@ -146,7 +146,7 @@
     <tbody>
     <tr>
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
-            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
+            rowspan="{{ (view.vars.show_margin ? 5 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
             {{ block('messages') -}}
             {{ form_widget(view.vars.quantities_form.submit) }}
         </td>
@@ -165,10 +165,26 @@
     </tr>
     {%- endif %}
     {% if view.vars.show_margin -%}
-    <tr>
-        <th>{{ view.translations.margin|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_margin">{{ view.margin.amount }}<br>({{ view.margin.percent }})</td>
-    </tr>
+        <tr>
+            <th>{{ view.translations.commercial_margin|raw }}</th>
+            <td class="text-right sale-detail-total" id="commercial_margin">
+                {%- if view.commercialMargin is not null -%}
+                    {{ view.commercialMargin.amount }}<br>({{ view.commercialMargin.percent }})
+                {%- else -%}
+                    -
+                {%- endif -%}
+            </td>
+        </tr>
+        <tr>
+            <th>{{ view.translations.profit_margin|raw }}</th>
+            <td class="text-right sale-detail-total" id="profit_margin">
+                {%- if view.profitMargin is not null -%}
+                    {{- view.profitMargin.amount }}<br>({{ view.profitMargin.percent }})
+                {%- else -%}
+                    -
+                {%- endif -%}
+            </td>
+        </tr>
     {%- endif %}
     </tbody>
 {% endapply %}
@@ -225,8 +241,8 @@
                 {% endif %}
             </div>
             <div class="col-sm-8 sale-detail-buttons">
-                {% if view.vars.buttons is defined %}
-                    {% for button in view.vars.buttons %}
+                {% if view.buttons is defined %}
+                    {% for button in view.buttons %}
                         <a href="{{ button.path }}"{% with {attr: button.attributes} %} {{ block('attributes') }}{% endwith %}>
                             <i class="{{ button.icon }}"></i> {{ button.label }}
                         </a>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -13,17 +15,13 @@ interface ViewTypeRegistryInterface
 {
     /**
      * Registers the view type.
-     *
-     * @param ViewTypeInterface $type
      */
     public function addType(ViewTypeInterface $type): void;
 
     /**
      * Returns the view types supporting the given sale.
      *
-     * @param SaleInterface $sale
-     *
-     * @return array|ViewTypeInterface[]
+     * @return array<ViewTypeInterface>
      */
     public function getTypesForSale(SaleInterface $sale): array;
 }

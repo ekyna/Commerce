@@ -21,26 +21,21 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  */
 class AmountCalculator implements AmountCalculatorInterface
 {
-    private CurrencyConverterInterface        $currencyConverter;
-    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    private AmountCalculatorFactory           $amountCalculatorFactory;
-    private string                            $currency;
-    private bool                              $revenue;
-    private ?StatFilter                       $filter;
-    /** @var Model\Amount[] */
-    private array $cache;
+    private readonly CurrencyConverterInterface        $currencyConverter;
+    private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator;
+    private readonly AmountCalculatorFactory           $amountCalculatorFactory;
 
+    /** @var Model\Amount[] */
+    private array $cache = [];
 
     /**
      * @internal Use Calculator factory
      */
-    public function __construct(string $currency, bool $revenue, StatFilter $filter = null)
-    {
-        $this->currency = $currency;
-        $this->revenue = $revenue;
-        $this->filter = $filter;
-
-        $this->clear();
+    public function __construct(
+        private readonly string      $currency,
+        private readonly bool        $profit,
+        private readonly ?StatFilter $filter
+    ) {
     }
 
     public function clear(): void
@@ -140,7 +135,7 @@ class AmountCalculator implements AmountCalculatorInterface
         bool $asPublic = false
     ): Model\Amount {
         if ($quantity) {
-            if ($this->revenue) {
+            if ($this->profit) {
                 throw new Exception\LogicException('You can\'t override quantity if revenue mode is enabled.');
             }
 
@@ -298,7 +293,7 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Revenue mode
-        if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
+        if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
             if ($this->invoiceCalculator->calculateSoldQuantity($adjustment)->isZero()) {
                 return $result;
             }
@@ -388,7 +383,7 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         // Revenue mode
-        if ($this->revenue && $sale instanceof InvoiceSubjectInterface) {
+        if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
             if ($this->invoiceCalculator->calculateSoldQuantity($sale)->isZero()) {
                 return $result;
             }
@@ -439,7 +434,7 @@ class AmountCalculator implements AmountCalculatorInterface
      */
     protected function calculateSaleItemQuantity(Model\SaleItemInterface $item): Decimal
     {
-        if (!$this->revenue) {
+        if (!$this->profit) {
             return $item->getTotalQuantity();
         }
 

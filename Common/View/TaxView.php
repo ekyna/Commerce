@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 /**
@@ -9,46 +11,9 @@ namespace Ekyna\Component\Commerce\Common\View;
  */
 class TaxView extends AbstractView
 {
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var string
-     */
-    private $total;
-
-
-    /**
-     * Constructor.
-     *
-     * @param string $name
-     * @param string $total
-     */
-    public function __construct(string $name, string $total)
-    {
-        $this->name = $name;
-        $this->total = $total;
-    }
-
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * Returns the total.
-     *
-     * @return string
-     */
-    public function getTotal(): string
-    {
-        return $this->total;
+    public function __construct(
+        public readonly string $name,
+        public readonly string $total
+    ) {
     }
 }

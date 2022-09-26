@@ -251,10 +251,12 @@
         </span>
     </td>
     <td class="text-right" colspan="{{ view.vars.show_availability ? 3 : 2 }}">&nbsp;</td>
-    {%- if view.vars.show_taxes %}{{ block('line_taxes') }}{% endif -%}
+    {% if view.vars.show_taxes %}{{ block('line_taxes') }}{% endif -%}
     <td{% if view.vars.show_discounts %} colspan="4"{% endif %}>&nbsp;</td>
     <td class="text-right" id="{{ line.id }}_base">{{ view.ati ? line.total : line.base }}</td>
-    {%- if view.vars.show_margin %}<td>&nbsp;</td>{% endif -%}
+    {% if view.vars.show_margin -%}
+        <td class="text-right" id="{{ line.id }}_margin">{{ line.margin }}</td>
+    {%- endif %}
 {% endapply %}
 {% endblock shipment %}
 
@@ -279,7 +281,7 @@
     <tbody>
     <tr>
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 3 : 2) }}"
-            rowspan="{{ (view.vars.show_margin ? 4 : 3) - (view.ati ? 1 : 0) }}">
+            rowspan="{{ (view.vars.show_margin ? 5 : 3) - (view.ati ? 1 : 0) }}">
             {{ block('messages') }}
         </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
@@ -297,10 +299,26 @@
     </tr>
     {%- endif %}
     {% if view.vars.show_margin -%}
-    <tr>
-        <th>{{ view.translations.margin|upper }}</th>
-        <td class="text-right sale-detail-total" id="final_margin">{{ view.margin.amount }}<br>({{ view.margin.percent }})</td>
-    </tr>
+        <tr>
+            <th>{{ view.translations.commercial_margin|raw }}</th>
+            <td class="text-right sale-detail-total" id="commercial_margin">
+                {%- if view.commercialMargin is not null -%}
+                    {{ view.commercialMargin.amount }}<br>({{ view.commercialMargin.percent }})
+                {%- else -%}
+                    -
+                {%- endif -%}
+            </td>
+        </tr>
+        <tr>
+            <th>{{ view.translations.profit_margin|raw }}</th>
+            <td class="text-right sale-detail-total" id="profit_margin">
+                {%- if view.profitMargin is not null -%}
+                    {{- view.profitMargin.amount }}<br>({{ view.profitMargin.percent }})
+                {%- else -%}
+                    -
+                {%- endif -%}
+            </td>
+        </tr>
     {%- endif %}
     </tbody>
 {% endapply %}

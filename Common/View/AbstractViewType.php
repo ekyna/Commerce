@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\View;
 
 use Ekyna\Component\Commerce\Common\Model;
@@ -12,10 +14,7 @@ use Ekyna\Component\Commerce\Common\Util\Formatter;
  */
 abstract class AbstractViewType implements ViewTypeInterface
 {
-    /**
-     * @var Formatter
-     */
-    protected $formatter;
+    protected Formatter $formatter;
 
 
     /**
@@ -66,9 +65,6 @@ abstract class AbstractViewType implements ViewTypeInterface
 
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPriority(): int
     {
         return 0;

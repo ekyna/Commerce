@@ -20,47 +20,41 @@ interface InvoiceSubjectCalculatorInterface
 {
     /**
      * Returns whether the sale item or adjustment is invoiced.
-     *
-     * @param Item|Adjustment $itemOrAdjustment
      */
-    public function isInvoiced($itemOrAdjustment): bool;
+    public function isInvoiced(Item|Adjustment $itemOrAdjustment): bool;
 
     /**
      * Calculates the given subject's invoiceable quantity.
-     *
-     * @param Sale|Item|Adjustment $subject
      */
-    public function calculateInvoiceableQuantity($subject, Invoice $ignore = null): Decimal;
+    public function calculateInvoiceableQuantity(Sale|Item|Adjustment $subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's creditable quantity.
-     *
-     * @param Sale|Item|Adjustment $subject
      */
-    public function calculateCreditableQuantity($subject, Invoice $ignore = null): Decimal;
+    public function calculateCreditableQuantity(Sale|Item|Adjustment $subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's invoiced quantity.
-     *
-     * @param Sale|Item|Adjustment $subject
      */
-    public function calculateInvoicedQuantity($subject, Invoice $ignore = null): Decimal;
+    public function calculateInvoicedQuantity(Sale|Item|Adjustment $subject, Invoice $ignore = null): Decimal;
 
     /**
      * Calculates the given subject's credited quantity.
      *
-     * @param Sale|Item|Adjustment $subject
-     * @param Invoice|null         $ignore
-     * @param bool                 $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credit
+     * @param bool $adjustment TRUE: only adjustments, FALSE: exclude adjustments and NULL: all credit
      */
-    public function calculateCreditedQuantity($subject, Invoice $ignore = null, bool $adjustment = null): Decimal;
+    public function calculateCreditedQuantity(
+        Sale|Item|Adjustment $subject,
+        Invoice              $ignore = null,
+        bool                 $adjustment = null
+    ): Decimal;
 
     /**
      * Calculates the given subject's sold quantity.
      *
      * @param Sale|Item|Adjustment $subject
      */
-    public function calculateSoldQuantity($subject): Decimal;
+    public function calculateSoldQuantity(Sale|Item|Adjustment $subject): Decimal;
 
     /**
      * Builds the invoice quantity map.

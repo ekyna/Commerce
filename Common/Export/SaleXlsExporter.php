@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Bundle\CommerceBundle\Service\Common\CommonRenderer;
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Common\View;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
-use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
@@ -20,6 +24,16 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Component\Intl\Currencies;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
+
+use function array_fill;
+use function implode;
+use function is_null;
+use function preg_replace;
+use function sprintf;
+use function str_replace;
+use function strip_tags;
+use function sys_get_temp_dir;
 
 /**
  * Class SaleXlsExporter
@@ -72,52 +86,15 @@ class SaleXlsExporter implements SaleExporterInterface
         'USD' => NumberFormat::FORMAT_CURRENCY_USD_SIMPLE,
     ];
 
-    /**
-     * @var View\ViewBuilder
-     */
-    private $viewBuilder;
+    private ?Worksheet $sheet = null;
+    private int        $col   = 0;
+    private int        $row   = 0;
 
-    /**
-     * @var CommonRenderer
-     */
-    private $commonRenderer;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-
-    /**
-     * @var Worksheet
-     */
-    private $sheet;
-
-    /**
-     * @var int
-     */
-    private $col = 0;
-
-    /**
-     * @var int
-     */
-    private $row = 0;
-
-
-    /**
-     * Constructor.
-     *
-     * @param View\ViewBuilder    $viewBuilder
-     * @param CommonRenderer      $commonRenderer
-     * @param TranslatorInterface $translator
-     */
     public function __construct(
-        View\ViewBuilder $viewBuilder,
-        CommonRenderer $commonRenderer,
-        TranslatorInterface $translator
+        private readonly View\ViewBuilder    $viewBuilder,
+        private readonly CommonRenderer      $commonRenderer,
+        private readonly TranslatorInterface $translator
     ) {
-        $this->viewBuilder    = $viewBuilder;
-        $this->commonRenderer = $commonRenderer;
-        $this->translator     = $translator;
     }
 
     /**
@@ -150,8 +127,8 @@ class SaleXlsExporter implements SaleExporterInterface
             $writer = new Xls($spreadsheet);
             $path = sprintf('%s/%s.xls', sys_get_temp_dir(), $sale->getNumber());
             $writer->save($path);
-        } catch (Exception $e) {
-            throw new RuntimeException("Failed to generate XLS.");
+        } catch (Throwable) {
+            throw new RuntimeException('Failed to generate XLS.');
         }
 
         return $path;
@@ -159,8 +136,6 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Builds the header.
-     *
-     * @param SaleInterface $sale
      */
     private function buildHeader(SaleInterface $sale): void
     {
@@ -175,25 +150,25 @@ class SaleXlsExporter implements SaleExporterInterface
             $type = $this->translator->trans('order.label.singular', [], 'EkynaCommerce');
         }
 
-        $this->sheet->mergeCells("B{$this->row}:K{$this->row}");
+        $this->sheet->mergeCells("B$this->row:K$this->row");
         $this->col = 1;
         $this->cell($type . ' ' . $sale->getNumber());
-        $this->sheet->getStyle("B{$this->row}")->applyFromArray(self::STYLE_TITLE);
+        $this->sheet->getStyle("B$this->row")->applyFromArray(self::STYLE_TITLE);
 
         $this->spacer();
         $this->row();
 
-        $this->sheet->mergeCells("B{$this->row}:C{$this->row}");
+        $this->sheet->mergeCells("B$this->row:C$this->row");
         $this->col = 1;
         $this->cell($this->translator->trans('sale.field.invoice_address', [], 'EkynaCommerce'));
-        $this->sheet->getStyle("B{$this->row}")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("B$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
 
-        $this->sheet->mergeCells("D{$this->row}:E{$this->row}");
+        $this->sheet->mergeCells("D$this->row:E$this->row");
 
-        $this->sheet->mergeCells("F{$this->row}:K{$this->row}");
+        $this->sheet->mergeCells("F$this->row:K$this->row");
         $this->col = 5;
         $this->cell($this->translator->trans('sale.field.delivery_address', [], 'EkynaCommerce'));
-        $this->sheet->getStyle("F{$this->row}")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("F$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
 
         $this->row();
 
@@ -201,7 +176,7 @@ class SaleXlsExporter implements SaleExporterInterface
         $address = strip_tags(str_replace('<br>', "\n", $address));
         $address = preg_replace("~\n+~", "\n", $address);
 
-        $this->sheet->mergeCells("B{$this->row}:C{$this->row}");
+        $this->sheet->mergeCells("B$this->row:C$this->row");
         $this->col = 1;
         $this->cell($address);
 
@@ -211,8 +186,8 @@ class SaleXlsExporter implements SaleExporterInterface
             $address = preg_replace("~\n+~", "\n", $address);
         }
 
-        $this->sheet->mergeCells("D{$this->row}:E{$this->row}");
-        $this->sheet->mergeCells("F{$this->row}:K{$this->row}");
+        $this->sheet->mergeCells("D$this->row:E$this->row");
+        $this->sheet->mergeCells("F$this->row:K$this->row");
         $this->col = 5;
         $this->cell($address);
 
@@ -221,8 +196,6 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Build headers.
-     *
-     * @param View\SaleView $view
      */
     private function buildRowHeaders(View\SaleView $view): void
     {
@@ -246,27 +219,26 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell($trans['net_gross']);
         // G - Discount rate
         // H - Discount amount
-        $this->sheet->mergeCells("G{$this->row}:H{$this->row}");
+        $this->sheet->mergeCells("G$this->row:H$this->row");
         $this->cell($this->translator->trans('sale.field.discount', [], 'EkynaCommerce'));
         // I - Total
         $this->col = 8;
         $this->cell($trans['net_total']);
         // J - Tax rate
         // K - Tax amount
-        $this->sheet->mergeCells("J{$this->row}:K{$this->row}");
+        $this->sheet->mergeCells("J$this->row:K$this->row");
         $this->cell($this->translator->trans('field.vat', [], 'EkynaCommerce'));
         $this->col = 11;
         // L - Ati Total
         //$this->cell($trans['ati_total']);
 
-        $this->sheet->getStyle("B{$this->row}:K{$this->row}")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("B$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
     }
 
     /**
      * Builds the items rows.
      *
-     * @param View\SaleView   $view
-     * @param View\LineView[] $lines
+     * @param array<View\LineView> $lines
      */
     private function buildItemsRows(View\SaleView $view, array $lines): void
     {
@@ -279,82 +251,76 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Applies the number formats.
-     *
-     * @param View\SaleView $view
-     * @param int           $from
-     * @param int           $to
      */
     private function applyNumberFormats(View\SaleView $view, int $from, int $to): void
     {
-        $currency = $this->getCurrencyFormat($view->getCurrency());
+        $currency = $this->getCurrencyFormat($view->currency);
 
         $this->sheet
-            ->getStyle("D{$from}:D{$to}")
+            ->getStyle("D$from:D$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
         $this->sheet
-            ->getStyle("F{$from}:F{$to}")
+            ->getStyle("F$from:F$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
         $this->sheet
-            ->getStyle("G{$from}:G{$to}")
+            ->getStyle("G$from:G$to")
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
 
         $this->sheet
-            ->getStyle("H{$from}:I{$to}")
+            ->getStyle("H$from:I$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
         $this->sheet
-            ->getStyle("J{$from}:J{$to}")
+            ->getStyle("J$from:J$to")
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
 
         $this->sheet
-            ->getStyle("K{$from}:K{$to}")
+            ->getStyle("K$from:K$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
     }
 
     /**
      * Build the item row.
-     *
-     * @param View\SaleView $view
-     * @param View\LineView $line
-     * @param int           $parentRow
      */
     private function buildItemRow(View\SaleView $view, View\LineView $line, int $parentRow = null): void
     {
-        if ($line->isPrivate()) {
+        if ($line->private) {
             return;
         }
 
         $this->row();
 
-        /** @var \Ekyna\Component\Commerce\Common\Model\SaleItemInterface $item */
-        $item = $line->getSource();
+        $item = $line->source;
+        if (!$item instanceof SaleItemInterface) {
+            throw new UnexpectedTypeException($item, SaleItemInterface::class);
+        }
 
         // A - Number
-        $this->cell($line->getNumber());
+        $this->cell((string)$line->number);
         // B - Designation
-        $this->cell(implode('', array_fill(0, $line->getLevel(), ' - ')) . $line->getDesignation());
+        $this->cell(implode('', array_fill(0, $line->level, ' - ')) . $line->designation);
         if (isset($line->vars['link'])) {
             $this->getCell()->getHyperlink()->setUrl($line->vars['link']['href']);
         }
         // C - Reference
         $this->cell($item->getReference());
         // D - Unit price
-        $this->cell($line->getUnit());
+        $this->cell($line->unit);
         // E - Quantity
         if (is_null($parentRow)) {
-            $this->cell($line->getQuantity());
-            $this->sheet->getStyle("E{$this->row}")->applyFromArray(self::STYLE_QUANTITY);
+            $this->cell($line->quantity);
+            $this->sheet->getStyle("E$this->row")->applyFromArray(self::STYLE_QUANTITY);
         } else {
-            $this->cell(sprintf("=%f*E%s", $item->getQuantity(), $parentRow));
-            $this->sheet->getStyle("E{$this->row}")->applyFromArray(self::STYLE_CHILD_QUANTITY);
+            $this->cell(sprintf('=%f*E%s', $item->getQuantity(), $parentRow));
+            $this->sheet->getStyle("E$this->row")->applyFromArray(self::STYLE_CHILD_QUANTITY);
         }
 
         $unit = Units::PIECE;
@@ -366,24 +332,24 @@ class SaleXlsExporter implements SaleExporterInterface
         }
 
         $this->sheet
-            ->getStyle("E{$this->row}")
+            ->getStyle("E$this->row")
             ->getNumberFormat()
             ->setFormatCode(Units::PIECE === $unit ? NumberFormat::FORMAT_NUMBER : NumberFormat::FORMAT_NUMBER_00);
 
         // F - Gross
-        $this->cell("=D{$this->row}*E{$this->row}");
+        $this->cell("=D$this->row*E$this->row");
         // G - Discount rate
-        $this->cell($line->getDiscountRates());
+        $this->cell($line->discountRates);
         // H - Discount amount
-        $this->cell("=-F{$this->row}*G{$this->row}");
+        $this->cell("=-F$this->row*G$this->row");
         // I - Net total
-        $this->cell("=F{$this->row}+H{$this->row}");
+        $this->cell("=F$this->row+H$this->row");
         // J - Tax rate
-        $this->cell($line->getTaxRates());
+        $this->cell($line->taxRates);
         // K - Tax amount
-        $this->cell("=I{$this->row}*J{$this->row}");
+        $this->cell("=I$this->row*J$this->row");
         // I - Ati total
-        //$this->cell("=I{$this->row}+K{$this->row}");
+        //$this->cell("=I$this->row+K$this->row");
 
         $row = $this->row;
         foreach ($line->getLines() as $child) {
@@ -404,25 +370,25 @@ class SaleXlsExporter implements SaleExporterInterface
 
         // A - Number
         // E - Quantity
-        $this->sheet->mergeCells("B{$this->row}:E{$this->row}");
+        $this->sheet->mergeCells("B$this->row:E$this->row");
         $this->col = 1;
         $this->cell($this->translator->trans('sale.field.gross_totals', [], 'EkynaCommerce'));
         $this->col = 5;
 
         // F - Gross
-        $this->cell(sprintf("=SUM(F2:F%d)", $this->row - 2));
+        $this->cell(sprintf('=SUM(F2:F%d)', $this->row - 2));
         // G - Discount rate
         $this->cell('');
         // H - Discount amount
-        $this->cell(sprintf("=SUM(H2:H%d)", $this->row - 2));
+        $this->cell(sprintf('=SUM(H2:H%d)', $this->row - 2));
         // I - Net total
-        $this->cell(sprintf("=SUM(I2:I%d)", $this->row - 2));
+        $this->cell(sprintf('=SUM(I2:I%d)', $this->row - 2));
         // J - Tax rate
         $this->cell('');
         // K - Tax amount
-        $this->cell(sprintf("=SUM(K2:K%d)", $this->row - 2));
+        $this->cell(sprintf('=SUM(K2:K%d)', $this->row - 2));
         // I - Ati total
-        //$this->cell(sprintf("=SUM(L2:L%d)", $this->row - 2));
+        //$this->cell(sprintf('=SUM(L2:L%d)', $this->row - 2));
 
         return $this->row;
     }
@@ -430,8 +396,7 @@ class SaleXlsExporter implements SaleExporterInterface
     /**
      * Builds the discounts rows.
      *
-     * @param View\SaleView $view
-     * @param int           $gtri The gross total row index
+     * @param int $gtri The gross total row index
      */
     private function buildDiscountsRows(View\SaleView $view, int $gtri): void
     {
@@ -449,13 +414,14 @@ class SaleXlsExporter implements SaleExporterInterface
     /**
      * Builds the discount row.
      *
-     * @param View\LineView $line
-     * @param int           $gtri The gross total row index
+     * @param int $gtri The gross total row index
      */
     private function buildDiscountRow(View\LineView $line, int $gtri): void
     {
-        /** @var \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface $adjustment */
-        $adjustment = $line->getSource();
+        $adjustment = $line->source;
+        if (!$adjustment instanceof AdjustmentInterface) {
+            throw new UnexpectedTypeException($adjustment, AdjustmentInterface::class);
+        }
 
         // TODO Temporary skip non percent discount
         if ($adjustment->getMode() !== AdjustmentModes::MODE_PERCENT) {
@@ -467,79 +433,78 @@ class SaleXlsExporter implements SaleExporterInterface
         // A - Number
         $this->cell('');
         // B - Description
-        $this->cell($line->getDesignation());
+        $this->cell($line->designation);
 
         if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
             // F - Gross
-            $this->sheet->mergeCells("C{$this->row}:F{$this->row}");
+            $this->sheet->mergeCells("C$this->row:F$this->row");
             $this->col = 6;
             // G - Discount rate
-            $this->cell($adjustment->getAmount());
+            $this->cell($adjustment->getAmount()->toFixed());
             // H - Discount amount
             $this->cell('');
             // I - Net total
             if ($this->row === $gtri + 2) {
-                $this->cell(sprintf("=-I%d*G%s/100", $gtri, $this->row));
+                $this->cell(sprintf('=-I%d*G%s/100', $gtri, $this->row));
             } else {
-                $this->cell(sprintf("=-(I%d+SUM(I%d:I%d))*G%d/100", $gtri, $gtri + 2, $this->row, $this->row));
+                $this->cell(sprintf('=-(I%d+SUM(I%d:I%d))*G%d/100', $gtri, $gtri + 2, $this->row, $this->row));
             }
             // J - Tax rate
             $this->cell('');
             // K - Tax amount
             if ($this->row === $gtri + 2) {
-                $this->cell(sprintf("=-K%d*G%s/100", $gtri, $this->row));
+                $this->cell(sprintf('=-K%d*G%s/100', $gtri, $this->row));
             } else {
-                $this->cell(sprintf("=-(K%d+SUM(K%d:K%d))*G%d/100", $gtri, $gtri + 2, $this->row, $this->row));
+                $this->cell(sprintf('=-(K%d+SUM(K%d:K%d))*G%d/100', $gtri, $gtri + 2, $this->row, $this->row));
             }
         } else {
             // H - Discount amount
-            $this->sheet->mergeCells("C{$this->row}:H{$this->row}");
+            $this->sheet->mergeCells("C$this->row:H$this->row");
             $this->col = 8;
             // I - Net total
-            $this->cell($adjustment->getAmount());
+            $this->cell($adjustment->getAmount()->toFixed());
             // J - Tax rate
             $this->cell('');
             // K - Tax amount
             if ($this->row === $gtri + 2) {
-                $this->cell(0); // TODO
+                $this->cell('0'); // TODO
             } else {
-                $this->cell(0); // TODO
+                $this->cell('0'); // TODO
             }
         }
     }
 
     /**
      * Builds the shipment row.
-     *
-     * @param View\SaleView $view
      */
     private function buildShipmentRow(View\SaleView $view): void
     {
+        if (null === $line = $view->shipment) {
+            return;
+        }
+
         $this->spacer();
         $this->row();
-
-        $line = $view->getShipment();
 
         // A - Number
         $this->cell('');
         // B - Description
-        $this->cell($line ? $line->getDesignation() : '');
+        $this->cell($line ? $line->designation : '');
         // H - Discount amount
-        $this->sheet->mergeCells("C{$this->row}:H{$this->row}");
+        $this->sheet->mergeCells("C$this->row:H$this->row");
         $this->col = 8;
         // I - Net total
-        $this->cell($line ? (string)(float)$line->getBase() : 0); // TODO (string)(float) because it may be 'Offert'
+        $this->cell($line ? (string)(float)$line->base : '0'); // TODO (string)(float) because it may be 'Offert'
         // J - Tax rate
-        $this->cell($line ? $line->getTaxRates() : 0);
+        $this->cell($line ? $line->taxRates : '0');
         // K - Tax amount
-        $this->cell(sprintf("=I{$this->row}*J{$this->row}"));
+        $this->cell("=I$this->row*J$this->row");
     }
 
     /**
      * Builds the grand total rows.
      *
-     * @param View\SaleView $view
-     * @param int           $gtri The gross total row index
+     * @param int $gtri The gross total row index
      */
     private function buildGranTotalsRows(View\SaleView $view, int $gtri): void
     {
@@ -559,7 +524,7 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->sheet
             ->getStyle(sprintf('I%d:I%d', $this->row - 2, $this->row))
             ->getNumberFormat()
-            ->setFormatCode($this->getCurrencyFormat($view->getCurrency()));
+            ->setFormatCode($this->getCurrencyFormat($view->currency));
 
         // Styles
         $this->sheet->getStyle(sprintf('G%d:G%d', $this->row - 2, $this->row))->applyFromArray(self::STYLE_GRAND_TOTAL);
@@ -568,17 +533,15 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Prepare a gran total row.
-     *
-     * @param string $label
      */
     private function buildGranTotalRow(string $label): void
     {
         $this->row();
         // F - Gross
-        $this->sheet->mergeCells("A{$this->row}:F{$this->row}");
+        $this->sheet->mergeCells("A$this->row:F$this->row");
         $this->col = 6;
         // G - Discount rate
-        $this->sheet->mergeCells("G{$this->row}:H{$this->row}");
+        $this->sheet->mergeCells("G$this->row:H$this->row");
         $this->cell($label);
         $this->col = 8;
     }
@@ -594,18 +557,14 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Returns the next cell number.
-     *
-     * @return string
      */
-    private function col(): string
+    private function col(): int
     {
         return ++$this->col;
     }
 
     /**
      * Writes value into the next cell.
-     *
-     * @param string $value
      */
     private function cell(string $value = null): void
     {
@@ -614,8 +573,6 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Returns the latest written cell.
-     *
-     * @return Cell|null
      */
     private function getCell(): ?Cell
     {
@@ -633,10 +590,6 @@ class SaleXlsExporter implements SaleExporterInterface
 
     /**
      * Returns the number format for the given currency.
-     *
-     * @param string $currency
-     *
-     * @return string
      */
     private function getCurrencyFormat(string $currency): string
     {
