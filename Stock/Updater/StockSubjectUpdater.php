@@ -185,16 +185,17 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         foreach ($composition as $component) {
             $child = $component->getSubject();
-            $quantity = $component->getQuantity();
 
             // Mode
-            if ($child->getStockMode() !== StockSubjectModes::MODE_JUST_IN_TIME) {
-                $justInTime = false;
-            }
             if ($child->getStockMode() === StockSubjectModes::MODE_DISABLED) {
                 continue;
             }
             $disabled = false;
+            if ($child->getStockMode() !== StockSubjectModes::MODE_JUST_IN_TIME) {
+                $justInTime = false;
+            }
+
+            $quantity = $component->getQuantity();
 
             // In stock
             $childInStock = $child->getInStock()->div($quantity);
