@@ -63,4 +63,6 @@ interface CartProviderInterface
      * @return CartProviderInterface
      */
     public function saveCart(): CartProviderInterface;
+
+    public function getCartClass(): string;
 }

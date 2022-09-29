@@ -39,6 +39,7 @@
 
 {% block lines_headers %}
 {% apply spaceless %}
+    {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     <th class="sale-detail-actions">
         {% if view.vars.private -%}
@@ -47,12 +48,6 @@
            title="Afficher les détails">{# TODO Translate #}
             <i class="fa fa-info-circle"></i>
         </a>
-        {#<a class="text-muted"
-           data-dale-toggle-all-details
-           href="javascript: void(0)"
-           title="Afficher les information">#}{# TODO Translate #}{#
-            <i class="fa fa-tasks"></i>
-        </a>#}
         {%- endif %}
     </th>
 {% endapply %}
@@ -65,6 +60,10 @@
         {% if view.vars.quantities_form[line.formId] is defined %}
             {% form_theme view.vars.quantities_form[line.formId] _self %}
             {{ form_widget(view.vars.quantities_form[line.formId]) }}
+        {#{%- if line.source is sale_item and not line.source.immutable -%}
+            <input type="number" id="sale_item_{{ line.source.id }}_quantity"
+                   name="sale[item][{{ line.source.id }}][quantity]"
+                   required="required" min="1" class="form-control" value="{{ line.quantity }}">#}
         {% else %}
             <span id="{{ line.id }}_quantity">{{ line.quantity }}</span>
         {% endif %}
@@ -99,10 +98,26 @@
 {% endblock line_information %}
 
 
+{% block line_columns %}
+{% apply spaceless %}
+    {% if view.vars.show_batch -%}
+    <td class="sale-detail-select">
+        {%- if line.source is sale_item and not line.source.parent -%}
+        <input type="checkbox" id="sale_item_{{ line.source.id }}_select" name="sale[items][]"
+               value="{{ line.source.id }}"{% if not line.batchable %} disabled{% endif %}>
+        {%- endif -%}
+    </td>
+    {%- endif %}
+    {{ parent() }}
+{% endapply %}
+{% endblock line_columns %}
+
+
 {% block gross_totals %}
 {% apply spaceless %}
     <tbody>
     <tr id="sale_gross">
+        {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
         <th>&nbsp;</th>
         <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) + (view.vars.show_availability ? 1 : 0) }}">
             <strong>{{ view.translations.gross_totals }}</strong>
@@ -127,6 +142,7 @@
 
 {% block discount %}
 {% apply spaceless %}
+    {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     {{ block('actions') }}
 {% endapply %}
@@ -135,6 +151,7 @@
 
 {% block shipment %}
 {% apply spaceless %}
+    {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     {{ block('actions') }}
 {% endapply %}
@@ -148,7 +165,19 @@
         <td colspan="{{ view.vars.columns_count - (view.vars.show_margin ? 4 : 3) }}"
             rowspan="{{ (view.vars.show_margin ? 5 : 3) - (view.ati ? 1 : 0) }}" class="sale-detail-buttons">
             {{ block('messages') -}}
-            {{ form_widget(view.vars.quantities_form.submit) }}
+            {{ form_widget(view.vars.quantities_form.recalculate) }}
+            {% if view.vars.show_batch -%}
+                <button type="button" id="sale_items_remove" name="sale_items_remove" disabled
+                        class="sale-view-batch btn-sm btn btn-danger disabled" data-action="remove-items"
+                        data-confirm="{{ view.translations.confirm_batch_remove }}">
+                    {{- view.translations.btn_batch_remove -}}
+                </button>
+                <button type="button" id="sale_items_synchronise" name="sale_items_synchronise" disabled
+                        class="sale-view-batch btn-sm btn btn-warning disabled" data-action="synchronise-subjects"
+                        data-confirm="{{ view.translations.confirm_batch_synchronize }}">
+                    {{- view.translations.btn_batch_synchronize -}}
+                </button>
+            {%- endif %}
         </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>
         <td class="text-right sale-detail-total" id="final_base">{{ view.ati ? view.final.total|raw : view.final.base|raw }}</td>

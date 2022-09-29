@@ -131,8 +131,8 @@ class AmountCalculator implements AmountCalculatorInterface
      */
     public function calculateSaleItem(
         Model\SaleItemInterface $item,
-        Decimal $quantity = null,
-        bool $asPublic = false
+        Decimal                 $quantity = null,
+        bool                    $asPublic = false
     ): Model\Amount {
         if ($quantity) {
             if ($this->profit) {
@@ -268,8 +268,8 @@ class AmountCalculator implements AmountCalculatorInterface
 
     public function calculateSaleDiscount(
         Model\SaleAdjustmentInterface $adjustment,
-        Model\Amount $gross = null,
-        Model\Amount $final = null
+        Model\Amount                  $gross = null,
+        Model\Amount                  $final = null
     ): Model\Amount {
         $this->assertAdjustmentType($adjustment, Model\AdjustmentTypes::TYPE_DISCOUNT);
 
@@ -368,7 +368,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
     public function calculateSaleShipment(
         Model\SaleInterface $sale,
-        Model\Amount $final = null
+        Model\Amount        $final = null
     ): Model\Amount {
         $key = spl_object_hash($sale) . '_shipment';
         if ($result = $this->get($key)) {
@@ -486,7 +486,7 @@ class AmountCalculator implements AmountCalculatorInterface
     }
 
     /**
-     * Returns whether the given item should be skipped regarding to the configured filter.
+     * Returns whether the given item should be skipped regarding the configured filter.
      */
     protected function isItemSkipped(Model\SaleItemInterface $item): bool
     {
@@ -506,7 +506,7 @@ class AmountCalculator implements AmountCalculatorInterface
      */
     protected function mergeItemsResults(Model\SaleItemInterface $item, Model\Amount $result): void
     {
-        // At this points items result are calculated and set.
+        // At this point, items result are calculated and set.
         foreach ($item->getChildren() as $child) {
             if ($child->isPrivate() || $this->isItemSkipped($child)) {
                 continue;

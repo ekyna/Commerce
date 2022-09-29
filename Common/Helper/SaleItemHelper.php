@@ -7,7 +7,10 @@ namespace Ekyna\Component\Commerce\Common\Helper;
 use Ekyna\Component\Commerce\Common\Event\SaleItemEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleItemEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
+use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
+use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -19,20 +22,23 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 class SaleItemHelper
 {
-    protected SubjectHelperInterface   $subjectHelper;
-    protected EventDispatcherInterface $eventDispatcher;
-
-    public function __construct(SubjectHelperInterface $subjectHelper, EventDispatcherInterface $eventDispatcher)
-    {
-        $this->subjectHelper = $subjectHelper;
-        $this->eventDispatcher = $eventDispatcher;
+    public function __construct(
+        protected readonly EventDispatcherInterface         $eventDispatcher,
+        private readonly SubjectHelperInterface             $subjectHelper,
+        private readonly ShipmentSubjectCalculatorInterface $shipmentSubjectCalculator,
+        private readonly InvoiceSubjectCalculatorInterface  $invoiceSubjectCalculator,
+    ) {
     }
 
     /**
      * Initializes the sale item with its subject.
+     *
+     * @throws IllegalOperationException
      */
     public function initialize(SaleItemInterface $item, ?SubjectInterface $subject): SaleItemEvent
     {
+        $this->preventIllegalOperation($item);
+
         if (null !== $subject) {
             $this->subjectHelper->assign($item, $subject);
         }
@@ -48,9 +54,13 @@ class SaleItemHelper
 
     /**
      * Builds the sale item (with its subject).
+     *
+     * @throws IllegalOperationException
      */
     public function build(SaleItemInterface $item): SaleItemEvent
     {
+        $this->preventIllegalOperation($item);
+
         $this->assertAssignedSubject($item);
 
         $event = new SaleItemEvent($item);
@@ -58,6 +68,26 @@ class SaleItemHelper
         $this->eventDispatcher->dispatch($event, SaleItemEvents::BUILD);
 
         return $event;
+    }
+
+    public function isShippedOrInvoiced(SaleItemInterface $item): bool
+    {
+        if ($this->shipmentSubjectCalculator->isShipped($item)) {
+            return true;
+        }
+
+        if ($this->invoiceSubjectCalculator->isInvoiced($item)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function preventIllegalOperation(SaleItemInterface $item): void
+    {
+        if ($this->isShippedOrInvoiced($item)) {
+            throw new IllegalOperationException('Item is shipped and therefor cannot be changed.');
+        }
     }
 
     protected function assertAssignedSubject(SaleItemInterface $item): void

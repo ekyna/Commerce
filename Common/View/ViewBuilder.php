@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Helper\SaleItemHelper;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
@@ -26,14 +27,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class ViewBuilder
 {
-    private ViewTypeRegistryInterface  $registry;
-    private AmountCalculatorFactory    $amountCalculatorFactory;
-    private CurrencyConverterInterface $currencyConverter;
-    private MarginCalculatorFactory    $marginCalculatorFactory;
-    private FormatterFactory           $formatterFactory;
-    private string                     $defaultTemplate;
-    private string                     $editableTemplate;
-
     private ?OptionsResolver $optionsResolver = null;
     private array            $options;
     private SaleView         $view;
@@ -44,23 +37,16 @@ class ViewBuilder
     private AmountCalculatorInterface $amountCalculator;
     private MarginCalculatorInterface $marginCalculator;
 
-
     public function __construct(
-        ViewTypeRegistryInterface  $registry,
-        AmountCalculatorFactory    $amountCalculatorFactory,
-        MarginCalculatorFactory    $marginCalculatorFactory,
-        CurrencyConverterInterface $currencyConverter,
-        FormatterFactory           $formatterFactory,
-        string                     $defaultTemplate = '@Commerce/Sale/view.html.twig',
-        string                     $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
+        private readonly ViewTypeRegistryInterface  $registry,
+        private readonly AmountCalculatorFactory    $amountCalculatorFactory,
+        private readonly MarginCalculatorFactory    $marginCalculatorFactory,
+        private readonly CurrencyConverterInterface $currencyConverter,
+        private readonly FormatterFactory           $formatterFactory,
+        private readonly SaleItemHelper             $saleItemHelper,
+        private readonly string                     $defaultTemplate = '@Commerce/Sale/view.html.twig',
+        private readonly string                     $editableTemplate = '@Commerce/Sale/view_editable.html.twig'
     ) {
-        $this->registry = $registry;
-        $this->amountCalculatorFactory = $amountCalculatorFactory;
-        $this->marginCalculatorFactory = $marginCalculatorFactory;
-        $this->currencyConverter = $currencyConverter;
-        $this->formatterFactory = $formatterFactory;
-        $this->defaultTemplate = $defaultTemplate;
-        $this->editableTemplate = $editableTemplate;
     }
 
     /**
@@ -131,6 +117,18 @@ class ViewBuilder
             $type->buildSaleView($sale, $this->view, $this->options);
         }
 
+        $batchableCount = 0;
+        foreach ($this->view->getItems() as $line) {
+            if (!$line->batchable) {
+                continue;
+            }
+            $batchableCount++;
+            if (1 < $batchableCount) {
+                $this->view->vars['show_batch'] = true;
+                break;
+            }
+        }
+
         $columnsCount = 6;
         if ($this->view->vars['show_availability']) {
             $columnsCount++;
@@ -148,6 +146,9 @@ class ViewBuilder
             $columnsCount++;
         }
         if ($this->view->vars['show_margin']) {
+            $columnsCount++;
+        }
+        if ($this->view->vars['show_batch']) {
             $columnsCount++;
         }
         if ($this->options['editable']) {
@@ -324,6 +325,10 @@ class ViewBuilder
             if ($margin = $this->marginCalculator->calculateSaleItem($item)) {
                 $view->margin = $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '');
             }
+        }
+
+        if (!$item->hasParent() && !$this->saleItemHelper->isShippedOrInvoiced($item)) {
+            $view->batchable = true;
         }
 
         if ($item->hasChildren()) {

@@ -47,11 +47,11 @@ class SaleView extends AbstractView
         $this->translations = $this->getDefaultTranslations();
 
         $this->vars = [
-            'buttons'           => [],
             'show_availability' => false,
             'show_taxes'        => false,
             'show_discount'     => false,
             'show_margin'       => false,
+            'show_batch'        => false,
         ];
     }
 
@@ -190,25 +190,31 @@ class SaleView extends AbstractView
     public function getDefaultTranslations(): array
     {
         return [
-            'designation'       => 'Designation',
-            'reference'         => 'Reference',
-            'availability'      => 'Avai.',
-            'unit_net_price'    => 'Unit Price',
-            'unit_ati_price'    => 'Unit Price',
-            'quantity'          => 'Quantity',
-            'net_gross'         => 'Gross',
-            'ati_gross'         => 'Gross',
-            'discount'          => 'Discount',
-            'tax_rate'          => 'Tax rate',
-            'tax_name'          => 'Tax',
-            'tax_amount'        => 'Amount',
-            'gross_totals'      => 'Gross totals',
-            'net_total'         => 'Net total',
-            'tax_total'         => 'Tax total',
-            'grand_total'       => 'Grand total',
-            'margin'            => 'Margin',
-            'commercial_margin' => 'Commercial margin',
-            'profit_margin'     => 'Profit margin',
+            'designation'               => 'Designation',
+            'reference'                 => 'Reference',
+            'availability'              => 'Avai.',
+            'unit_net_price'            => 'Unit Price',
+            'unit_ati_price'            => 'Unit Price',
+            'quantity'                  => 'Quantity',
+            'net_gross'                 => 'Gross',
+            'ati_gross'                 => 'Gross',
+            'discount'                  => 'Discount',
+            'tax_rate'                  => 'Tax rate',
+            'tax_name'                  => 'Tax',
+            'tax_amount'                => 'Amount',
+            'gross_totals'              => 'Gross totals',
+            'net_total'                 => 'Net total',
+            'tax_total'                 => 'Tax total',
+            'grand_total'               => 'Grand total',
+            'margin'                    => 'Margin',
+            'commercial_margin'         => 'Commercial margin',
+            'profit_margin'             => 'Profit margin',
+            'btn_batch_remove'          => 'Removes lines',
+            'btn_batch_synchronize'     => 'Synchronize lines',
+            'confirm_batch_remove'      =>
+                'Are you sure you want to remove these lines ? (Non-reversible operation).',
+            'confirm_batch_synchronize' =>
+                'Are you sure you want to update these lines data from the associated products ? (Non-reversible operation).',
         ];
     }
 }

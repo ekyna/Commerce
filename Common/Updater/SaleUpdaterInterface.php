@@ -15,7 +15,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 interface SaleUpdaterInterface
 {
     /**
-     * Recalculate the whole sale.
+     * Recalculate the sale.
      *
      * @return bool Whether the sale has been changed or not.
      */
@@ -58,7 +58,7 @@ interface SaleUpdaterInterface
     ): bool;
 
     /**
-     * Updates the whole sale discount adjustments.
+     * Updates the sale discount adjustments.
      *
      * @return bool Whether the sale has been changed or not.
      */
@@ -75,7 +75,7 @@ interface SaleUpdaterInterface
     public function clearMutableDiscounts(SaleInterface $sale): void;
 
     /**
-     * Updates the whole sale taxation adjustments.
+     * Updates the sale taxation adjustments.
      *
      * @return bool Whether the sale has been changed or not.
      */

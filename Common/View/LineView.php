@@ -26,6 +26,7 @@ class LineView extends AbstractView
     public ?string $total          = null; // Total price after applying discounts and taxes.
     public ?string $margin         = null; // The margin in percentage.
     public bool    $private        = false;
+    public bool    $batchable      = false;
     public bool    $gift           = false; // TODO To get rid of 'Offert' value...
     public ?object $source         = null;
     /** @var array<LineView> */

@@ -47,6 +47,11 @@ abstract class AbstractCartProvider implements CartProviderInterface
         $this->localeProvider = $localeProvider;
     }
 
+    public function getCartClass(): string
+    {
+        return $this->cartRepository->getClassName();
+    }
+
     public function hasCart(): bool
     {
         return !is_null($this->cart);

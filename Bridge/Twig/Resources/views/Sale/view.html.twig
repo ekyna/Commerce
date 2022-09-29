@@ -99,24 +99,22 @@
 {% endapply %}
 {% endblock line_private %}
 
-
-{% block line %}
+{% block line_columns %}
 {% apply spaceless %}
-    <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
-        <td class="sale-detail-number">{{ line.number }}</td>
-        <td class="sale-detail-designation" id="{{ line.id }}_designation">
-            {% if line.level > 0 -%}
-                {% for i in 1..line.level -%}
-                    <i class="
+    <td class="sale-detail-number">{{ line.number }}</td>
+    <td class="sale-detail-designation" id="{{ line.id }}_designation">
+        {% if line.level > 0 -%}
+            {% for i in 1..line.level -%}
+                <i class="
                     {%- if loop.last -%}
                         child{% if loop.parent.loop.last %} last{% endif %}
                     {%- else -%}
                         continue{% if loop.parent.loop.parent.loop.last %} last{% endif %}
                     {%- endif -%}
                     "></i>
-                {%- endfor %}
-            {%- endif %}
-            <span>
+            {%- endfor %}
+        {%- endif %}
+        <span>
             {%- if line.vars.link is defined -%}
                 <a{% with {attr: {'href': 'javascript:void(0)'}|merge(line.vars.link)} %} {{ block('attributes') }}{% endwith %}>
                     {{ line.designation|raw }}
@@ -128,16 +126,24 @@
                 <br><em>{{ line.description|raw }}</em>
             {%- endif -%}
             </span>
-        </td>
-        <td id="{{ line.id }}_reference" data-clipboard-copy="{{ line.reference }}">{{ line.reference }}</td>
-        {% if view.vars.show_availability -%}
+    </td>
+    <td id="{{ line.id }}_reference" data-clipboard-copy="{{ line.reference }}">{{ line.reference }}</td>
+    {% if view.vars.show_availability -%}
         <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability|raw }}</td>
-        {%- endif %}
-        {%- if line.private -%}
-            {{ block('line_private') }}
-        {%- else -%}
-            {{ block('line_public') }}
-        {%- endif -%}
+    {%- endif %}
+    {%- if line.private -%}
+        {{ block('line_private') }}
+    {%- else -%}
+        {{ block('line_public') }}
+    {%- endif -%}
+{% endapply %}
+{% endblock line_columns %}
+
+
+{% block line %}
+{% apply spaceless %}
+    <tr{% with {attr: line.vars.attr} %} {{ block('attributes') }}{% endwith %}>
+        {{ block('line_columns') }}
     </tr>
     {%- if line.vars.information is defined -%}
     <tr class="level-{{ line.level }}"
@@ -208,7 +214,7 @@
 
 {% block discount %}
 {% apply spaceless %}
-    <td class="sale-detail-number">{#{{ line.number }}#}</td>
+    <td class="sale-detail-number">&nbsp;</td>
     <td class="sale-detail-designation" id="{{ line.id }}_designation">
         <span>
             {{- line.designation|raw -}}
