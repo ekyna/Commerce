@@ -53,7 +53,7 @@ class ProductEventSubscriber
         $changed = $this->stockUpdater->update($product);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($product);
+            $this->persistenceHelper->persistAndRecompute($product, false);
         }
     }
 
@@ -77,7 +77,7 @@ class ProductEventSubscriber
         }
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($product);
+            $this->persistenceHelper->persistAndRecompute($product, false);
         }
     }
 

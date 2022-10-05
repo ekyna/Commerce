@@ -41,7 +41,7 @@ class SupplierOrderListener extends AbstractListener
         $changed = $this->supplierOrderUpdater->updateExchangeRate($order) || $changed;
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($order);
+            $this->persistenceHelper->persistAndRecompute($order, false);
         }
     }
 

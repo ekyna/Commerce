@@ -39,7 +39,7 @@ abstract class AbstractSaleItemListener
         $changed = $this->updateDiscount($item) || $changed;
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($item);
+            $this->persistenceHelper->persistAndRecompute($item, false);
         }
 
         $this->scheduleSaleContentChangeEvent($item->getRootSale());
@@ -67,7 +67,7 @@ abstract class AbstractSaleItemListener
         }
 
         if ($change) {
-            $this->persistenceHelper->persistAndRecompute($item);
+            $this->persistenceHelper->persistAndRecompute($item, false);
 
             $this->scheduleSaleContentChangeEvent($item->getRootSale());
         }

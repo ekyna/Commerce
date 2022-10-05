@@ -119,7 +119,7 @@ abstract class AbstractPaymentListener
         $changed = $this->handleCompletedState($payment) || $changed;
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($payment);
+            $this->persistenceHelper->persistAndRecompute($payment, false);
         }
 
         $sale = $this->getSaleFromPayment($payment);
@@ -163,7 +163,7 @@ abstract class AbstractPaymentListener
         }
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($payment);
+            $this->persistenceHelper->persistAndRecompute($payment, false);
         }
 
         if ($this->persistenceHelper->isChanged($payment, ['realAmount', 'state'])) {

@@ -97,7 +97,7 @@ class AudienceListener implements ListenerInterface
             ->getGateway($audience->getGateway(), GatewayInterface::INSERT_AUDIENCE)
             ->insertAudience($audience);
 
-        $this->persistenceHelper->persistAndRecompute($audience);
+        $this->persistenceHelper->persistAndRecompute($audience, false);
     }
 
     /**
@@ -125,7 +125,7 @@ class AudienceListener implements ListenerInterface
             ->getGateway($audience->getGateway(), GatewayInterface::UPDATE_AUDIENCE)
             ->updateAudience($audience, $changeSet);
 
-        $this->persistenceHelper->persistAndRecompute($audience);
+        $this->persistenceHelper->persistAndRecompute($audience, false);
     }
 
     /**

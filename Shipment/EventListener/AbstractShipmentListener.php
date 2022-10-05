@@ -115,7 +115,7 @@ abstract class AbstractShipmentListener
         $changed = $this->handleStateChange($shipment) || $changed;
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($shipment);
+            $this->persistenceHelper->persistAndRecompute($shipment, false);
         }
 
         $sale = $this->getSaleFromShipment($shipment);
@@ -146,7 +146,7 @@ abstract class AbstractShipmentListener
         }
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($shipment);
+            $this->persistenceHelper->persistAndRecompute($shipment, false);
         }
 
         if ($stateChanged) {

@@ -30,7 +30,7 @@ class SupplierOrderItemListener extends AbstractListener
         $changed = $this->synchronizeWithProduct($item);
 
         if ($changed) {
-            $this->persistenceHelper->persistAndRecompute($item);
+            $this->persistenceHelper->persistAndRecompute($item, false);
 
             $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
         }

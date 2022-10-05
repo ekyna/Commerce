@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Customer\Loyalty;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Customer\Entity\LoyaltyLog;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Repository\LoyaltyLogRepositoryInterface;
@@ -14,36 +17,15 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class LoyaltyLogger
 {
-    /**
-     * @var LoyaltyLogRepositoryInterface
-     */
-    private $repository;
-
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param LoyaltyLogRepositoryInterface $repository
-     * @param PersistenceHelperInterface    $persistenceHelper
-     */
-    public function __construct(LoyaltyLogRepositoryInterface $repository, PersistenceHelperInterface $persistenceHelper)
-    {
-        $this->repository = $repository;
-        $this->persistenceHelper = $persistenceHelper;
+    public function __construct(
+        private readonly LoyaltyLogRepositoryInterface $repository,
+        private readonly PersistenceHelperInterface    $persistenceHelper,
+        private readonly EntityManagerInterface        $entityManager
+    ) {
     }
 
     /**
      * Returns whether a log exists for the given customer and origin.
-     *
-     * @param CustomerInterface $customer
-     * @param string            $origin
-     *
-     * @return bool
      */
     public function has(CustomerInterface $customer, string $origin): bool
     {
@@ -52,11 +34,6 @@ class LoyaltyLogger
 
     /**
      * Logs customer's loyalty points update.
-     *
-     * @param CustomerInterface $customer
-     * @param int               $points
-     * @param bool              $debit
-     * @param string            $origin
      */
     public function add(CustomerInterface $customer, int $points, bool $debit, string $origin): void
     {
@@ -73,13 +50,14 @@ class LoyaltyLogger
 
         // TODO $this->persistenceHelper->persistAndRecompute($log);
 
-        $manager = $this->persistenceHelper->getManager();
-        $manager->persist($log);
+        $this->entityManager->persist($log);
 
-        if ($this->persistenceHelper->getEventQueue()->isOpened()) {
-            $uow = $manager->getUnitOfWork();
-            $metadata = $manager->getClassMetadata(LoyaltyLog::class);
-            $uow->computeChangeSet($metadata, $log);
+        if (!$this->persistenceHelper->getEventQueue()->isOpened()) {
+            return;
         }
+
+        $uow = $this->entityManager->getUnitOfWork();
+        $metadata = $this->entityManager->getClassMetadata(LoyaltyLog::class);
+        $uow->computeChangeSet($metadata, $log);
     }
 }

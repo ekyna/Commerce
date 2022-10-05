@@ -49,7 +49,7 @@ class ShipmentMethodListener
 
             // TODO check uniqueness
 
-            $this->persistenceHelper->persistAndRecompute($method);
+            $this->persistenceHelper->persistAndRecompute($method, false);
         }
     }
 
