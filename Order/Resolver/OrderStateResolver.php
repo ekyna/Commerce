@@ -14,6 +14,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 
+use function in_array;
+
 /**
  * Class OrderStateResolver
  * @package Ekyna\Component\Commerce\Order\Resolver
@@ -46,9 +48,9 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
 
             // COMPLETED If fully Paid / Shipped / Invoiced
             if (
-                PaymentStates::STATE_COMPLETED === $paymentState &&
-                ShipmentStates::STATE_COMPLETED === $shipmentState &&
-                InvoiceStates::STATE_COMPLETED === $invoiceState
+                PaymentStates::STATE_COMPLETED === $paymentState
+                && ShipmentStates::STATE_COMPLETED === $shipmentState
+                && InvoiceStates::STATE_COMPLETED === $invoiceState
             ) {
                 return OrderStates::STATE_COMPLETED;
             }
@@ -74,9 +76,28 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
                 ShipmentStates::STATE_NEW,
             ];
             if (
-                InvoiceStates::STATE_CREDITED === $invoiceState &&
-                in_array($paymentState, $refundablePaymentStates, true) &&
-                in_array($shipmentState, $refundableShipmentStates, true)
+                InvoiceStates::STATE_CREDITED === $invoiceState
+                && in_array($paymentState, $refundablePaymentStates, true)
+                && in_array($shipmentState, $refundableShipmentStates, true)
+            ) {
+                return OrderStates::STATE_REFUNDED;
+            }
+
+            // CANCELED If refund with no shipments and no invoices.
+            $cancelableInvoiceStates = [
+                InvoiceStates::STATE_CREDITED,
+                InvoiceStates::STATE_CANCELED,
+                InvoiceStates::STATE_NEW,
+            ];
+            $cancelableShipmentStates = [
+                ShipmentStates::STATE_RETURNED,
+                ShipmentStates::STATE_CANCELED,
+                ShipmentStates::STATE_NEW,
+            ];
+            if (
+                PaymentStates::STATE_REFUNDED === $paymentState
+                && in_array($invoiceState, $cancelableInvoiceStates, true)
+                && in_array($shipmentState, $cancelableShipmentStates, true)
             ) {
                 return OrderStates::STATE_REFUNDED;
             }

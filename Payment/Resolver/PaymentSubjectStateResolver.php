@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Payment\Resolver;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Calculator\PaymentCalculatorInterface;
@@ -23,17 +23,11 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class PaymentSubjectStateResolver extends AbstractStateResolver
 {
-    protected PaymentCalculatorInterface $paymentCalculator;
-    protected CurrencyConverterInterface $currencyConverter;
-    protected string                     $defaultCurrency;
-
     public function __construct(
-        PaymentCalculatorInterface $paymentCalculator,
-        CurrencyConverterInterface $currencyConverter
+        protected readonly PaymentCalculatorInterface        $paymentCalculator,
+        protected readonly InvoiceSubjectCalculatorInterface $invoiceSubjectCalculator,
+        protected string                                     $defaultCurrency
     ) {
-        $this->paymentCalculator = $paymentCalculator;
-        $this->currencyConverter = $currencyConverter;
-        $this->defaultCurrency = $currencyConverter->getDefaultCurrency();
     }
 
     /**
@@ -79,46 +73,61 @@ class PaymentSubjectStateResolver extends AbstractStateResolver
         // -> use SaleUpdater::updateTotals
 
         $currency = $subject->getCurrency()->getCode();
+
         [
-            $total,
-            $paid,
-            $refunded,
-            $deposit,
-            $pending,
+            'total'    => $total,
+            'paid'     => $paid,
+            'refunded' => $refunded,
+            'pending'  => $pending,
+            'deposit'  => $deposit,
         ] = $this->paymentCalculator->getPaymentAmounts($subject, $currency);
 
         if ($currency === $this->defaultCurrency) {
             $accepted = $subject->getOutstandingAccepted();
             $expired = $subject->getOutstandingExpired();
+            if ($subject instanceof InvoiceSubjectInterface) {
+                $invoiced = $subject->getInvoiceTotal();
+                $credited = $subject->getCreditTotal();
+            } else {
+                $invoiced = new Decimal(0);
+                $credited = new Decimal(0);
+            }
         } elseif ($subject instanceof SaleInterface) {
             $accepted = $this->paymentCalculator->calculateOutstandingAcceptedTotal($subject, $currency);
             $expired = $this->paymentCalculator->calculateOutstandingExpiredTotal($subject, $currency);
+            if ($subject instanceof InvoiceSubjectInterface) {
+                $invoiced = $this->invoiceSubjectCalculator->calculateInvoiceTotal($subject, $currency);
+                $credited = $this->invoiceSubjectCalculator->calculateCreditTotal($subject, $currency);
+            } else {
+                $invoiced = new Decimal(0);
+                $credited = new Decimal(0);
+            }
         } else {
             throw new UnexpectedValueException();
         }
 
         // COMPLETED paid total equals grand total and no accepted/expired outstanding
-        if (
-            $paid && $accepted->isZero() && $expired->isZero() && $paid->sub($refunded)->equals($total)
-        ) {
+        if (0 < $paid && $accepted->isZero() && $expired->isZero()) {
             // If invoice subject and fully invoiced (ignoring credits)
-            if ($subject instanceof InvoiceSubjectInterface) {
-                if ($subject->isFullyInvoiced()) {
-                    // REFUNDED If refunded amount equals total
-                    if ($total->isZero() || $refunded->equals($total)) {
-                        return PaymentStates::STATE_REFUNDED;
-                    }
-
-                    // COMPLETED
-                    return PaymentStates::STATE_COMPLETED;
+            if (0 < $invoiced) {
+                if ($paid->sub($refunded)->equals($invoiced->sub($credited))) {
+                    // REFUNDED if credited, else COMPLETED
+                    return 0 < $credited ? PaymentStates::STATE_REFUNDED : PaymentStates::STATE_COMPLETED;
                 }
 
-                // ACCEPTED
+                // CAPTURED
                 return PaymentStates::STATE_CAPTURED;
             }
 
-            // COMPLETED
-            return PaymentStates::STATE_COMPLETED;
+            if ($paid->sub($refunded)->isZero()) {
+                // REFUNDED
+                return PaymentStates::STATE_REFUNDED;
+            }
+
+            if ($paid->sub($refunded)->equals($total)) {
+                // COMPLETED
+                return PaymentStates::STATE_COMPLETED;
+            }
         }
 
         $fullFill = function (Decimal $amount) use ($total): bool {

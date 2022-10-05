@@ -62,33 +62,35 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
 
         foreach ($quantities as $q) {
             // TODO Use packaging format
-            // If invoiced greater than zero
-            if (0 < $q['invoiced']) {
-                $invoiced = $q['invoiced']->sub($q['adjusted']);
-                // If invoiced is greater or equals total
-                if ($invoiced >= $q['total']) {
-                    // If invoiced equals credited, item is fully credited
-                    if ($invoiced->equals($q['credited'])) {
-                        $creditedCount++;
-                        continue;
-                    }
+            // Skip not invoiced
+            if ($q['invoiced']->isZero()) {
+                continue;
+            }
 
-                    // If total equals invoiced - credit, item is fully invoiced
-                    if ($q['total']->equals($invoiced->sub($q['credited']))) {
-                        $invoicedCount++;
-                        continue;
-                    }
-
-                    // If shipped and credited, and shipped - returns equals invoiced - credit, item is fully invoiced
-                    if (0 < $q['credited'] && $q['shipped']->sub($q['returned'])->equals($invoiced->sub($q['credited']))) {
-                        $invoicedCount++;
-                        continue;
-                    }
+            $invoiced = $q['invoiced']->sub($q['adjusted']);
+            // If invoiced is greater or equals total
+            if ($invoiced >= $q['total']) {
+                // If invoiced equals credited, item is fully credited
+                if ($invoiced->equals($q['credited'])) {
+                    $creditedCount++;
+                    continue;
                 }
 
-                // Item is partially invoiced
-                $partialCount++;
+                // If total equals invoiced - credit, item is fully invoiced
+                if ($q['total']->equals($invoiced->sub($q['credited']))) {
+                    $invoicedCount++;
+                    continue;
+                }
+
+                // If shipped and credited, and shipped - returns equals invoiced - credit, item is fully invoiced
+                if (0 < $q['credited'] && $q['shipped']->sub($q['returned'])->equals($invoiced->sub($q['credited']))) {
+                    $invoicedCount++;
+                    continue;
+                }
             }
+
+            // Item is partially invoiced
+            $partialCount++;
         }
 
         // TODO Assert sale's shipment and discounts are invoiced

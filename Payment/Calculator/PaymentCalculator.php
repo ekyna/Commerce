@@ -11,7 +11,6 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
@@ -23,12 +22,12 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class PaymentCalculator implements PaymentCalculatorInterface
 {
-    protected AmountCalculatorFactory $calculatorFactory;
+    protected AmountCalculatorFactory    $calculatorFactory;
     protected CurrencyConverterInterface $currencyConverter;
-    protected string $currency;
+    protected string                     $currency;
 
     public function __construct(
-        AmountCalculatorFactory $calculatorFactory,
+        AmountCalculatorFactory    $calculatorFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
         $this->calculatorFactory = $calculatorFactory;
@@ -41,24 +40,13 @@ class PaymentCalculator implements PaymentCalculatorInterface
         $currency = $currency ?? $subject->getCurrency()->getCode();
 
         if ($currency === $this->currency) {
-            if ($subject instanceof InvoiceSubjectInterface && $subject->hasInvoices()) {
-                $total = $subject->getInvoiceTotal() - $subject->getCreditTotal();
-            } else {
-                $total = $subject->getGrandTotal();
-            }
+            $total = $subject->getGrandTotal();
             $paid = $subject->getPaidTotal();
             $refunded = $subject->getRefundedTotal();
             $deposit = $subject->getDepositTotal();
             $pending = $subject->getPendingTotal();
         } elseif ($subject instanceof SaleInterface) {
-            if ($subject instanceof InvoiceSubjectInterface && $subject->isFullyInvoiced()) {
-                // TODO Use invoice calculator ?
-                $total = $this->currencyConverter->convertWithSubject(
-                    $subject->getInvoiceTotal() - $subject->getCreditTotal(), $subject, $currency
-                );
-            } else {
-                $total = $this->calculatorFactory->create($currency)->calculateSale($subject)->getTotal();
-            }
+            $total = $this->calculatorFactory->create($currency)->calculateSale($subject)->getTotal();
             $paid = $this->calculatePaidTotal($subject, $currency);
             $refunded = $this->calculateRefundedTotal($subject, $currency);
             $deposit = $this->currencyConverter->convertWithSubject($subject->getDepositTotal(), $subject, $currency);
@@ -67,7 +55,13 @@ class PaymentCalculator implements PaymentCalculatorInterface
             throw new UnexpectedValueException();
         }
 
-        return [$total, $paid, $refunded, $deposit, $pending];
+        return [
+            'total'    => $total,
+            'paid'     => $paid,
+            'refunded' => $refunded,
+            'pending'  => $pending,
+            'deposit'  => $deposit,
+        ];
     }
 
     public function calculatePaidTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
@@ -127,8 +121,10 @@ class PaymentCalculator implements PaymentCalculatorInterface
         return $total;
     }
 
-    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
-    {
+    public function calculateOutstandingAcceptedTotal(
+        PaymentSubjectInterface $subject,
+        string                  $currency = null
+    ): Decimal {
         $currency = $currency ?? $this->currency;
 
         $total = new Decimal(0);
@@ -214,7 +210,13 @@ class PaymentCalculator implements PaymentCalculatorInterface
 
     public function calculateExpectedPaymentAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
-        [$total, $paid, $refunded, $deposit, $pending] = $this->getPaymentAmounts($subject, $currency);
+        [
+            'total'    => $total,
+            'paid'     => $paid,
+            'refunded' => $refunded,
+            'pending'  => $pending,
+            'deposit'  => $deposit,
+        ] = $this->getPaymentAmounts($subject, $currency);
 
         $paid -= $refunded;
 
@@ -268,7 +270,11 @@ class PaymentCalculator implements PaymentCalculatorInterface
 
     public function calculateExpectedRefundAmount(PaymentSubjectInterface $subject, string $currency = null): Decimal
     {
-        [$total, $paid, $refunded] = $this->getPaymentAmounts($subject, $currency);
+        [
+            'total'    => $total,
+            'paid'     => $paid,
+            'refunded' => $refunded,
+        ] = $this->getPaymentAmounts($subject, $currency);
 
         $paid -= $refunded;
 
@@ -286,9 +292,9 @@ class PaymentCalculator implements PaymentCalculatorInterface
      */
     protected function calculateTotalByState(
         PaymentSubjectInterface $subject,
-        string $state,
-        string $currency,
-        bool $refund = false
+        string                  $state,
+        string                  $currency,
+        bool                    $refund = false
     ): Decimal {
         PaymentStates::isValidState($state, true);
 
