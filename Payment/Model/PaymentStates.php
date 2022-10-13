@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Payment\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
+use function array_key_exists;
+use function in_array;
+use function is_null;
 
 /**
  * Class PaymentStates
@@ -55,7 +61,7 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is valid.
+     * Returns whether the given state is valid.
      *
      * @param string $state
      * @param bool   $throwException
@@ -93,13 +99,9 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is a notifiable state.
-     *
-     * @param PaymentInterface|string $state
-     *
-     * @return bool
+     * Returns whether the given state is a notifiable state.
      */
-    public static function isNotifiableState($state): bool
+    public static function isNotifiableState(PaymentInterface|string $state): bool
     {
         $state = self::stateFromPayment($state);
 
@@ -109,7 +111,7 @@ final class PaymentStates
     /**
      * Returns the deletable states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getDeletableStates(): array
     {
@@ -121,17 +123,13 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is a deletable state.
-     *
-     * @param PaymentInterface|string $state
-     *
-     * @return bool
+     * Returns whether the given state is a deletable state.
      */
-    public static function isDeletableState($state): bool
+    public static function isDeletableState(PaymentInterface|string $state): bool
     {
         $state = self::stateFromPayment($state);
 
-        return is_null($state) || in_array($state, self::getDeletableStates(), true);
+        return in_array($state, self::getDeletableStates(), true);
     }
 
     /**
@@ -139,7 +137,7 @@ final class PaymentStates
      *
      * @param bool $andRefunded Whether to include refunded state.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getPaidStates(bool $andRefunded = false): array
     {
@@ -160,14 +158,9 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is a paid state.
-     *
-     * @param PaymentInterface|string $state
-     * @param bool                    $orRefunded
-     *
-     * @return bool
+     * Returns whether the given state is a paid state.
      */
-    public static function isPaidState($state, bool $orRefunded = false): bool
+    public static function isPaidState(PaymentInterface|string $state, bool $orRefunded = false): bool
     {
         return in_array(self::stateFromPayment($state), self::getPaidStates($orRefunded), true);
     }
@@ -177,7 +170,7 @@ final class PaymentStates
      *
      * @param bool $andRefunded Whether to include refunded state.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getCompletedStates(bool $andRefunded = false): array
     {
@@ -196,14 +189,9 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is a completed state.
-     *
-     * @param PaymentInterface|string $state
-     * @param bool                    $orRefunded
-     *
-     * @return bool
+     * Returns whether the given state is a completed state.
      */
-    public static function isCompletedState($state, bool $orRefunded = false): bool
+    public static function isCompletedState(PaymentInterface|string $state, bool $orRefunded = false): bool
     {
         return in_array(self::stateFromPayment($state), self::getCompletedStates($orRefunded), true);
     }
@@ -211,7 +199,7 @@ final class PaymentStates
     /**
      * Returns the canceled states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getCanceledStates(): array
     {
@@ -223,39 +211,31 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the given state is a canceled state.
-     *
-     * @param PaymentInterface|string $state
-     *
-     * @return bool
+     * Returns whether the given state is a canceled state.
      */
-    public static function isCanceledState($state): bool
+    public static function isCanceledState(PaymentInterface|string $state): bool
     {
         return in_array(self::stateFromPayment($state), self::getCanceledStates(), true);
     }
 
     /**
      * Returns the state from the payment.
-     *
-     * @param PaymentInterface|string $stateOrPayment
-     *
-     * @return string
      */
-    private static function stateFromPayment($stateOrPayment): string
+    private static function stateFromPayment(PaymentInterface|string $stateOrPayment): string
     {
         if ($stateOrPayment instanceof PaymentInterface) {
             $stateOrPayment = $stateOrPayment->getState();
         }
 
-        if (is_string($stateOrPayment) && !empty($stateOrPayment)) {
+        if (!empty($stateOrPayment)) {
             return $stateOrPayment;
         }
 
-        throw new InvalidArgumentException("Expected string or " . PaymentInterface::class);
+        throw new InvalidArgumentException('Blank payment state.');
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from a non paid state to a paid state.
      *
      * @param array $cs The persistence change set
@@ -270,7 +250,7 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from a paid state to a non paid state.
      *
      * @param array $cs The persistence change set
@@ -285,7 +265,7 @@ final class PaymentStates
     }
 
     /**
-     * Returns whether or not the change set is valid.
+     * Returns whether the change set is valid.
      *
      * @param array $cs
      *
@@ -304,7 +284,7 @@ final class PaymentStates
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected payment state change set.");
+        throw new InvalidArgumentException('Unexpected payment state change set.');
     }
 
     /**

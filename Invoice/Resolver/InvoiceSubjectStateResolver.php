@@ -9,8 +9,6 @@ use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 
 /**
  * Class InvoiceSubjectStateResolver
@@ -19,11 +17,9 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
  */
 class InvoiceSubjectStateResolver extends AbstractStateResolver
 {
-    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
-
-    public function __construct(InvoiceSubjectCalculatorInterface $invoiceCalculator)
-    {
-        $this->invoiceCalculator = $invoiceCalculator;
+    public function __construct(
+        protected readonly InvoiceSubjectCalculatorInterface $calculator
+    ) {
     }
 
     /**
@@ -53,7 +49,7 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
      */
     protected function resolveState(object $subject): string
     {
-        $quantities = $this->invoiceCalculator->buildInvoiceQuantityMap($subject);
+        $quantities = $this->calculator->buildInvoiceQuantityMap($subject);
         if (0 === $itemsCount = count($quantities)) {
             return InvoiceStates::STATE_NEW;
         }
@@ -61,7 +57,6 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
         $partialCount = $invoicedCount = $creditedCount = 0;
 
         foreach ($quantities as $q) {
-            // TODO Use packaging format
             // Skip not invoiced
             if ($q['invoiced']->isZero()) {
                 continue;
@@ -108,13 +103,6 @@ class InvoiceSubjectStateResolver extends AbstractStateResolver
         // If some partially invoiced
         if (0 < $partialCount || 0 < $invoicedCount) {
             return InvoiceStates::STATE_PARTIAL;
-        }
-
-        // CANCELED If subject has payment(s) and has canceled state
-        if ($subject instanceof PaymentSubjectInterface) {
-            if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
-                return InvoiceStates::STATE_CANCELED;
-            }
         }
 
         // NEW by default

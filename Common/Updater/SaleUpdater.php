@@ -168,7 +168,7 @@ class SaleUpdater implements SaleUpdaterInterface
             return false;
         }
 
-        // Abort if sale has payment with non deletable state.
+        // Abort if sale has payment with non-deletable state.
         foreach ($sale->getPayments() as $payment) {
             if (!PaymentStates::isDeletableState($payment->getState())) {
                 return false;

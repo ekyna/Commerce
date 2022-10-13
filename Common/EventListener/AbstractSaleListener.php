@@ -377,11 +377,13 @@ abstract class AbstractSaleListener
 
         // Stop if sale has valid payments
         foreach ($sale->getPayments() as $payment) {
-            if (!PaymentStates::isDeletableState($payment->getState())) {
-                throw new Exception\IllegalOperationException(
-                    'Sale has valid payments and therefore cannot be deleted.'
-                ); // TODO Translation
+            if (PaymentStates::isDeletableState($payment->getState())) {
+                continue;
             }
+
+            throw new Exception\IllegalOperationException(
+                'Sale has valid payments and therefore cannot be deleted.'
+            ); // TODO Translation
         }
     }
 

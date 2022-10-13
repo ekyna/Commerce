@@ -59,7 +59,7 @@ class OutstandingReleaser implements ReleaserInterface
         $paidStates = PaymentStates::getPaidStates();
         $paidStates[] = PaymentStates::STATE_EXPIRED;
 
-        // For each payments
+        // For each payment
         foreach ($sale->getPayments(true) as $payment) {
             // Continue if the payment does not use an outstanding balance method
             if (!$payment->getMethod()->isOutstanding()) {

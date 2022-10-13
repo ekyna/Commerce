@@ -12,6 +12,8 @@ use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 
+use function array_diff_assoc;
+
 /**
  * Class AbstractSaleStateResolver
  * @package Ekyna\Component\Commerce\Common\Resolver
@@ -47,55 +49,52 @@ abstract class AbstractSaleStateResolver extends AbstractStateResolver
     {
         $this->supports($subject);
 
-        $changed = false;
-
-        if ($subject instanceof PaymentSubjectInterface) {
-            if ($subject->isSample()) {
-                if ($subject->getPaymentState() !== PaymentStates::STATE_COMPLETED) {
-                    $subject->setPaymentState(PaymentStates::STATE_COMPLETED);
-
-                    $changed = true;
-                }
-            } else {
-                $changed = $this->paymentStateResolver->resolve($subject);
-            }
-        }
-
+        $old = ['state' => $subject->getState()];
         if ($subject instanceof ShipmentSubjectInterface) {
-            $changed = $this->shipmentStateResolver->resolve($subject) || $changed;
+            $old['shipment'] = $subject->getShipmentState();
+            $this->shipmentStateResolver->resolve($subject);
         }
-
         if ($subject instanceof InvoiceSubjectInterface) {
+            $old['invoice'] = $subject->getInvoiceState();
             if ($subject->isSample()) {
                 if ($subject->getInvoiceState() !== InvoiceStates::STATE_COMPLETED) {
                     $subject->setInvoiceState(InvoiceStates::STATE_COMPLETED);
-
-                    $changed = true;
                 }
             } else {
-                $changed = $this->invoiceStateResolver->resolve($subject) || $changed;
+                $this->invoiceStateResolver->resolve($subject);
+            }
+        }
+        if ($subject instanceof PaymentSubjectInterface) {
+            $old['payment'] = $subject->getPaymentState();
+            if ($subject->isSample()) {
+                if ($subject->getPaymentState() !== PaymentStates::STATE_COMPLETED) {
+                    $subject->setPaymentState(PaymentStates::STATE_COMPLETED);
+                }
+            } else {
+                $this->paymentStateResolver->resolve($subject);
             }
         }
 
         $state = $this->resolveState($subject);
 
-        if ($state !== $subject->getState()) {
-            $subject->setState($state);
-
-            $this->postStateResolution($subject);
-
-            return true;
+        $new = ['state' => $state];
+        if ($subject instanceof PaymentSubjectInterface) {
+            $new['payment'] = $subject->getPaymentState();
+        }
+        if ($subject instanceof ShipmentSubjectInterface) {
+            $new['shipment'] = $subject->getShipmentState();
+        }
+        if ($subject instanceof InvoiceSubjectInterface) {
+            $new['invoice'] = $subject->getInvoiceState();
         }
 
-        return $changed;
-    }
+        if (empty(array_diff_assoc($old, $new))) {
+            return false;
+        }
 
-    /**
-     * Post state resolution (called if state changed).
-     */
-    protected function postStateResolution(SaleInterface $sale): void
-    {
+        $subject->setState($state);
 
+        return true;
     }
 
     /**

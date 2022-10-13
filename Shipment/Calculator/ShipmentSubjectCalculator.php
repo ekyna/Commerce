@@ -17,6 +17,10 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
+use function is_null;
+use function max;
+use function min;
+
 use const INF;
 
 /**
@@ -26,7 +30,7 @@ use const INF;
  */
 class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 {
-    protected SubjectHelperInterface $subjectHelper;
+    protected SubjectHelperInterface            $subjectHelper;
     protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
 
     public function __construct(SubjectHelperInterface $subjectHelper)
@@ -205,7 +209,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 continue;
             }
 
-            /** @var Stock\StockSubjectInterface */
             if (null === $subject = $this->subjectHelper->resolve($saleItem, false)) {
                 continue;
             }
@@ -321,7 +324,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
     /**
      * Calculate the sale item remaining quantity.
      *
-     * @param array<Shipment>    $shipments
+     * @param array<Shipment> $shipments
      */
     private function buildSaleItemRemaining(SaleItem $saleItem, RemainingList $list, array $shipments): void
     {

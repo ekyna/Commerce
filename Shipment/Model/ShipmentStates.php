@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
+use function array_key_exists;
+use function in_array;
+use function is_null;
 
 /**
  * Class ShipmentStates
@@ -12,28 +18,28 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 final class ShipmentStates
 {
     // Common
-    const STATE_NEW      = 'new';
-    const STATE_CANCELED = 'canceled';
+    public const STATE_NEW      = 'new';
+    public const STATE_CANCELED = 'canceled';
 
     // Shipment
-    const STATE_PREPARATION = 'preparation';
-    const STATE_READY       = 'ready';
-    const STATE_SHIPPED     = 'shipped';
+    public const STATE_PREPARATION = 'preparation';
+    public const STATE_READY       = 'ready';
+    public const STATE_SHIPPED     = 'shipped';
 
     // Return
-    const STATE_PENDING  = 'pending';
-    const STATE_RETURNED = 'returned';
+    public const STATE_PENDING  = 'pending';
+    public const STATE_RETURNED = 'returned';
 
     // For sale
-    const STATE_NONE      = 'none';
-    const STATE_PARTIAL   = 'partial';
-    const STATE_COMPLETED = 'completed';
+    public const STATE_NONE      = 'none';
+    public const STATE_PARTIAL   = 'partial';
+    public const STATE_COMPLETED = 'completed';
 
 
     /**
      * Returns all the states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getStates(): array
     {
@@ -53,12 +59,8 @@ final class ShipmentStates
 
     /**
      * Returns whether the given state is valid or not.
-     *
-     * @param ShipmentInterface|string $state
-     *
-     * @return bool
      */
-    public static function isValidState($state): bool
+    public static function isValidState(ShipmentInterface|string $state): bool
     {
         return in_array(self::stateFormShipment($state), self::getStates(), true);
     }
@@ -66,7 +68,7 @@ final class ShipmentStates
     /**
      * Returns the notifiable states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getNotifiableStates(): array
     {
@@ -79,12 +81,8 @@ final class ShipmentStates
 
     /**
      * Returns whether the given state is a notifiable state.
-     *
-     * @param ShipmentInterface|string $state
-     *
-     * @return bool
      */
-    public static function isNotifiableState($state): bool
+    public static function isNotifiableState(ShipmentInterface|string $state): bool
     {
         return in_array(self::stateFormShipment($state), self::getNotifiableStates(), true);
     }
@@ -92,7 +90,7 @@ final class ShipmentStates
     /**
      * Returns the deletable states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getDeletableStates(): array
     {
@@ -105,12 +103,8 @@ final class ShipmentStates
 
     /**
      * Returns whether the given state is a deletable state.
-     *
-     * @param ShipmentInterface|string $state
-     *
-     * @return bool
      */
-    public static function isDeletableState($state): bool
+    public static function isDeletableState(ShipmentInterface|string $state): bool
     {
         $state = self::stateFormShipment($state);
 
@@ -120,7 +114,7 @@ final class ShipmentStates
     /**
      * Returns the preparable states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getPreparableStates(): array
     {
@@ -133,12 +127,8 @@ final class ShipmentStates
 
     /**
      * Returns whether the given state is a preparable state.
-     *
-     * @param ShipmentInterface|string $state
-     *
-     * @return bool
      */
-    public static function isPreparableState($state): bool
+    public static function isPreparableState(ShipmentInterface|string $state): bool
     {
         $state = self::stateFormShipment($state);
 
@@ -146,8 +136,8 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a non deletable state to a deletable state.
+     * Returns whether the state has changed
+     * from a non-deletable state to a deletable state.
      *
      * @param array $cs The persistence change set
      *
@@ -159,8 +149,8 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a deletable state to a non deletable state.
+     * Returns whether the state has changed
+     * from a deletable state to a non-deletable state.
      *
      * @param array $cs The persistence change set
      *
@@ -176,7 +166,7 @@ final class ShipmentStates
      *
      * @param bool $withPreparation
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getStockableStates(bool $withPreparation): array
     {
@@ -198,13 +188,8 @@ final class ShipmentStates
 
     /**
      * Returns whether the given state is a stockable state.
-     *
-     * @param ShipmentInterface|string $state
-     * @param bool                     $withPreparation
-     *
-     * @return bool
      */
-    public static function isStockableState($state, bool $withPreparation): bool
+    public static function isStockableState(ShipmentInterface|string $state, bool $withPreparation): bool
     {
         $state = self::stateFormShipment($state);
 
@@ -212,7 +197,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from a non stockable state to a stockable state.
      *
      * @param array $cs The persistence change set
@@ -226,8 +211,8 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a stockable state to a non stockable state.
+     * Returns whether the state has changed
+     * from a stockable state to a non-stockable state.
      *
      * @param array $cs The persistence change set
      * @param bool  $withPreparation
@@ -240,7 +225,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from a non preparation state to the preparation state.
      *
      * @param array $cs            The persistence change set
@@ -262,7 +247,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from the preparation state to a non preparation state.
      *
      * @param array $cs          The persistence change set
@@ -284,7 +269,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * to any of the given states, from any other state.
      *
      * @param array $cs     The persistence change set
@@ -300,7 +285,7 @@ final class ShipmentStates
     }
 
     /**
-     * Returns whether or not the state has changed
+     * Returns whether the state has changed
      * from any of the given states, to any other states.
      *
      * @param array $cs     The persistence change set
@@ -322,21 +307,21 @@ final class ShipmentStates
      *
      * @return string
      */
-    private static function stateFormShipment($stateOrShipment): string
+    private static function stateFormShipment(ShipmentInterface|string $stateOrShipment): string
     {
         if ($stateOrShipment instanceof ShipmentInterface) {
             $stateOrShipment = $stateOrShipment->getState();
         }
 
-        if (is_string($stateOrShipment) && !empty($stateOrShipment)) {
+        if (!empty($stateOrShipment)) {
             return $stateOrShipment;
         }
 
-        throw new InvalidArgumentException("Expected string or instance of " . ShipmentInterface::class);
+        throw new InvalidArgumentException('Unexpected shipment state');
     }
 
     /**
-     * Returns whether or not the change set is valid.
+     * Returns whether the change set is valid.
      *
      * @param array $cs
      *
@@ -355,7 +340,7 @@ final class ShipmentStates
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected shipment state change set.");
+        throw new InvalidArgumentException('Unexpected shipment state change set.');
     }
 
     /**

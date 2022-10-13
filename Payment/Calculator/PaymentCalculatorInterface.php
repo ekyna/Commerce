@@ -17,7 +17,7 @@ interface PaymentCalculatorInterface
     /**
      * Returns the subject's payment amounts.
      *
-     * @return array<Decimal, Decimal, Decimal, Decimal, Decimal> (total, paid, refunded, deposit, pending)
+     * @return array{total: Decimal, paid: Decimal, refunded: Decimal, deposit: Decimal, pending: Decimal}
      */
     public function getPaymentAmounts(PaymentSubjectInterface $subject, string $currency = null): array;
 
@@ -34,12 +34,18 @@ interface PaymentCalculatorInterface
     /**
      * Calculates the accepted outstanding total.
      */
-    public function calculateOutstandingAcceptedTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
+    public function calculateOutstandingAcceptedTotal(
+        PaymentSubjectInterface $subject,
+        string                  $currency = null
+    ): Decimal;
 
     /**
      * Calculates the expired outstanding total.
      */
-    public function calculateOutstandingExpiredTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal;
+    public function calculateOutstandingExpiredTotal(
+        PaymentSubjectInterface $subject,
+        string                  $currency = null
+    ): Decimal;
 
     /**
      * Calculates the failed total.

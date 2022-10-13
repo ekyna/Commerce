@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Tests\Invoice\Resolver;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoiceSubjectStateResolver;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
+use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 /**
  * Class InvoiceSubjectStateResolverTest
@@ -18,16 +21,8 @@ use PHPUnit\Framework\TestCase;
  */
 class InvoiceSubjectStateResolverTest extends TestCase
 {
-    /**
-     * @var InvoiceSubjectCalculatorInterface|MockObject
-     */
-    private $calculator;
-
-    /**
-     * @var InvoiceSubjectStateResolver
-     */
-    private $resolver;
-
+    private InvoiceSubjectCalculatorInterface|MockObject|null $calculator;
+    private ?InvoiceSubjectStateResolver                      $resolver;
 
     protected function setUp(): void
     {
@@ -43,24 +38,22 @@ class InvoiceSubjectStateResolverTest extends TestCase
 
 
     /**
-     * @param string                   $expected
-     * @param InvoiceSubjectInterface $subject
-     * @param array                    $map
-     *
-     * @dataProvider provide_resolveState
+     * @dataProvider provideResolveState
      */
-    public function test_resolveState(string $expected, InvoiceSubjectInterface $subject, array $map): void
+    public function testResolveState(string $expected, array $map): void
     {
-        $map = array_map(function($item) {
-            return array_replace([
+        $map = array_map(function ($item) {
+            return array_map(fn($v) => new Decimal($v), array_replace([
                 'total'    => 0,
                 'invoiced' => 0,
                 'adjusted' => 0,
                 'credited' => 0,
                 'shipped'  => 0,
                 'returned' => 0,
-            ], $item);
+            ], $item));
         }, $map);
+
+        $subject = $this->createMock(OrderInterface::class);
 
         $this
             ->calculator
@@ -69,20 +62,21 @@ class InvoiceSubjectStateResolverTest extends TestCase
             ->with($subject)
             ->willReturn($map);
 
-        $rc = new \ReflectionClass(InvoiceSubjectStateResolver::class);
+        $rc = new ReflectionClass(InvoiceSubjectStateResolver::class);
         $rm = $rc->getMethod('resolveState');
-        $rm->setAccessible(true);
 
-        $this->assertEquals($expected, $rm->invoke($this->resolver, $subject));
+        self::assertEquals($expected, $rm->invoke($this->resolver, $subject));
     }
 
-    public function provide_resolveState(): \Generator
+    public function provideResolveState(): Generator
     {
-        yield 'New case 1' => [InvoiceStates::STATE_NEW, $this->createOrder(), []];
+        yield 'New case 1' => [
+            InvoiceStates::STATE_NEW,
+            [],
+        ];
 
         yield 'Credited case 1' => [
             InvoiceStates::STATE_CREDITED,
-            $this->createOrder(),
             [
                 ['total' => 10, 'invoiced' => 10, 'credited' => 10],
             ],
@@ -90,7 +84,6 @@ class InvoiceSubjectStateResolverTest extends TestCase
 
         yield 'Completed case 1' => [
             InvoiceStates::STATE_COMPLETED,
-            $this->createOrder(),
             [
                 ['total' => 10, 'invoiced' => 10, 'credited' => 0],
             ],
@@ -98,35 +91,16 @@ class InvoiceSubjectStateResolverTest extends TestCase
 
         yield 'Partial case 1' => [
             InvoiceStates::STATE_PARTIAL,
-            $this->createOrder(),
             [
                 ['total' => 10, 'invoiced' => 8, 'credited' => 0],
             ],
         ];
 
-        yield 'Canceled case 3' => [
-            InvoiceStates::STATE_CANCELED,
-            $this->createOrder(PaymentStates::STATE_CANCELED),
-            [
-                ['total' => 10, 'invoiced' => 0, 'credited' => 0],
-            ],
-        ];
-
         yield 'New case 2' => [
             InvoiceStates::STATE_NEW,
-            $this->createOrder(),
             [
                 ['total' => 10, 'invoiced' => 0, 'credited' => 0],
             ],
         ];
-    }
-
-    private function createOrder(string $paymentState = null): OrderInterface
-    {
-        $order = $this->createMock(OrderInterface::class);
-
-        $order->method('getPaymentState')->willReturn($paymentState ?? PaymentStates::STATE_NEW);
-
-        return $order;
     }
 }

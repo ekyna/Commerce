@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Invoice\Model;
 
+use function in_array;
+
 /**
  * Class InvoiceStates
  * @package Ekyna\Component\Commerce\Invoice\Model
@@ -23,7 +25,7 @@ final class InvoiceStates
     /**
      * Returns all the states.
      *
-     * @return array
+     * @return array<int, string>
      */
     public static function getStates(): array
     {
@@ -40,14 +42,31 @@ final class InvoiceStates
 
     /**
      * Returns whether the given state is valid or not.
-     *
-     * @param string $state
-     *
-     * @return bool
      */
     public static function isValidState(string $state): bool
     {
         return in_array($state, self::getStates(), true);
+    }
+
+    /**
+     * Returns the deletable sale states.
+     *
+     * @return array<int, string>
+     */
+    public static function getDeletableStates(): array
+    {
+        return [
+            self::STATE_NEW,
+            self::STATE_CANCELED,
+        ];
+    }
+
+    /**
+     * Returns whether the given sale state is a deletable state.
+     */
+    public static function isDeletableState(string $state): bool
+    {
+        return in_array($state, self::getDeletableStates(), true);
     }
 
     /**

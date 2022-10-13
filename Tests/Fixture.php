@@ -138,13 +138,13 @@ class Fixture
     /**
      * Creates a tax.
      *
-     * @psalm-param array{
+     * @param PricingE\Tax|int|string|array{
      *     name:    string,
      *     code:    string,
      *     country: string|int
-     * } $data
+     * } $data The tax object, ID, reference or data.
      */
-    public static function tax(PricingE\Tax|array|int|string $data = []): PricingE\Tax
+    public static function tax(PricingE\Tax|int|string|array $data = []): PricingE\Tax
     {
         self::loadTaxes();
 
@@ -181,14 +181,14 @@ class Fixture
     /**
      * Creates a tax group.
      *
-     * @psalm-param array{
+     * @param PricingE\TaxGroup|int|string|array{
      *     name:    string,
      *     code:    string,
      *     default: bool,
      *     taxes:   array,
-     * } $data
+     * } $data The tag group object, ID, reference or data.
      */
-    public static function taxGroup(PricingE\TaxGroup|array|int|string $data = []): PricingE\TaxGroup
+    public static function taxGroup(PricingE\TaxGroup|int|string|array $data = []): PricingE\TaxGroup
     {
         self::loadTaxes();
 
@@ -221,7 +221,7 @@ class Fixture
     /**
      * Creates a tax rule.
      *
-     * @psalm-param array{
+     * @param PricingE\TaxRule|int|string|array{
      *     code:     string,
      *     name:     string,
      *     customer: bool,
@@ -230,9 +230,9 @@ class Fixture
      *     targets:  array,
      *     taxes:    array,
      *     priority: int,
-     * } $data
+     * } $data The tax rule object, ID, reference or data.
      */
-    public static function taxRule(PricingE\TaxRule|array|int|string $data = []): PricingE\TaxRule
+    public static function taxRule(PricingE\TaxRule|int|string|array $data = []): PricingE\TaxRule
     {
         self::loadTaxes();
 
@@ -279,13 +279,13 @@ class Fixture
     /**
      * Creates a currency.
      *
-     * @psalm-param array{
+     * @param CommonE\Currency|int|string|null|array{
      *     name:    string,
      *     code:    string,
      *     enabled: bool
-     * } $data
+     * } $data The currency object, ID, reference or data.
      */
-    public static function currency(CommonE\Currency|array|int|string|null $data = null): CommonE\Currency
+    public static function currency(CommonE\Currency|int|string|null|array $data = null): CommonE\Currency
     {
         if (null === $data) {
             $data = self::CURRENCY_EUR;
@@ -340,7 +340,7 @@ class Fixture
     /**
      * Creates a context.
      *
-     * @psalm-param array{
+     * @param array{
      *     customer_group:   mixed,
      *     invoice_country:  string,
      *     delivery_country: string,
@@ -352,7 +352,7 @@ class Fixture
      *     tax_exempt:       bool,
      *     date:             DateTimeInterface|string,
      *     admin:            bool,
-     * } $data
+     * } $data The context data.
      */
     public static function context(array $data): ContextInterface
     {
@@ -1208,13 +1208,15 @@ class Fixture
     /**
      * Creates a payment method.
      *
-     * @psalm-param array{
+     * @param Acme\PaymentMethod|int|string|array{
+     *     enabled:     bool,
+     *     available:   bool,
      *     manual:      bool,
      *     outstanding: bool,
      *     credit:      bool,
-     * }
+     * } $data The payment method object, ID, reference or data.
      */
-    public static function paymentMethod(Acme\PaymentMethod|array|int|string $data = []): Acme\PaymentMethod
+    public static function paymentMethod(Acme\PaymentMethod|int|string|array $data = []): Acme\PaymentMethod
     {
         if (is_string($data) && isset(self::PAYMENT_METHODS_MAP[$data]) && !self::has($data)) {
             $data = array_replace(self::PAYMENT_METHODS_MAP[$data], [
@@ -1254,7 +1256,7 @@ class Fixture
     /**
      * Creates a new order.
      *
-     * @psalm-param array{
+     * @param OrderE\Order|int|string|array{
      *     currency:             string,
      *     state:                string,
      *     customer:             mixed,
@@ -1280,9 +1282,9 @@ class Fixture
      *     payments:             array,
      *     shipments:            array,
      *     invoices:             array,
-     * } $data
+     * } $data The order object, ID, reference or data.
      */
-    public static function order(OrderE\Order|array|int|string $data = []): OrderE\Order
+    public static function order(OrderE\Order|int|string|array $data = []): OrderE\Order
     {
         /** @var OrderE\Order $order */
         [$order, $return] = self::create($data, OrderE\Order::class);
@@ -1442,7 +1444,7 @@ class Fixture
     /**
      * Creates a new order item.
      *
-     * @psalm-param array{
+     * @param OrderE\OrderItem|int|string|array{
      *     order:       mixed,
      *     parent:      mixed,
      *     subject:     mixed,
@@ -1459,9 +1461,9 @@ class Fixture
      *     taxes:       array,
      *     children:    array,
      *     assignments: array,
-     * } $data
+     * } $data The item object, ID, reference or data.
      */
-    public static function orderItem(OrderE\OrderItem|array|int|string $data = []): OrderE\OrderItem
+    public static function orderItem(OrderE\OrderItem|int|string|array $data = []): OrderE\OrderItem
     {
         /** @var OrderE\OrderItem $item */
         [$item, $return] = self::create($data, OrderE\OrderItem::class);
@@ -1593,15 +1595,15 @@ class Fixture
     /**
      * Creates a new order adjustment.
      *
-     * @psalm-param array{
+     * @param OrderE\OrderAdjustment|int|string|array{
      *     type:    string,
      *     mode:    string,
      *     order:    mixed,
      *     ammount: string|int|float,
      *     source:  string,
-     * }
+     * } $data The adjustment object, id, reference or data.
      */
-    public static function orderAdjustment(OrderE\OrderAdjustment|array|int|string $data = []): OrderE\OrderAdjustment
+    public static function orderAdjustment(OrderE\OrderAdjustment|int|string|array $data = []): OrderE\OrderAdjustment
     {
         /** @var OrderE\OrderAdjustment $adjustment */
         [$adjustment, $return] = self::create($data, OrderE\OrderAdjustment::class);

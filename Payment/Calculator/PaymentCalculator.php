@@ -184,7 +184,7 @@ class PaymentCalculator implements PaymentCalculatorInterface
     {
         $currency = $currency ?? $this->currency;
 
-        return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED, $currency);
+        return $this->calculateTotalByState($subject, PaymentStates::STATE_CANCELED, $currency, true);
     }
 
     public function calculateOfflinePendingTotal(PaymentSubjectInterface $subject, string $currency = null): Decimal
@@ -294,15 +294,15 @@ class PaymentCalculator implements PaymentCalculatorInterface
         PaymentSubjectInterface $subject,
         string                  $state,
         string                  $currency,
-        bool                    $refund = false
+        bool                    $outstanding = false
     ): Decimal {
-        PaymentStates::isValidState($state, true);
+        PaymentStates::isValidState($state);
 
         $total = new Decimal(0);
 
-        foreach ($subject->getPayments(!$refund) as $payment) {
+        foreach ($subject->getPayments(true) as $payment) {
             // Skip outstanding payments
-            if ($payment->getMethod()->isOutstanding()) {
+            if (!$outstanding && $payment->getMethod()->isOutstanding()) {
                 continue;
             }
 

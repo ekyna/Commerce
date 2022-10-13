@@ -1,5 +1,4 @@
 <?php
-/** @noinspection PhpTooManyParametersInspection */
 
 declare(strict_types=1);
 
@@ -17,6 +16,7 @@ use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionObject;
 
 use function array_intersect_key;
 use function array_map;
@@ -60,15 +60,201 @@ class PaymentSubjectStateResolverTest extends TestCase
     {
         $subject = $this->configure($configuration);
 
-        $ro = new \ReflectionObject($this->resolver);
+        $ro = new ReflectionObject($this->resolver);
         $method = $ro->getMethod('resolveState');
 
-        $this->assertEquals($expectedState, $method->invokeArgs($this->resolver, [$subject]));
+        self::assertEquals($expectedState, $method->invokeArgs($this->resolver, [$subject]));
     }
 
     public function provideResolveState(): Generator
     {
-        // 0) No payments
+        yield 0 => [
+            PaymentStates::STATE_NEW,
+            [],
+        ];
+
+        yield 1 => [
+            PaymentStates::STATE_NEW,
+            ['invoiced' => 50,],
+        ];
+
+        yield 2 => [
+            PaymentStates::STATE_NEW,
+            ['invoiced' => 100,],
+        ];
+
+        yield 3 => [
+            PaymentStates::STATE_NEW,
+            ['invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 4 => [
+            PaymentStates::STATE_NEW,
+            ['paid' => 50,],
+        ];
+
+        yield 5 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'invoiced' => 50,],
+        ];
+
+        yield 6 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 7 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'invoiced' => 100,],
+        ];
+
+        yield 8 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 9 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'refunded' => 50, 'invoiced' => 50,],
+        ];
+
+        yield 10 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'refunded' => 50, 'invoiced' => 100,],
+        ];
+
+        yield 11 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 50, 'refunded' => 50, 'invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 12 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100,],
+        ];
+
+        yield 13 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'invoiced' => 50,],
+        ];
+
+        yield 14 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 15 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 16 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 17 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 50,],
+        ];
+
+        yield 18 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 50, 'invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 19 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 50, 'invoiced' => 100,],
+        ];
+
+        yield 20 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 50, 'invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 21 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 100, 'invoiced' => 50,],
+        ];
+
+        yield 22 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 100, 'invoiced' => 100,],
+        ];
+
+        yield 23 => [
+            PaymentStates::STATE_CAPTURED,
+            ['paid' => 100, 'refunded' => 100, 'invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 24 => [
+            PaymentStates::STATE_COMPLETED,
+            ['paid' => 50, 'invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 25 => [
+            PaymentStates::STATE_COMPLETED,
+            ['paid' => 100, 'invoiced' => 100,],
+        ];
+
+        yield 26 => [
+            PaymentStates::STATE_COMPLETED,
+            ['paid' => 100, 'refunded' => 50, 'invoiced' => 50,],
+        ];
+
+        yield 27 => [
+            PaymentStates::STATE_COMPLETED,
+            ['paid' => 100, 'refunded' => 50, 'invoiced' => 100, 'credited' => 50,],
+        ];
+
+        yield 28 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 50, 'refunded' => 50,],
+        ];
+
+        yield 29 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 50, 'refunded' => 50, 'invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 30 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 50, 'refunded' => 50, 'invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 31 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 100, 'refunded' => 100,],
+        ];
+
+        yield 32 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 100, 'refunded' => 100, 'invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 33 => [
+            PaymentStates::STATE_REFUNDED,
+            ['paid' => 100, 'refunded' => 100, 'invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 34 => [
+            PaymentStates::STATE_NEW,
+            ['invoiced' => 50, 'credited' => 50,],
+        ];
+
+        yield 35 => [
+            PaymentStates::STATE_NEW,
+            ['invoiced' => 100, 'credited' => 100,],
+        ];
+
+        yield 'No items' => [
+            PaymentStates::STATE_NEW,
+            [
+                'hasItems' => false,
+            ],
+        ];
+
         yield 'No payments' => [
             PaymentStates::STATE_NEW,
             [
@@ -76,38 +262,23 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 1) No payments and fully credited invoices
-        yield 'No payments and fully credited invoices' => [
-            PaymentStates::STATE_CANCELED,
-            [
-                'invoiced'     => 100,
-                'credited'     => 100,
-                'hasPayments'  => false,
-                'invoiceState' => InvoiceStates::STATE_CREDITED,
-            ],
-        ];
-
-        // 2) Paid = Total and not fully invoiced
-        yield 'Paid = Total (not fully invoiced)' => [
-            PaymentStates::STATE_CAPTURED,
-            [
-                'paid'         => 100,
-                'invoiced'     => 50,
-                'invoiceState' => InvoiceStates::STATE_PARTIAL,
-            ],
-        ];
-
-        // 3) Paid = Total
-        yield 'Paid = Total (fully invoiced)' => [
+        yield 'No payments, Grand total equals zero' => [
             PaymentStates::STATE_COMPLETED,
             [
-                'paid'         => 100,
-                'invoiced'     => 100,
-                'invoiceState' => InvoiceStates::STATE_COMPLETED,
+                'total'       => 0,
+                'hasPayments' => false,
             ],
         ];
 
-        // 4) Accepted outstanding = Total
+        yield 'No payments and fully credited invoices' => [
+            PaymentStates::STATE_NEW,
+            [
+                'invoiced'    => 100,
+                'credited'    => 100,
+                'hasPayments' => false,
+            ],
+        ];
+
         yield 'Accepted outstanding = Total' => [
             PaymentStates::STATE_CAPTURED,
             [
@@ -115,7 +286,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 5) Paid = Deposit
         yield 'Paid = Deposit' => [
             PaymentStates::STATE_DEPOSIT,
             [
@@ -124,7 +294,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 6) Expired > 0
         yield 'Expired > 0' => [
             PaymentStates::STATE_OUTSTANDING,
             [
@@ -132,7 +301,21 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 7) Paid + Pending = Total
+        yield 'Pending = Total' => [
+            PaymentStates::STATE_PENDING,
+            [
+                'pending' => 100,
+            ],
+        ];
+
+        yield 'Pending = Deposit' => [
+            PaymentStates::STATE_PENDING,
+            [
+                'deposit' => 50,
+                'pending' => 50,
+            ],
+        ];
+
         yield 'Paid + Pending = Total' => [
             PaymentStates::STATE_PENDING,
             [
@@ -141,37 +324,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 8) Paid = Refunded = Total
-        yield 'Paid = Refunded = Total (not invoiced)' => [
-            PaymentStates::STATE_REFUNDED,
-            [
-                'paid'     => 100,
-                'refunded' => 100,
-            ],
-        ];
-
-        // 9) Paid = Refunded = Total
-        yield 'Paid = Refunded = Total (partially invoiced)' => [
-            PaymentStates::STATE_CAPTURED,
-            [
-                'paid'     => 100,
-                'refunded' => 100,
-                'invoiced' => 50,
-            ],
-        ];
-
-        // 10) Paid = Refunded = Total
-        yield 'Paid = Refunded = Total (fully invoiced)' => [
-            PaymentStates::STATE_REFUNDED,
-            [
-                'paid'     => 100,
-                'refunded' => 100,
-                'invoiced' => 100,
-                'credited' => 100,
-            ],
-        ];
-
-        // 11) Failed = Total
         yield 'Failed = Total' => [
             PaymentStates::STATE_FAILED,
             [
@@ -179,7 +331,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 12) Canceled = Total
         yield 'Canceled = Total' => [
             PaymentStates::STATE_CANCELED,
             [
@@ -187,7 +338,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 13) USD Paid = Total
         yield 'USD Paid = Total (not fully invoiced)' => [
             PaymentStates::STATE_CAPTURED,
             [
@@ -199,7 +349,6 @@ class PaymentSubjectStateResolverTest extends TestCase
             ],
         ];
 
-        // 14) USD Paid = Total
         yield 'USD Paid = Total (fully invoiced)' => [
             PaymentStates::STATE_COMPLETED,
             [
@@ -216,6 +365,7 @@ class PaymentSubjectStateResolverTest extends TestCase
     {
         $values = array_replace([
             'currency'     => self::DEFAULT_CURRENCY,
+            'hasItems'     => true,
             'hasPayments'  => true,
             'invoiceState' => InvoiceStates::STATE_NEW,
 
@@ -261,6 +411,7 @@ class PaymentSubjectStateResolverTest extends TestCase
         $subject->method('getOutstandingExpired')->willReturn($values['expired']);
         $subject->method('getInvoiceTotal')->willReturn($values['invoiced']);
         $subject->method('getCreditTotal')->willReturn($values['credited']);
+        $subject->method('hasItems')->willReturn($values['hasItems']);
         $subject->method('hasPayments')->willReturn($values['hasPayments']);
         $subject->method('getPaymentState')->willReturn(PaymentStates::STATE_NEW);
         $subject->method('getInvoiceState')->willReturn($values['invoiceState']);

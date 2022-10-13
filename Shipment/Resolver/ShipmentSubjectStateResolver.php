@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Shipment\Resolver;
 
+use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceStates;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
-use Ekyna\Component\Commerce\Payment\Model\PaymentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
+
+use function count;
 
 /**
  * Class ShipmentStateResolver
@@ -21,17 +20,15 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
  */
 class ShipmentSubjectStateResolver extends AbstractStateResolver
 {
-    protected ShipmentSubjectCalculatorInterface $calculator;
-
-    public function __construct(ShipmentSubjectCalculatorInterface $calculator)
-    {
-        $this->calculator = $calculator;
+    public function __construct(
+        protected readonly ShipmentSubjectCalculatorInterface $calculator
+    ) {
     }
 
     /**
      * @inheritDoc
      *
-     * @param ShipmentSubjectInterface
+     * @param ShipmentSubjectInterface $subject
      */
     public function resolve(object $subject): bool
     {
@@ -55,7 +52,7 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
      */
     protected function resolveState(object $subject): string
     {
-        // If has at least one preparation shipment
+        // If subject has at least one preparation shipment
         foreach ($subject->getShipments(true) as $shipment) {
             if ($shipment->getState() === ShipmentStates::STATE_PREPARATION) {
                 return ShipmentStates::STATE_PREPARATION;
@@ -65,7 +62,7 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             }
         }
 
-        // If has at least one pending return
+        // If subject has at least one pending return
         foreach ($subject->getShipments(false) as $return) {
             if ($return->getState() === ShipmentStates::STATE_PENDING) {
                 return ShipmentStates::STATE_PENDING;
@@ -77,9 +74,35 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
             return ShipmentStates::STATE_NEW;
         }
 
+        $sample = $released = false;
+        if ($subject instanceof SaleInterface) {
+            $sample = $subject->isSample();
+            $released = $subject->isReleased();
+        }
+
         $partialCount = $shippedCount = $returnedCount = $canceledCount = 0;
 
         foreach ($quantities as $q) {
+            if ($sample) {
+                if ($q['shipped']->isZero()) {
+                    continue;
+                }
+
+                // Released sale is automatically fully shipped
+                if ($released || $q['shipped'] >= $q['sold']) {
+                    $shippedCount++;
+                    if ($q['shipped']->equals($q['returned'])) {
+                        $returnedCount++;
+                    }
+
+                    continue;
+                }
+
+                $partialCount++;
+
+                continue;
+            }
+
             if (!$q['invoiced']) {
                 // Non-invoiced orders does not affect sold quantity (no credit equivalent for return)
                 $q['sold'] = $q['sold']->sub($q['returned']);
@@ -132,20 +155,6 @@ class ShipmentSubjectStateResolver extends AbstractStateResolver
         // PARTIAL If partially shipped
         if (0 < $partialCount || 0 < $shippedCount) {
             return ShipmentStates::STATE_PARTIAL;
-        }
-
-        // CANCELED If subject has invoice(s) and is fully credited
-        if ($subject instanceof InvoiceSubjectInterface) {
-            if ($subject->getInvoiceState() === InvoiceStates::STATE_CREDITED) {
-                return ShipmentStates::STATE_CANCELED;
-            }
-        }
-
-        // CANCELED If subject has payment(s) and has canceled state
-        if ($subject instanceof PaymentSubjectInterface) {
-            if (in_array($subject->getPaymentState(), PaymentStates::getCanceledStates(), true)) {
-                return ShipmentStates::STATE_CANCELED;
-            }
         }
 
         // NEW by default
