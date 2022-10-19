@@ -24,7 +24,7 @@ interface MarginCalculatorInterface
     /**
      * Calculates the sale item margin.
      */
-    public function calculateSaleItem(Item $item): ?Margin;
+    public function calculateSaleItem(Item $item, bool $single = false): ?Margin;
 
     /**
      * Calculates the sale shipment margin.

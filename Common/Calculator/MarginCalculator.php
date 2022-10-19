@@ -139,9 +139,9 @@ class MarginCalculator implements MarginCalculatorInterface
         return $margin;
     }
 
-    public function calculateSaleItem(Item $item): ?Margin
+    public function calculateSaleItem(Item $item, bool $single = false): ?Margin
     {
-        $key = spl_object_hash($item);
+        $key = spl_object_hash($item) . ($single ? '_single' : '');
         if ($margin = $this->get($key)) {
             return $margin;
         }
@@ -151,8 +151,12 @@ class MarginCalculator implements MarginCalculatorInterface
 
         $this->addSaleItemPurchaseCost($margin, $item);
 
-        $result = $this->getAmountCalculator()->calculateSaleItem($item);
+        $result = $this->getAmountCalculator()->calculateSaleItem($item, null, $single, !$single);
         $margin->addSellingPrice($result->getBase());
+
+        if ($single) {
+            return $margin;
+        }
 
         foreach ($item->getChildren() as $child) {
             if ($this->isItemSkipped($item)) {

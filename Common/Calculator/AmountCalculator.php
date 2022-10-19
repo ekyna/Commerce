@@ -132,11 +132,12 @@ class AmountCalculator implements AmountCalculatorInterface
     public function calculateSaleItem(
         Model\SaleItemInterface $item,
         Decimal                 $quantity = null,
-        bool                    $asPublic = false
+        bool                    $asPublic = false,
+        bool                    $withChildren = true
     ): Model\Amount {
         if ($quantity) {
             if ($this->profit) {
-                throw new Exception\LogicException('You can\'t override quantity if revenue mode is enabled.');
+                throw new Exception\LogicException('You can\'t override quantity if profit mode is enabled.');
             }
 
             if ($quantity->isNegative()) {
@@ -144,7 +145,10 @@ class AmountCalculator implements AmountCalculatorInterface
             }
         }
 
-        $key = spl_object_hash($item) . ($quantity ? "_$quantity" : '');
+        $key = spl_object_hash($item)
+            . ($quantity ? "_$quantity" : '')
+            . ($asPublic ? '_public' : '')
+            . (!$withChildren ? '_standalone' : '');
         if ($result = $this->get($key)) {
             return $result;
         }
@@ -160,29 +164,31 @@ class AmountCalculator implements AmountCalculatorInterface
             ->convertWithSubject($item->getNetPrice(), $sale, $this->currency, !$ati);
 
         // Add private items unit prices
-        foreach ($item->getChildren() as $child) {
-            if ($this->isItemSkipped($child)) {
-                continue;
+        if ($withChildren) {
+            foreach ($item->getChildren() as $child) {
+                if ($this->isItemSkipped($child)) {
+                    continue;
+                }
+
+                $q = $quantity ? $child->getQuantity()->mul($quantity) : null;
+                $childResult = $this->calculateSaleItem($child, $q);
+
+                if (!$child->isPrivate()) {
+                    continue;
+                }
+
+                if ($taxGroup !== $child->getTaxGroup()) {
+                    throw new Exception\LogicException('Private item must have the same tax group as its parent.');
+                }
+
+                if ($child->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
+                    throw new Exception\LogicException('Private items can\'t have discount adjustment.');
+                }
+
+                $unit += $ati
+                    ? $childResult->getUnit()->mul($child->getQuantity())
+                    : Money::round($childResult->getUnit(), $this->currency)->mul($child->getQuantity());
             }
-
-            $q = $quantity ? $child->getQuantity()->mul($quantity) : null;
-            $childResult = $this->calculateSaleItem($child, $q);
-
-            if (!$child->isPrivate()) {
-                continue;
-            }
-
-            if ($taxGroup !== $child->getTaxGroup()) {
-                throw new Exception\LogicException('Private item must have the same tax group as its parent.');
-            }
-
-            if ($child->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
-                throw new Exception\LogicException('Private items can\'t have discount adjustment.');
-            }
-
-            $unit += $ati
-                ? $childResult->getUnit()->mul($child->getQuantity())
-                : Money::round($childResult->getUnit(), $this->currency)->mul($child->getQuantity());
         }
 
         $quantity = $quantity ?? $this->calculateSaleItemQuantity($item);
@@ -292,7 +298,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        // Revenue mode
+        // Profit mode
         if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
             if ($this->invoiceCalculator->calculateSoldQuantity($adjustment)->isZero()) {
                 return $result;
@@ -382,7 +388,7 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        // Revenue mode
+        // Profit mode
         if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
             if ($this->invoiceCalculator->calculateSoldQuantity($sale)->isZero()) {
                 return $result;
@@ -439,7 +445,7 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
-            $quantity = new Decimal('0');
+            $quantity = new Decimal(0);
             foreach ($item->getStockAssignments() as $assignment) {
                 $quantity += $assignment->getSoldQuantity();
             }

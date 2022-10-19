@@ -67,9 +67,9 @@ abstract class AbstractSale extends AbstractResource implements Common\SaleInter
     protected ?string                      $documentComment = null;
     protected ?DateTimeInterface           $acceptedAt      = null;
     protected string                       $source          = Common\SaleSources::SOURCE_WEBSITE;
-    /** @var Collection|Common\SaleAttachmentInterface[] */
+    /** @var Collection<Common\SaleAttachmentInterface> */
     protected Collection $attachments;
-    /** @var ArrayCollection|Common\SaleItemInterface[] */
+    /** @var Collection<Common\SaleItemInterface> */
     protected Collection      $items;
     private ?ContextInterface $context = null;
 
@@ -355,7 +355,7 @@ abstract class AbstractSale extends AbstractResource implements Common\SaleInter
 
         $address = $this->isSameAddress() ? $this->getInvoiceAddress() : $this->getDeliveryAddress();
 
-        return null !== $address ? $address->getCountry() : null;
+        return $address?->getCountry();
     }
 
     public function isSameAddress(): bool

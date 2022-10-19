@@ -52,7 +52,8 @@ interface AmountCalculatorInterface
     public function calculateSaleItem(
         Model\SaleItemInterface $item,
         Decimal                 $quantity = null,
-        bool                    $asPublic = false
+        bool                    $asPublic = false,
+        bool                    $withChildren = true
     ): Model\Amount;
 
     /**
