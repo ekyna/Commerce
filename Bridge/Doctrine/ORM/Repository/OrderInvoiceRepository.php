@@ -12,27 +12,31 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
+use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
+use Ekyna\Component\Resource\Model\DateRange;
 use Exception;
 
 /**
  * Class OrderInvoiceRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @implements InvoiceRepositoryInterface<OrderInvoiceInterface>
  */
 class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceRepositoryInterface
 {
+    private ?Query $findByCreatedAtQuery      = null;
     private ?Query $customerInvoiceSumQuery   = null;
     private ?Query $customerCreditSumQuery    = null;
     private ?Query $customerInvoiceCountQuery = null;
     private ?Query $customerCreditCountQuery  = null;
 
-
     /**
-     * @return OrderInvoiceInterface[]
+     * @inheritDoc
      */
     public function findByCustomer(CustomerInterface $customer, int $limit = null): array
     {
@@ -57,9 +61,12 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findByCustomerAndDateRange(
         CustomerInterface $customer,
-        string $currency = null,
+        string            $currency = null,
         DateTimeInterface $from = null,
         DateTimeInterface $to = null
     ): array {
@@ -107,7 +114,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     }
 
     /**
-     * @return OrderInvoiceInterface
+     * @inheritDoc
      */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, $number): ?OrderInvoiceInterface
     {
@@ -128,6 +135,23 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getOneOrNullResult();
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function findByCreatedAt(DateRange $range, int $page, int $size): array
+    {
+        return $this
+            ->getFindByCreatedAtQuery()
+            ->setParameter('from', $range->getStart(), Types::DATETIME_IMMUTABLE)
+            ->setParameter('to', $range->getEnd(), Types::DATETIME_IMMUTABLE)
+            ->setFirstResult($size * $page)
+            ->setMaxResults($size)
+            ->getResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findByMonth(DateTimeInterface $date): array
     {
         $qb = $this->createQueryBuilder('i');
@@ -152,6 +176,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findByMonthAndCountries(DateTimeInterface $date, array $codes, bool $exclude = false): array
     {
         $qb = $this->createQueryBuilder('i');
@@ -202,6 +229,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $query->getScalarResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findByOrderId(int $id): array
     {
         $qb = $this->createQueryBuilder('i');
@@ -212,6 +242,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this
@@ -221,6 +254,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findFirstInvoiceDate(): ?DateTime
     {
         $qb = $this->createQueryBuilder('i');
@@ -235,6 +271,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return $date ? new DateTime($date) : null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getDueTotal(CustomerInterface $customer = null): Decimal
     {
         $total = $this
@@ -246,6 +285,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return new Decimal($total ?: 0);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function findFallInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this
@@ -255,6 +297,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getFallTotal(CustomerInterface $customer = null): Decimal
     {
         $total = $this
@@ -266,6 +311,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return new Decimal($total ?: 0);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCustomerInvoiceSum(CustomerInterface $customer, DateTime $from, DateTime $to): Decimal
     {
         $total = $this
@@ -278,6 +326,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return new Decimal($total ?: 0);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCustomerCreditSum(CustomerInterface $customer, DateTime $from, DateTime $to): Decimal
     {
         $total = $this
@@ -290,6 +341,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
         return new Decimal($total ?: 0);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCustomerInvoiceCount(CustomerInterface $customer, DateTime $from, DateTime $to): int
     {
         return (int)$this
@@ -300,6 +354,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
             ->getSingleScalarResult();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCustomerCreditCount(CustomerInterface $customer, DateTime $from, DateTime $to): int
     {
         return (int)$this
@@ -313,9 +370,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * Returns the due invoices query builder.
      */
-    protected function getDueInvoicesQueryBuilder(
+    private function getDueInvoicesQueryBuilder(
         CustomerInterface $customer = null,
-        string $currency = null
+        string            $currency = null
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('i');
 
@@ -336,9 +393,9 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * Returns the fall invoices query builder.
      */
-    protected function getFallInvoicesQueryBuilder(
+    private function getFallInvoicesQueryBuilder(
         CustomerInterface $customer = null,
-        string $currency = null
+        string            $currency = null
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('i');
 
@@ -361,10 +418,10 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
      *
      * @throws Exception
      */
-    protected function addInvoicesQBParameters(
-        QueryBuilder $qb,
+    private function addInvoicesQBParameters(
+        QueryBuilder      $qb,
         CustomerInterface $customer = null,
-        string $currency = null
+        string            $currency = null
     ): void {
         $today = new DateTime();
         $today->setTime(23, 59, 59, 999999);
@@ -390,9 +447,27 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     }
 
     /**
+     * Returns the "find by «created at» date" query.
+     */
+    private function getFindByCreatedAtQuery(): Query
+    {
+        if (null !== $this->findByCreatedAtQuery) {
+            return $this->findByCreatedAtQuery;
+        }
+
+        $qb = $this->createQueryBuilder('i');
+        $ex = $qb->expr();
+
+        return $this->findByCreatedAtQuery = $qb
+            ->andWhere($ex->between('i.createdAt', ':from', ':to'))
+            ->getQuery()
+            ->useQueryCache(true);
+    }
+
+    /**
      * Returns the "customer invoice sum query".
      */
-    protected function getCustomerInvoiceSumQuery(): Query
+    private function getCustomerInvoiceSumQuery(): Query
     {
         if ($this->customerInvoiceSumQuery) {
             return $this->customerInvoiceSumQuery;
@@ -420,7 +495,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * Returns the "customer credit sum" query.
      */
-    protected function getCustomerCreditSumQuery(): Query
+    private function getCustomerCreditSumQuery(): Query
     {
         if ($this->customerCreditSumQuery) {
             return $this->customerCreditSumQuery;
@@ -448,7 +523,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * Returns the "customer invoice count" query.
      */
-    protected function getCustomerInvoiceCountQuery(): Query
+    private function getCustomerInvoiceCountQuery(): Query
     {
         if ($this->customerInvoiceCountQuery) {
             return $this->customerInvoiceCountQuery;
@@ -476,7 +551,7 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * Returns the "customer credit count" query.
      */
-    protected function getCustomerCreditCountQuery(): Query
+    private function getCustomerCreditCountQuery(): Query
     {
         if ($this->customerCreditCountQuery) {
             return $this->customerCreditCountQuery;

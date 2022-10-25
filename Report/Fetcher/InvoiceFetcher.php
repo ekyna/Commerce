@@ -4,29 +4,30 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Report\Fetcher;
 
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
-use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
+use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
-use Ekyna\Component\Commerce\Report\Util\OrderUtil;
 use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
 use Ekyna\Component\Resource\Model\DateRange;
 
 use function gc_collect_cycles;
 
 /**
- * Class OrderFetcher
+ * Class InvoiceFetcher
  * @package Ekyna\Component\Commerce\Report\Fetcher
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class OrderFetcher implements FetcherInterface
+class InvoiceFetcher implements FetcherInterface
 {
     public function __construct(
-        private readonly OrderRepositoryInterface $repository,
+        private readonly OrderInvoiceRepositoryInterface $repository,
         private readonly ResourceManagerInterface $manager,
-        private readonly OrderUtil $orderUtil
     ) {
     }
 
+    /**
+     * @inheritDoc
+     */
     public function initialize(ReportConfig $config): void
     {
 
@@ -40,9 +41,7 @@ class OrderFetcher implements FetcherInterface
         $this->manager->clear();
         gc_collect_cycles();
 
-        $this->orderUtil->clear();
-
-        return $this->repository->findByAcceptedAt($range, $page, $size);
+        return $this->repository->findByCreatedAt($range, $page, $size);
     }
 
     /**
@@ -50,6 +49,6 @@ class OrderFetcher implements FetcherInterface
      */
     public function provides(): string
     {
-        return OrderInterface::class;
+        return OrderInvoiceInterface::class;
     }
 }

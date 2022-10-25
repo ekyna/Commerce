@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Invoice\Repository;
 use DateTimeInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
+use Ekyna\Component\Resource\Model\DateRange;
 use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
@@ -32,6 +33,13 @@ interface InvoiceRepositoryInterface extends ResourceRepositoryInterface
      * @return I|null
      */
     public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?InvoiceInterface;
+
+    /**
+     * Finds invoices having «created at» date between given dates.
+     *
+     * @return array<int, I>
+     */
+    public function findByCreatedAt(DateRange $range, int $page, int $size): array;
 
     /**
      * Finds invoices (and credits) by month.
