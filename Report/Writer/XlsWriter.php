@@ -149,9 +149,9 @@ class XlsWriter implements WriterInterface
         $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
 
         // Cells values
-        $sheet->getCell([$col, $row])->setValue($data->grossMargin->getRevenue());
-        $sheet->getCell([$col + 1, $row])->setValue($data->grossMargin->getPercent());
-        $sheet->getCell([$col + 2, $row])->setValue($data->commercialMargin->getPercent());
+        $sheet->getCell([$col, $row])->setValue($data->grossMargin->getRevenue()->toFixed(2));
+        $sheet->getCell([$col + 1, $row])->setValue($data->grossMargin->getPercent()->toFixed(2));
+        $sheet->getCell([$col + 2, $row])->setValue($data->commercialMargin->getPercent()->toFixed(2));
     }
 
     /**

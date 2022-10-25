@@ -60,6 +60,14 @@ class InvoicesSection implements SectionInterface
 
         $data = $this->data[$year][$month];
 
+        if ($resource->isCredit()) {
+            $data->good -= $resource->getGoodsBase();
+            $data->shipment -= $resource->getShipmentBase();
+            $data->discount -= $resource->getDiscountBase();
+
+            return;
+        }
+
         $data->good += $resource->getGoodsBase();
         $data->shipment += $resource->getShipmentBase();
         $data->discount += $resource->getDiscountBase();
@@ -112,7 +120,7 @@ class InvoicesSection implements SectionInterface
 
                 $value = $data->good->add($data->shipment)->sub($data->discount);
 
-                $sheet->getCell([$col, $row])->setValue($value->toFixed());
+                $sheet->getCell([$col, $row])->setValue($value->toFixed(2));
             }
         }
     }
