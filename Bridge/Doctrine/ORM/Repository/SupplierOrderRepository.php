@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use DateTime;
+use DateTimeInterface;
 use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
-use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
+use Ekyna\Component\Resource\Model\DateRange;
 
 /**
  * Class SupplierOrderRepository
@@ -21,12 +25,24 @@ use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 class SupplierOrderRepository extends ResourceRepository implements SupplierOrderRepositoryInterface
 {
     private ?Query $findNewBySupplierQuery = null;
+    private ?Query $findByOrderedAtQuery   = null;
 
-    public function findNewBySupplier(Model\SupplierInterface $supplier): array
+    public function findNewBySupplier(SupplierInterface $supplier): array
     {
         return $this
             ->getFindNewBySupplierQuery()
             ->setParameter('supplier', $supplier)
+            ->getResult();
+    }
+
+    public function findByOrderAt(DateRange $range, int $page, int $size): array
+    {
+        return $this
+            ->getFindByOrderedAtQuery()
+            ->setParameter('from', $range->getStart(), Types::DATETIME_MUTABLE)
+            ->setParameter('to', $range->getEnd(), Types::DATETIME_MUTABLE)
+            ->setFirstResult($size * $page)
+            ->setMaxResults($size)
             ->getResult();
     }
 
@@ -87,13 +103,39 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ->andWhere($qb->expr()->in($as . '.state', ':states'))
             ->addOrderBy($as . '.createdAt', 'DESC')
             ->getQuery()
-            ->setParameter('states', [Model\SupplierOrderStates::STATE_NEW, Model\SupplierOrderStates::STATE_ORDERED]);
+            ->setParameter('states', [SupplierOrderStates::STATE_NEW, SupplierOrderStates::STATE_ORDERED]);
+    }
+
+    /**
+     * Returns the "find by 'ordered at' date" query.
+     */
+    private function getFindByOrderedAtQuery(): Query
+    {
+        if (null !== $this->findByOrderedAtQuery) {
+            return $this->findByOrderedAtQuery;
+        }
+
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        return $this->findByOrderedAtQuery = $qb
+            ->andWhere($ex->in('o.state', ':state'))
+            ->andWhere($ex->between('o.orderedAt', ':from', ':to'))
+            ->setParameter('state', [
+                SupplierOrderStates::STATE_COMPLETED,
+                SupplierOrderStates::STATE_PARTIAL,
+                SupplierOrderStates::STATE_VALIDATED,
+                SupplierOrderStates::STATE_RECEIVED,
+                SupplierOrderStates::STATE_ORDERED,
+            ])
+            ->getQuery()
+            ->useQueryCache(true);
     }
 
     /**
      * Returns the expired due orders.
      *
-     * @return array<Model\SupplierOrderInterface>
+     * @return array<int, SupplierOrderInterface>
      */
     private function findExpiredDue(string $prefix): array
     {
@@ -106,7 +148,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
     /**
      * Returns the fall due orders.
      *
-     * @return array<Model\SupplierOrderInterface>
+     * @return array<int, SupplierOrderInterface>
      */
     private function findFallDue(string $prefix): array
     {
@@ -160,7 +202,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ->andWhere($ex->lt($as . '.' . $prefix . 'DueDate', ':today'))
             ->andWhere($ex->neq($as . '.state', ':state'))
             ->setParameter('today', (new DateTime())->setTime(0, 0), Types::DATETIME_MUTABLE)
-            ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
+            ->setParameter('state', SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 
@@ -182,7 +224,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
             ))
             ->andWhere($ex->neq($as . '.state', ':state'))
             ->setParameter('today', (new DateTime())->setTime(0, 0), Types::DATETIME_MUTABLE)
-            ->setParameter('state', Model\SupplierOrderStates::STATE_CANCELED)
+            ->setParameter('state', SupplierOrderStates::STATE_CANCELED)
             ->addOrderBy($as . '.' . $prefix . 'DueDate', 'ASC');
     }
 

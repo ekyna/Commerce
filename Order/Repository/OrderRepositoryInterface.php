@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Resource\Model\DateRange;
 
 /**
  * Interface OrderRepositoryInterface
@@ -32,35 +33,42 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     /**
      * Finds the sales by origin customer, optionally filtered by states.
      *
-     * @return array<OrderInterface>
+     * @return array<int, OrderInterface>
      */
     public function findByOriginCustomer(CustomerInterface $customer, array $states = []): array;
 
     /**
      * Finds orders initiated by the given customer or its children.
      *
-     * @return array<OrderInterface>
+     * @return array<int, OrderInterface>
      */
     public function findByInitiatorCustomer(CustomerInterface $initiator): array;
 
     /**
      * Finds orders completed yesterday.
      *
-     * @return array<OrderInterface>
+     * @return array<int, OrderInterface>
      */
     public function findCompletedYesterday(): array;
 
     /**
      * Returns the dues orders.
      *
-     * @return array<OrderInterface>
+     * @return array<int, OrderInterface>
      */
     public function findDueOrders(): array;
 
     /**
+     * Finds orders having acceptedAt date between given dates.
+     *
+     * @return array<int, OrderInterface>
+     */
+    public function findByAcceptedAt(DateRange $range, int $page, int $size): array;
+
+    /**
      * Finds orders having revenue total or margin total set to null.
      *
-     * @return array<int>
+     * @return array<int> The orders identifiers.
      */
     public function findWithNullRevenueOrMargin(): array;
 

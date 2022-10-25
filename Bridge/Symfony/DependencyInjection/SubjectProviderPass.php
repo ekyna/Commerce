@@ -17,7 +17,7 @@ class SubjectProviderPass implements CompilerPassInterface
 {
     public const TAG = 'ekyna_commerce.subject_provider';
 
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $definition = $container->getDefinition('ekyna_commerce.registry.subject_provider');
 

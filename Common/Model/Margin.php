@@ -80,6 +80,16 @@ class Margin
         return $this->sellingPrice;
     }
 
+    public function getCost(): Decimal
+    {
+        return $this->purchaseCost;
+    }
+
+    public function getRevenue(): Decimal
+    {
+        return $this->sellingPrice;
+    }
+
     public function isAverage(): bool
     {
         return $this->average;

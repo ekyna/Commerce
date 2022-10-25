@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use DateTime;
 use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
@@ -19,18 +20,20 @@ use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Resource\Doctrine\ORM\Hydrator\IdHydrator;
+use Ekyna\Component\Resource\Model\DateRange;
+use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
  * Class OrderRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @method OrderInterface|null findOneById(int $id)
- * @method OrderInterface|null findOneByKey(string $key)
- * @method OrderInterface|null findOneByNumber(string $number)
+ * @implements ResourceRepositoryInterface<OrderInterface>
  */
 class OrderRepository extends AbstractSaleRepository implements OrderRepositoryInterface
 {
+    private ?Query $findByAcceptedAtQuery = null;
+
     public function existsForCustomer(CustomerInterface $customer): bool
     {
         $qb = $this->createQueryBuilder('o');
@@ -43,7 +46,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->setParameters([
                 'customer' => $customer,
             ])
-            ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
 
         return null !== $id;
     }
@@ -60,7 +63,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 ->setParameters([
                     'email' => $email,
                 ])
-                ->getOneOrNullResult(Query::HYDRATE_SINGLE_SCALAR);
+                ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
     }
 
     public function findOneByCustomerAndNumber(CustomerInterface $customer, string $number): ?OrderInterface
@@ -189,6 +192,17 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->setParameter('not_sample', false)
             ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
             ->useQueryCache(true)
+            ->getResult();
+    }
+
+    public function findByAcceptedAt(DateRange $range, int $page, int $size): array
+    {
+        return $this
+            ->getFindByAcceptedAtQuery()
+            ->setParameter('from', $range->getStart(), Types::DATETIME_IMMUTABLE)
+            ->setParameter('to', $range->getEnd(), Types::DATETIME_IMMUTABLE)
+            ->setFirstResult($size * $page)
+            ->setMaxResults($size)
             ->getResult();
     }
 
@@ -339,6 +353,32 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getQuery()
             ->setParameter('coupon', $coupon)
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Returns the "find by 'accepted at' date" query.
+     */
+    private function getFindByAcceptedAtQuery(): Query
+    {
+        if (null !== $this->findByAcceptedAtQuery) {
+            return $this->findByAcceptedAtQuery;
+        }
+
+        $qb = $this->createQueryBuilder('o');
+        $ex = $qb->expr();
+
+        return $this->findByAcceptedAtQuery = $qb
+            ->andWhere($ex->eq('o.sample', ':sample'))
+            ->andWhere($ex->in('o.state', ':state'))
+            ->andWhere($ex->between('o.acceptedAt', ':from', ':to'))
+            ->setParameter('sample', false)
+            ->setParameter('state', [
+                OrderStates::STATE_COMPLETED,
+                OrderStates::STATE_ACCEPTED,
+                OrderStates::STATE_PENDING,
+            ])
+            ->getQuery()
+            ->useQueryCache(true);
     }
 
     /**
@@ -498,7 +538,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
      *
      * @param Query|QueryBuilder $query
      */
-    private function setDueParameters($query)
+    private function setDueParameters(Query|QueryBuilder $query): void
     {
         $query
             ->setParameter('trigger_invoiced', Trigger::TRIGGER_INVOICED)

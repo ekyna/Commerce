@@ -6,19 +6,19 @@
                         http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
 
     <class name="Ekyna\Component\Commerce\Newsletter\Entity\Audience">
-        <property name="provider">
-            <constraint name="NotBlank"/>
-            <constraint name="Length">
-                <option name="max">32</option>
-            </constraint>
-        </property>
-        <property name="key">
+        <property name="gateway">
             <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="max">32</option>
             </constraint>
         </property>
         <property name="identifier">
+            <constraint name="Length">
+                <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="key">
+            <constraint name="NotBlank"/>
             <constraint name="Length">
                 <option name="max">32</option>
             </constraint>
@@ -32,12 +32,6 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Newsletter\Entity\Member">
-        <property name="key">
-            <constraint name="NotBlank"/>
-            <constraint name="Length">
-                <option name="max">32</option>
-            </constraint>
-        </property>
         <property name="email">
             <constraint name="NotBlank"/>
             <constraint name="Email"/>

@@ -1,0 +1,296 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Ekyna\Component\Commerce\Report\Section;
+
+use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Report\ReportConfig;
+use Ekyna\Component\Commerce\Report\Section\Model\SupplierData;
+use Ekyna\Component\Commerce\Report\Util\OrderUtil;
+use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
+use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
+use Ekyna\Component\Commerce\Stock\Helper\StockSubjectQuantityHelper;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Resource\Model\ResourceInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
+
+use function array_walk;
+use function Symfony\Component\Translation\t;
+use function uasort;
+
+/**
+ * Class SupplierOrdersSection
+ * @package Ekyna\Component\Commerce\Report\Section
+ * @author  Étienne Dauvergne <contact@ekyna.com>
+ */
+class SupplierOrdersSection implements SectionInterface
+{
+    final public const NAME = 'supplier_orders';
+
+    /** @var array<int, array<int, SupplierData>> */
+    private array $data;
+    /** @var array<int, string> */
+    private array  $names;
+    /** @var array<int, string> */
+    private array  $years;
+    private string $year;
+
+    public function __construct(
+        private readonly StockSubjectQuantityHelper $quantityHelper,
+        private readonly OrderUtil                  $util
+    ) {
+    }
+
+    public function initialize(ReportConfig $config): void
+    {
+        $this->data = [];
+        $this->names = [];
+        $this->years = $config->range->getYears();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function read(ResourceInterface $resource): void
+    {
+        if ($resource instanceof OrderInterface) {
+            $this->readOrder($resource);
+
+            return;
+        }
+
+        if ($resource instanceof SupplierOrderInterface) {
+            $this->readSupplierOrder($resource);
+
+            return;
+        }
+
+        throw new UnexpectedTypeException($resource, [OrderInterface::class, SupplierOrderInterface::class]);
+    }
+
+    public function readOrder(OrderInterface $order): void
+    {
+        $this->year = $order->getAcceptedAt()->format('Y');
+
+        $this->calculateOrderItems($order->getItems());
+    }
+
+    private function calculateOrderItems(Collection $items): void
+    {
+        foreach ($items as $item) {
+            $this->calculateOrderItem($item);
+
+            $this->calculateOrderItems($item->getChildren());
+        }
+    }
+
+    private function calculateOrderItem(OrderItemInterface $item): void
+    {
+        if ($item->isCompound()) {
+            return;
+        }
+
+        $soldTotal = $this->quantityHelper->calculateSoldQuantity($item);
+        if ($soldTotal->isZero()) {
+            return;
+        }
+
+        $grossMargin = $this->util->getGrossCalculator()->calculateSaleItem($item, true);
+
+        foreach ($item->getStockAssignments() as $assignment) {
+            $unit = $assignment->getStockUnit();
+            if (null === $supplier = $unit->getSupplierOrder()?->getSupplier()) {
+                // TODO Should never happen (but a lot exists T_T)
+                continue;
+            }
+
+            $id = $supplier->getId();
+
+            if (!isset($this->names[$id])) {
+                $this->names[$id] = $supplier->getName();
+            }
+            if (!isset($this->data[$id][$this->year])) {
+                $this->data[$id][$this->year] = new SupplierData();
+            }
+
+            $data = $this->data[$id][$this->year];
+
+            $sold = $assignment->getSoldQuantity();
+            $goodCost = $unit->getNetPrice()->mul($sold);
+            $supplyCost = $unit->getShippingPrice()->mul($sold);
+
+            $data->goodCost += $goodCost;
+            $data->supplyCost += $supplyCost;          // TODO Should use total quantity (need Assignment::credited quantity)
+            $data->sale += $grossMargin->getSellingPrice()->mul($sold)->div($soldTotal)->round(2);
+        }
+    }
+
+    public function readSupplierOrder(SupplierOrderInterface $order): void
+    {
+        if (null === $supplier = $order->getSupplier()) {
+            // TODO Should never happen
+            return;
+        }
+
+        $id = $supplier->getId();
+        $this->year = $order->getOrderedAt()->format('Y');
+
+        if (!isset($this->names[$id])) {
+            $this->names[$id] = $supplier->getName();
+        }
+        if (!isset($this->data[$id][$this->year])) {
+            $this->data[$id][$this->year] = new SupplierData();
+        }
+
+        $this->data[$id][$this->year]->order += $order->getPaymentTotal();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function write(WriterInterface $writer): void
+    {
+        if ($writer instanceof XlsWriter) {
+            $this->writeXls($writer);
+
+            return;
+        }
+
+        throw new UnexpectedValueException('Unsupported writer');
+    }
+
+    private function writeXls(XlsWriter $writer): void
+    {
+        $sheet = $writer->createSheet('Supplier orders'); // TODO Trans
+
+        $groups = [...$this->years];
+        if (1 < count($this->years)) {
+            $groups[] = 'Total';
+        }
+
+        $headerStyle = XlsWriter::STYLE_BOLD + XlsWriter::STYLE_BACKGROUND;
+
+        // Headers
+        $sheet->getColumnDimension('A')->setWidth(80, 'mm');
+        $sheet->mergeCells([1, 1, 1, 3]);
+        $sheet->getCell([1, 1])->getStyle()->applyFromArray($headerStyle);
+        $sheet->getCell([1, 2])->getStyle()->applyFromArray($headerStyle);
+        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle  + XlsWriter::STYLE_BORDER_BOTTOM);
+        $sheet->getCell([1, 1])->setValue('Fournisseur');
+
+        foreach ($groups as $index => $header) {
+            $col = 2 + $index * 4;
+
+            // |----------------------------------------------|
+            // |                     YYYY                     |
+            // |----------------------------------------------|
+            // |      Commandes clients      |   Commandes    |
+            // |-------------|------|--------|                |
+            // | Marchandise | Port | Ventes |  Fournisseurs  |
+            // |-------------|------|--------|----------------|
+
+            $sheet->mergeCells([$col, 1, $col + 3, 1]);
+            $sheet->getCell([$col, 1])->getStyle()->applyFromArray(
+                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+            );
+            $sheet->getCell([$col, 1])->setValue($header); // Year
+
+            $sheet->mergeCells([$col, 2, $col + 2, 2]);
+            $sheet->getCell([$col, 2])->getStyle()->applyFromArray(
+                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+            );
+            $sheet->getCell([$col, 2])->setValue('Commandes clients');
+
+            $sheet->mergeCells([$col + 3, 2, $col + 3, 3]);
+            $sheet->getColumnDimensionByColumn($col + 3)->setWidth(23, 'mm');
+            $sheet->getCell([$col + 3, 2])->getStyle()->applyFromArray($headerStyle);
+            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 3, 2])->setValue("Commandes\nfournisseurs");
+
+            $sheet->getColumnDimensionByColumn($col)->setWidth(25, 'mm');
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+            $sheet->getCell([$col, 3])->setValue('Marchandise');
+
+            $sheet->getColumnDimensionByColumn($col + 1)->setWidth(18, 'mm');
+            $sheet->getCell([$col + 1, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 1, 3])->setValue('Port');
+
+            $sheet->getColumnDimensionByColumn($col + 2)->setWidth(20, 'mm');
+            $sheet->getCell([$col + 2, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 2, 3])->setValue('Ventes');
+        }
+
+        array_walk($this->data, function (array &$data) {
+            $total = new SupplierData();
+            foreach ($data as $datum) {
+                $total->merge($datum);
+            }
+            $data['Total'] = $total;
+        });
+
+        uasort($this->data, function (array $a, array $b): int {
+            return $b['Total']->order <=> $a['Total']->order;
+        });
+
+        $row = 3;
+        foreach ($this->data as $id => $supplier) {
+            $row++;
+
+            $sheet->getCell([1, $row])->setValue($this->names[$id]);
+
+            foreach ($groups as $index => $group) {
+                $col = 2 + $index * 4;
+
+                $data = $supplier[$group] ?? new SupplierData();
+
+                $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+
+                $sheet->getCell([$col, $row])->setValue($data->goodCost->toFixed(2));
+                $sheet->getCell([$col + 1, $row])->setValue($data->supplyCost->toFixed(2));
+                $sheet->getCell([$col + 2, $row])->setValue($data->sale->toFixed(2));
+                $sheet->getCell([$col + 3, $row])->setValue($data->order->toFixed(2));
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function requiresResources(): array
+    {
+        return [
+            OrderInterface::class,
+            SupplierOrderInterface::class,
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportsWriter(string $writerClass): bool
+    {
+        return $writerClass === XlsWriter::class;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getName(): string
+    {
+        return self::NAME;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTitle(): TranslatableInterface
+    {
+        return t('supplier_order.label.plural', [], 'EkynaCommerce');
+    }
+}

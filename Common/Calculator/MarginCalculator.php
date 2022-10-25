@@ -22,6 +22,8 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
 use Ekyna\Component\Commerce\Subject\Guesser\PurchaseCostGuesserInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
+use function spl_object_hash;
+
 /**
  * Class MarginCalculator
  * @package Ekyna\Component\Commerce\Common\Calculator
@@ -42,7 +44,7 @@ class MarginCalculator implements MarginCalculatorInterface
 
     private ?AmountCalculatorInterface $amountCalculator = null;
 
-    /** @var Margin[] */
+    /** @var array<string, Margin> */
     private array $cache = [];
 
     /**
@@ -97,13 +99,13 @@ class MarginCalculator implements MarginCalculatorInterface
 
     public function calculateSale(Sale $sale): ?Margin
     {
+        if (!$sale->hasItems() || $sale->isSample()) {
+            return null;
+        }
+
         $key = spl_object_hash($sale);
         if ($margin = $this->get($key)) {
             return $margin;
-        }
-
-        if (!$sale->hasItems() || $sale->isSample()) {
-            return null;
         }
 
         $margin = new Margin($this->currency);

@@ -20,7 +20,7 @@ class RegisterViewTypePass implements CompilerPassInterface
     /**
      * @inheritDoc
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $definition = $container->getDefinition('ekyna_commerce.registry.view_type');
 
