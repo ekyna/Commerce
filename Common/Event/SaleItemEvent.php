@@ -17,7 +17,7 @@ class SaleItemEvent extends Event
     use AdjustmentDataTrait;
 
     private SaleItemInterface $item;
-
+    private array             $data = [];
 
     public function __construct(SaleItemInterface $item)
     {
@@ -27,5 +27,15 @@ class SaleItemEvent extends Event
     public function getItem(): SaleItemInterface
     {
         return $this->item;
+    }
+
+    public function setDatum(string $key, mixed $value): void
+    {
+        $this->data[$key] = $value;
+    }
+
+    public function getDatum(string $key): mixed
+    {
+        return $this->data[$key] ?? null;
     }
 }

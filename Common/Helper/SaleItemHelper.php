@@ -23,10 +23,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class SaleItemHelper
 {
     public function __construct(
-        protected readonly EventDispatcherInterface         $eventDispatcher,
-        private readonly SubjectHelperInterface             $subjectHelper,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SubjectHelperInterface $subjectHelper,
         private readonly ShipmentSubjectCalculatorInterface $shipmentSubjectCalculator,
-        private readonly InvoiceSubjectCalculatorInterface  $invoiceSubjectCalculator,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceSubjectCalculator,
     ) {
     }
 
@@ -35,8 +35,11 @@ class SaleItemHelper
      *
      * @throws IllegalOperationException
      */
-    public function initialize(SaleItemInterface $item, ?SubjectInterface $subject): SaleItemEvent
-    {
+    public function initialize(
+        SaleItemInterface $item,
+        ?SubjectInterface $subject,
+        SaleItemEvent     $event = null
+    ): SaleItemEvent {
         $this->preventIllegalOperation($item);
 
         if (null !== $subject) {
@@ -45,7 +48,11 @@ class SaleItemHelper
 
         $this->assertAssignedSubject($item);
 
-        $event = new SaleItemEvent($item);
+        if (null === $event) {
+            $event = new SaleItemEvent($item);
+        } elseif ($item !== $event->getItem()) {
+            throw new LogicException('Items do not match');
+        }
 
         $this->eventDispatcher->dispatch($event, SaleItemEvents::INITIALIZE);
 
@@ -57,13 +64,17 @@ class SaleItemHelper
      *
      * @throws IllegalOperationException
      */
-    public function build(SaleItemInterface $item): SaleItemEvent
+    public function build(SaleItemInterface $item, SaleItemEvent $event = null): SaleItemEvent
     {
         $this->preventIllegalOperation($item);
 
         $this->assertAssignedSubject($item);
 
-        $event = new SaleItemEvent($item);
+        if (null === $event) {
+            $event = new SaleItemEvent($item);
+        } elseif ($item !== $event->getItem()) {
+            throw new LogicException('Items do not match');
+        }
 
         $this->eventDispatcher->dispatch($event, SaleItemEvents::BUILD);
 

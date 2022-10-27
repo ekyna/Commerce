@@ -15,7 +15,7 @@ use Ekyna\Component\Resource\Locale\LocaleProviderInterface;
  */
 class FormatterFactory
 {
-    /** @var array<int, Formatter> */
+    /** @var array<string, Formatter> */
     protected array $cache = [];
 
     public function __construct(
