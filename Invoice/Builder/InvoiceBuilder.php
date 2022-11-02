@@ -74,21 +74,20 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             ->createWithInvoice($document)
             ->resolveSaleItem($item);
 
-        if ($availability->getMaximum()->isZero()) {
-            return null;
-        }
+        $line = null;
+        if (!$availability->getMaximum()->isZero()) {
+            $line = $this
+                ->findOrCreateGoodLine($document, $item)
+                ->setAvailability($availability);
 
-        $line = $this
-            ->findOrCreateGoodLine($document, $item)
-            ->setAvailability($availability);
-
-        // Set default quantity for new non-credit invoice lines
-        if (!$document->isCredit() && (null === $document->getId())) {
-            $line->setQuantity(min(
-                $item->getTotalQuantity(),
-                $availability->getExpected(),
-                $availability->getMaximum()
-            ));
+            // Set default quantity for new non-credit invoice lines
+            if (!$document->isCredit() && (null === $document->getId())) {
+                $line->setQuantity(min(
+                    $item->getTotalQuantity(),
+                    $availability->getExpected(),
+                    $availability->getMaximum()
+                ));
+            }
         }
 
         // Build children
