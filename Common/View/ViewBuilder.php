@@ -117,18 +117,6 @@ class ViewBuilder
             $type->buildSaleView($sale, $this->view, $this->options);
         }
 
-        $batchableCount = 0;
-        foreach ($this->view->getItems() as $line) {
-            if (!$line->batchable) {
-                continue;
-            }
-            $batchableCount++;
-            if (1 < $batchableCount) {
-                $this->view->vars['show_batch'] = true;
-                break;
-            }
-        }
-
         $columnsCount = 6;
         if ($this->view->vars['show_availability']) {
             $columnsCount++;
@@ -148,10 +136,21 @@ class ViewBuilder
         if ($this->view->vars['show_margin']) {
             $columnsCount++;
         }
-        if ($this->view->vars['show_batch']) {
-            $columnsCount++;
-        }
         if ($this->options['editable']) {
+            $columnsCount++;
+            $batchableCount = 0;
+            foreach ($this->view->getItems() as $line) {
+                if (!$line->batchable) {
+                    continue;
+                }
+                $batchableCount++;
+                if (1 < $batchableCount) {
+                    $this->view->vars['show_batch'] = true;
+                    break;
+                }
+            }
+        }
+        if ($this->view->vars['show_batch']) {
             $columnsCount++;
         }
         $this->view->vars['columns_count'] = $columnsCount;
