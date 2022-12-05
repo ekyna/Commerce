@@ -124,9 +124,9 @@ class SupplierOrdersSection implements SectionInterface
             $goodCost = $unit->getNetPrice()->mul($sold);
             $supplyCost = $unit->getShippingPrice()->mul($sold);
 
-            $data->goodCost += $goodCost;
-            $data->supplyCost += $supplyCost;          // TODO Should use total quantity (need Assignment::credited quantity)
-            $data->sale += $grossMargin->getSellingPrice()->mul($sold)->div($soldTotal)->round(2);
+            $data->saleGoodCost += $goodCost;
+            $data->saleSupplyCost += $supplyCost;          // TODO Should use total quantity (need Assignment::credited quantity)
+            $data->saleRevenue += $grossMargin->getSellingPrice()->mul($sold)->div($soldTotal)->round(2);
         }
     }
 
@@ -147,7 +147,10 @@ class SupplierOrdersSection implements SectionInterface
             $this->data[$id][$this->year] = new SupplierData();
         }
 
-        $this->data[$id][$this->year]->order += $order->getPaymentTotal();
+        $total = $order->getPaymentTotal() - $order->getTaxTotal() - $order->getShippingCost();
+
+        $this->data[$id][$this->year]->orderGoodCost += $total;
+        $this->data[$id][$this->year]->orderSupplyCost += $order->getShippingCost();
     }
 
     /**
@@ -186,15 +189,15 @@ class SupplierOrdersSection implements SectionInterface
         foreach ($groups as $index => $header) {
             $col = 2 + $index * 4;
 
-            // |----------------------------------------------|
-            // |                     YYYY                     |
-            // |----------------------------------------------|
-            // |      Commandes clients      |   Commandes    |
-            // |-------------|------|--------|                |
-            // | Marchandise | Port | Ventes |  Fournisseurs  |
-            // |-------------|------|--------|----------------|
+            // |--------------------------------------------------|
+            // |                       YYYY                       |
+            // |--------------------------------------------------|
+            // |      Commandes clients      |    Fournisseurs    |
+            // |-------------|------|--------|-------------|------|
+            // | Marchandise | Port | Ventes | Marchandise | Port |
+            // |-------------|------|--------|-------------|------|
 
-            $sheet->mergeCells([$col, 1, $col + 3, 1]);
+            $sheet->mergeCells([$col, 1, $col + 4, 1]);
             $sheet->getCell([$col, 1])->getStyle()->applyFromArray(
                 $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
             );
@@ -205,12 +208,6 @@ class SupplierOrdersSection implements SectionInterface
                 $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
             );
             $sheet->getCell([$col, 2])->setValue('Commandes clients');
-
-            $sheet->mergeCells([$col + 3, 2, $col + 3, 3]);
-            $sheet->getColumnDimensionByColumn($col + 3)->setWidth(23, 'mm');
-            $sheet->getCell([$col + 3, 2])->getStyle()->applyFromArray($headerStyle);
-            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
-            $sheet->getCell([$col + 3, 2])->setValue("Commandes\nfournisseurs");
 
             $sheet->getColumnDimensionByColumn($col)->setWidth(25, 'mm');
             $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
@@ -224,6 +221,21 @@ class SupplierOrdersSection implements SectionInterface
             $sheet->getColumnDimensionByColumn($col + 2)->setWidth(20, 'mm');
             $sheet->getCell([$col + 2, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col + 2, 3])->setValue('Ventes');
+
+            $sheet->mergeCells([$col + 3, 2, $col + 4, 2]);
+            $sheet->getCell([$col + 3, 2])->getStyle()->applyFromArray(
+                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+            );
+            $sheet->getCell([$col + 3, 2])->setValue('Fournisseurs');
+
+            $sheet->getColumnDimensionByColumn($col + 3)->setWidth(25, 'mm');
+            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+            $sheet->getCell([$col + 3, 3])->setValue('Marchandise');
+
+            $sheet->getColumnDimensionByColumn($col + 4)->setWidth(18, 'mm');
+            $sheet->getCell([$col + 4, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 4, 3])->setValue('Port');
         }
 
         array_walk($this->data, function (array &$data) {
@@ -235,7 +247,7 @@ class SupplierOrdersSection implements SectionInterface
         });
 
         uasort($this->data, function (array $a, array $b): int {
-            return $b['Total']->order <=> $a['Total']->order;
+            return $b['Total']->orderGoodCost <=> $a['Total']->orderGoodCost;
         });
 
         $row = 3;
@@ -245,16 +257,17 @@ class SupplierOrdersSection implements SectionInterface
             $sheet->getCell([1, $row])->setValue($this->names[$id]);
 
             foreach ($groups as $index => $group) {
-                $col = 2 + $index * 4;
+                $col = 2 + $index * 5;
 
                 $data = $supplier[$group] ?? new SupplierData();
 
                 $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
 
-                $sheet->getCell([$col, $row])->setValue($data->goodCost->toFixed(2));
-                $sheet->getCell([$col + 1, $row])->setValue($data->supplyCost->toFixed(2));
-                $sheet->getCell([$col + 2, $row])->setValue($data->sale->toFixed(2));
-                $sheet->getCell([$col + 3, $row])->setValue($data->order->toFixed(2));
+                $sheet->getCell([$col, $row])->setValue($data->saleGoodCost->toFixed(2));
+                $sheet->getCell([$col + 1, $row])->setValue($data->saleSupplyCost->toFixed(2));
+                $sheet->getCell([$col + 2, $row])->setValue($data->saleRevenue->toFixed(2));
+                $sheet->getCell([$col + 3, $row])->setValue($data->orderGoodCost->toFixed(2));
+                $sheet->getCell([$col + 4, $row])->setValue($data->orderSupplyCost->toFixed(2));
             }
         }
     }

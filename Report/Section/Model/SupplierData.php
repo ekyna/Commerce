@@ -13,24 +13,27 @@ use Decimal\Decimal;
  */
 class SupplierData
 {
-    public Decimal $goodCost;
-    public Decimal $supplyCost;
-    public Decimal $sale;
-    public Decimal $order;
+    public Decimal $saleGoodCost;
+    public Decimal $saleSupplyCost;
+    public Decimal $saleRevenue;
+    public Decimal $orderGoodCost;
+    public Decimal $orderSupplyCost;
 
     public function __construct()
     {
-        $this->goodCost = new Decimal(0);
-        $this->supplyCost = new Decimal(0);
-        $this->sale = new Decimal(0);
-        $this->order = new Decimal(0);
+        $this->saleGoodCost = new Decimal(0);
+        $this->saleSupplyCost = new Decimal(0);
+        $this->saleRevenue = new Decimal(0);
+        $this->orderGoodCost = new Decimal(0);
+        $this->orderSupplyCost = new Decimal(0);
     }
 
     public function merge(SupplierData $data): void
     {
-        $this->goodCost += $data->goodCost;
-        $this->supplyCost += $data->supplyCost;
-        $this->sale += $data->sale;
-        $this->order += $data->order;
+        $this->saleGoodCost += $data->saleGoodCost;
+        $this->saleSupplyCost += $data->saleSupplyCost;
+        $this->saleRevenue += $data->saleRevenue;
+        $this->orderGoodCost += $data->orderGoodCost;
+        $this->orderSupplyCost += $data->orderSupplyCost;
     }
 }
