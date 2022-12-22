@@ -67,9 +67,9 @@ abstract class AbstractSale extends AbstractResource implements Common\SaleInter
     protected ?string                      $documentComment = null;
     protected ?DateTimeInterface           $acceptedAt      = null;
     protected string                       $source          = Common\SaleSources::SOURCE_WEBSITE;
-    /** @var Collection<Common\SaleAttachmentInterface> */
+    /** @var Collection<int, Common\SaleAttachmentInterface> */
     protected Collection $attachments;
-    /** @var Collection<Common\SaleItemInterface> */
+    /** @var Collection<int, Common\SaleItemInterface> */
     protected Collection      $items;
     private ?ContextInterface $context = null;
 

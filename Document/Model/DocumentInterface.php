@@ -55,7 +55,7 @@ interface DocumentInterface extends LocalizedInterface
     public function hasLines(): bool;
 
     /**
-     * @return Collection<DocumentLineInterface>
+     * @return Collection<int, DocumentLineInterface>
      */
     public function getLines(): Collection;
 
@@ -87,7 +87,7 @@ interface DocumentInterface extends LocalizedInterface
     public function removeLine(DocumentLineInterface $line): DocumentInterface;
 
     /**
-     * @param Collection<DocumentLineInterface> $lines
+     * @param Collection<int, DocumentLineInterface> $lines
      *
      * @return $this|DocumentInterface
      */
@@ -119,7 +119,7 @@ interface DocumentInterface extends LocalizedInterface
     public function setItems(Collection $items): DocumentInterface;
 
     /**
-     * @return Collection<DocumentItemInterface>
+     * @return Collection<int, DocumentItemInterface>
      */
     public function getItems(): Collection;
 

@@ -45,7 +45,7 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function removeChild(SaleItemInterface $child): SaleItemInterface;
 
     /**
-     * @return Collection<SaleItemInterface>
+     * @return Collection<int, SaleItemInterface>
      */
     public function getChildren(): Collection;
 

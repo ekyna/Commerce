@@ -32,7 +32,7 @@ trait PaymentSubjectTrait
     protected ?DateTimeInterface $outstandingDate = null;
     protected string $paymentState;
     protected ?PaymentMethodInterface $paymentMethod = null;
-    /** @var Collection<PaymentInterface> */
+    /** @var Collection<int, PaymentInterface> */
     protected Collection $payments;
 
 
@@ -256,7 +256,7 @@ trait PaymentSubjectTrait
      *
      * @param bool $filter TRUE for payments, FALSE for refunds, NULL for all
      *
-     * @return Collection<PaymentInterface>
+     * @return Collection<int, PaymentInterface>
      */
     public function getPayments(bool $filter = null): Collection
     {

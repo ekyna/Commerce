@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
-use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Support\Model\TicketAttachmentInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -95,7 +95,7 @@ class TicketAttachmentEventListener
         $attachment = $event->getResource();
 
         if (!$attachment instanceof TicketAttachmentInterface) {
-            throw new UnexpectedValueException("Expected instance of " . TicketAttachmentInterface::class);
+            throw new UnexpectedTypeException($attachment, TicketAttachmentInterface::class);
         }
 
         return $attachment;

@@ -63,7 +63,7 @@ class OrderUpdater implements OrderUpdaterInterface
     /**
      * Calculates the items count.
      *
-     * @param Collection<OrderItemInterface> $items
+     * @param Collection<int, OrderItemInterface> $items
      *
      * @return int
      */

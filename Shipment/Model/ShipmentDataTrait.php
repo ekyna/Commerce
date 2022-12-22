@@ -18,7 +18,7 @@ trait ShipmentDataTrait
     protected ?Decimal $weight         = null;
     protected ?Decimal $valorization   = null;
     protected ?string  $trackingNumber = null;
-    /** @var Collection<ShipmentLabelInterface> */
+    /** @var Collection<int, ShipmentLabelInterface> */
     protected Collection $labels;
 
 
@@ -72,7 +72,7 @@ trait ShipmentDataTrait
     }
 
     /**
-     * @return Collection<ShipmentLabelInterface>
+     * @return Collection<int, ShipmentLabelInterface>
      */
     public function getLabels(): Collection
     {

@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\Collection;
  */
 trait MentionSubjectTrait
 {
-    /** @var Collection<MentionInterface> */
+    /** @var Collection<int, MentionInterface> */
     protected Collection $mentions;
 
     protected function initializeMentions(): void
@@ -23,7 +23,7 @@ trait MentionSubjectTrait
     }
 
     /**
-     * @return Collection<MentionInterface>
+     * @return Collection<int, MentionInterface>
      */
     public function getMentions(): Collection
     {

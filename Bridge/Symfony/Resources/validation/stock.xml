@@ -86,6 +86,11 @@
                 </option>
             </constraint>
         </property>
+        <property name="note">
+            <constraint name="Length">
+                <option name="max">255</option>
+            </constraint>
+        </property>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\StockAdjustment"/>
     </class>
 

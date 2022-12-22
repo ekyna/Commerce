@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Validator\ValidationHelper;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
@@ -21,8 +19,6 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class AddressValidator extends ConstraintValidator
 {
-    private ?PropertyAccessor $propertyAccessor = null;
-
     /**
      * @inheritDoc
      * @noinspection PhpParameterNameChangedDuringInheritanceInspection
@@ -140,31 +136,8 @@ class AddressValidator extends ConstraintValidator
             $config['mobile'][] = new Assert\NotBlank();
         }
 
-        if (null === $this->propertyAccessor) {
-            $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
-        }
-
-        foreach ($config as $field => $constraints) {
-            $violationList = $this
-                ->context
-                ->getValidator()
-                ->validate($this->propertyAccessor->getValue($address, $field), $constraints);
-
-            if (0 === $violationList->count()) {
-                continue;
-            }
-
-            /** @var ConstraintViolationInterface $violation */
-            foreach ($violationList as $violation) {
-                $this->context
-                    ->buildViolation($violation->getMessage())
-                    ->setInvalidValue($violation->getInvalidValue())
-                    ->atPath($field)
-                    ->addViolation();
-            }
-
-            break;
-        }
+        $helper = new ValidationHelper($this->context);
+        $helper->validate($address, $config);
 
         IdentityValidator::validateIdentity($this->context, $address, [
             'required' => $constraint->identity,

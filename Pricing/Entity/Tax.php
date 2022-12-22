@@ -27,7 +27,7 @@ class Tax extends AbstractResource implements TaxInterface
     protected ?CountryInterface $country = null;
     protected ?StateInterface   $state   = null;
 
-    /** @var Collection<TaxRuleInterface> */
+    /** @var Collection<int, TaxRuleInterface> */
     protected Collection $taxRules;
 
     public function __construct()

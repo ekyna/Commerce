@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Newsletter\Factory;
 
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
-use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Newsletter\Model\AudienceInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Factory\TranslatableFactory;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -26,10 +26,10 @@ class AudienceFactory extends TranslatableFactory implements AudienceFactoryInte
 
     public function create(): ResourceInterface
     {
-        $audience =  parent::create();
+        $audience = parent::create();
 
         if (!$audience instanceof AudienceInterface) {
-            throw new UnexpectedValueException($audience, AudienceInterface::class);
+            throw new UnexpectedTypeException($audience, AudienceInterface::class);
         }
 
         $this->generateKey($audience);

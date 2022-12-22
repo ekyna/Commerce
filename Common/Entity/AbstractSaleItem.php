@@ -27,7 +27,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     use SubjectRelativeTrait;
 
     protected ?Model\SaleItemInterface $parent = null;
-    /** @var Collection<Model\SaleItemInterface> */
+    /** @var Collection<int, Model\SaleItemInterface> */
     protected Collection $children;
     protected ?string    $description  = null;
     protected Decimal    $quantity;

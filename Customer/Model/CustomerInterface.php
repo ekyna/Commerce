@@ -68,7 +68,7 @@ interface CustomerInterface extends
     public function setParent(?CustomerInterface $parent): CustomerInterface;
 
     /**
-     * @return Collection<CustomerInterface>
+     * @return Collection<int, CustomerInterface>
      */
     public function getChildren(): Collection;
 
@@ -85,7 +85,7 @@ interface CustomerInterface extends
     public function setCustomerGroup(?CustomerGroupInterface $group): CustomerInterface;
 
     /**
-     * @return Collection<CustomerAddressInterface>
+     * @return Collection<int, CustomerAddressInterface>
      */
     public function getAddresses(): Collection;
 
@@ -96,7 +96,7 @@ interface CustomerInterface extends
     public function removeAddress(CustomerAddressInterface $address): CustomerInterface;
 
     /**
-     * @return Collection<CustomerContact>
+     * @return Collection<int, CustomerContact>
      */
     public function getContacts(): Collection;
 
@@ -111,7 +111,7 @@ interface CustomerInterface extends
     public function setDefaultPaymentMethod(?Payment\PaymentMethodInterface $method): CustomerInterface;
 
     /**
-     * @return Collection<Payment\PaymentMethodInterface>
+     * @return Collection<int, Payment\PaymentMethodInterface>
      */
     public function getPaymentMethods(): Collection;
 

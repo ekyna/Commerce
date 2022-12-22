@@ -18,7 +18,7 @@ class CustomerExport
 {
     private DateTimeInterface $from;
     private DateTimeInterface $to;
-    /** @var Collection<CustomerGroupInterface> */
+    /** @var Collection<int, CustomerGroupInterface> */
     private Collection $groups;
 
     public function __construct()
@@ -51,7 +51,7 @@ class CustomerExport
     }
 
     /**
-     * @return Collection<CustomerGroupInterface>
+     * @return Collection<int, CustomerGroupInterface>
      */
     public function getGroups(): Collection
     {

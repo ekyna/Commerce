@@ -17,6 +17,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Customer\Provider\CustomerProviderInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Pricing\Model\VatDisplayModes;
@@ -31,42 +32,20 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 class ContextProvider implements ContextProviderInterface
 {
-    protected EventDispatcherInterface         $eventDispatcher;
-    protected CustomerProviderInterface        $customerProvider;
-    protected CartProviderInterface            $cartProvider;
-    protected LocaleProviderInterface          $localProvider;
-    protected CurrencyProviderInterface        $currencyProvider;
-    protected CountryProviderInterface         $countryProvider;
-    protected WarehouseProviderInterface       $warehouseProvider;
-    protected CustomerGroupRepositoryInterface $customerGroupRepository;
-    protected string                           $defaultVatDisplayMode;
-    protected string                           $contextClass;
-
     protected ?ContextInterface $context = null;
 
-
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        CartProviderInterface $cartProvider,
-        CustomerProviderInterface $customerProvider,
-        LocaleProviderInterface $localProvider,
-        CurrencyProviderInterface $currencyProvider,
-        CountryProviderInterface $countryProvider,
-        WarehouseProviderInterface $warehouseProvider,
-        CustomerGroupRepositoryInterface $customerGroupRepository,
-        string $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
-        string $contextClass = Context::class
+        protected readonly EventDispatcherInterface         $eventDispatcher,
+        protected readonly CartProviderInterface            $cartProvider,
+        protected readonly CustomerProviderInterface        $customerProvider,
+        protected readonly LocaleProviderInterface          $localProvider,
+        protected readonly CurrencyProviderInterface        $currencyProvider,
+        protected readonly CountryProviderInterface         $countryProvider,
+        protected readonly WarehouseProviderInterface       $warehouseProvider,
+        protected readonly CustomerGroupRepositoryInterface $customerGroupRepository,
+        protected readonly string                           $defaultVatDisplayMode = VatDisplayModes::MODE_ATI,
+        protected readonly string                           $contextClass = Context::class
     ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->customerProvider = $customerProvider;
-        $this->cartProvider = $cartProvider;
-        $this->localProvider = $localProvider;
-        $this->currencyProvider = $currencyProvider;
-        $this->countryProvider = $countryProvider;
-        $this->warehouseProvider = $warehouseProvider;
-        $this->customerGroupRepository = $customerGroupRepository;
-        $this->defaultVatDisplayMode = $defaultVatDisplayMode;
-        $this->contextClass = $contextClass;
     }
 
     public function getCustomerProvider(): CustomerProviderInterface
@@ -147,7 +126,7 @@ class ContextProvider implements ContextProviderInterface
                 $currency = $this->currencyProvider->getCurrency($currency);
             }
             if (!$currency instanceof CurrencyInterface) {
-                throw new UnexpectedValueException('Expected string or instance of ' . CurrencyInterface::class);
+                throw new UnexpectedTypeException($currency, ['string', CurrencyInterface::class]);
             }
             if ($currency === $this->currencyProvider->getCurrency()) {
                 $currency = null;
@@ -159,7 +138,7 @@ class ContextProvider implements ContextProviderInterface
                 $country = $this->countryProvider->getCountry($country);
             }
             if (!$country instanceof CountryInterface) {
-                throw new UnexpectedValueException('Expected string or instance of ' . CountryInterface::class);
+                throw new UnexpectedTypeException($country, ['string', CountryInterface::class]);
             }
             if ($country === $this->countryProvider->getCountry()) {
                 $country = null;

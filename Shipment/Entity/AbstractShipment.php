@@ -35,9 +35,9 @@ abstract class AbstractShipment extends AbstractResource implements Shipment\Shi
     protected ?array                            $senderAddress   = null;
     protected ?array                            $receiverAddress = null;
     protected ?Shipment\RelayPointInterface     $relayPoint      = null;
-    /** @var Collection<Shipment\ShipmentItemInterface> */
+    /** @var Collection<int, Shipment\ShipmentItemInterface> */
     protected Collection $items;
-    /** @var Collection<Shipment\ShipmentParcelInterface> */
+    /** @var Collection<int, Shipment\ShipmentParcelInterface> */
     protected Collection $parcels;
 
     public function __construct()

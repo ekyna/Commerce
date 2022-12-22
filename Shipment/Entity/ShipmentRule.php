@@ -28,11 +28,11 @@ class ShipmentRule extends AbstractResource implements ShipmentRuleInterface
     protected ?DateTimeInterface $startAt = null;
     protected ?DateTimeInterface $endAt   = null;
     protected Decimal            $netPrice;
-    /** @var Collection<ShipmentMethodInterface> */
+    /** @var Collection<int, ShipmentMethodInterface> */
     protected Collection $methods;
-    /** @var Collection<CountryInterface> */
+    /** @var Collection<int, CountryInterface> */
     protected Collection $countries;
-    /** @var Collection<CustomerGroupInterface> */
+    /** @var Collection<int, CustomerGroupInterface> */
     protected Collection $customerGroups;
 
     public function __construct()

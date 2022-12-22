@@ -42,7 +42,7 @@ interface ShipmentInterface extends
     public function hasItems(): bool;
 
     /**
-     * @return Collection<ShipmentItemInterface>
+     * @return Collection<int, ShipmentItemInterface>
      */
     public function getItems(): Collection;
 
@@ -58,7 +58,7 @@ interface ShipmentInterface extends
     public function hasParcels(): bool;
 
     /**
-     * @return Collection<ShipmentParcelInterface>
+     * @return Collection<int, ShipmentParcelInterface>
      */
     public function getParcels(): Collection;
 

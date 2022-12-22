@@ -40,9 +40,9 @@ class Document implements DocumentInterface
 
     protected ?SaleInterface    $sale    = null;
     protected ?TaxRuleInterface $taxRule = null;
-    /** @var Collection<DocumentLineInterface> */
+    /** @var Collection<int, DocumentLineInterface> */
     protected Collection $lines;
-    /** @var Collection<DocumentItemInterface> */
+    /** @var Collection<int, DocumentItemInterface> */
     protected Collection $items;
 
     public function __construct()

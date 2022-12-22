@@ -28,7 +28,7 @@ class TicketMessage extends AbstractResource implements TicketMessageInterface
     protected bool               $internal   = false;
     protected bool               $notify     = false;
     protected ?DateTimeInterface $notifiedAt = null;
-    /** @var Collection<TicketAttachment> */
+    /** @var Collection<int, TicketAttachment> */
     protected Collection $attachments;
 
     public function __construct()

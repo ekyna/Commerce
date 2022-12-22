@@ -38,7 +38,7 @@ interface TaxGroupInterface extends ResourceInterface
     public function hasTaxes(): bool;
 
     /**
-     * @return Collection<TaxInterface>
+     * @return Collection<int, TaxInterface>
      */
     public function getTaxes(): Collection;
 

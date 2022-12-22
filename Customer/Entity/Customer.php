@@ -44,15 +44,15 @@ class Customer extends AbstractResource implements Model\CustomerInterface
     protected ?CustomerPosition        $customerPosition = null;
     protected ?DateTimeInterface       $birthday         = null;
     protected ?Model\CustomerInterface $parent           = null;
-    /** @var Collection<Model\CustomerInterface> */
+    /** @var Collection<int, Model\CustomerInterface> */
     protected Collection                    $children;
     protected ?Model\CustomerGroupInterface $customerGroup = null;
-    /** @var Collection<Model\CustomerAddressInterface> */
+    /** @var Collection<int, Model\CustomerAddressInterface> */
     protected Collection $addresses;
-    /** @var Collection<Model\CustomerAddressInterface> */
+    /** @var Collection<int, Model\CustomerAddressInterface> */
     protected Collection                      $contacts;
     protected ?Payment\PaymentMethodInterface $defaultPaymentMethod = null;
-    /** @var Collection<Payment\PaymentMethodInterface> */
+    /** @var Collection<int, Payment\PaymentMethodInterface> */
     protected Collection    $paymentMethods;
     protected ?CustomerLogo $brandLogo           = null;
     protected ?string       $brandColor          = null;

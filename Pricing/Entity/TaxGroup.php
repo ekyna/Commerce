@@ -21,7 +21,7 @@ class TaxGroup extends AbstractResource implements TaxGroupInterface
     protected ?string $name    = null;
     protected bool    $default = false;
 
-    /** @var Collection<TaxInterface> */
+    /** @var Collection<int, TaxInterface> */
     protected Collection $taxes;
 
     public function __construct()

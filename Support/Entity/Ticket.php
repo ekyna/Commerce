@@ -31,11 +31,11 @@ class Ticket extends AbstractResource implements TicketInterface
     protected ?string            $subject  = null;
     protected bool               $internal = false;
     protected ?CustomerInterface $customer = null;
-    /** @var Collection<OrderInterface> */
+    /** @var Collection<int, OrderInterface> */
     protected Collection $orders;
-    /** @var Collection<QuoteInterface> */
+    /** @var Collection<int, QuoteInterface> */
     protected Collection $quotes;
-    /** @var Collection<TicketMessageInterface> */
+    /** @var Collection<int, TicketMessageInterface> */
     protected Collection $messages;
 
 

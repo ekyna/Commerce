@@ -57,7 +57,7 @@ interface TicketMessageInterface extends ResourceInterface, TimestampableInterfa
     public function setNotifiedAt(?DateTimeInterface $date): TicketMessageInterface;
 
     /**
-     * @return Collection<TicketAttachmentInterface>
+     * @return Collection<int, TicketAttachmentInterface>
      */
     public function getAttachments(): Collection;
 

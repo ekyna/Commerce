@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\Collection;
  */
 trait AdjustableTrait
 {
-    /** @var Collection<AdjustmentInterface> */
+    /** @var Collection<int, AdjustmentInterface> */
     protected Collection $adjustments;
 
 
@@ -43,7 +43,7 @@ trait AdjustableTrait
     /**
      * Returns the adjustments, optionally filtered by type.
      *
-     * @return Collection<AdjustmentInterface>
+     * @return Collection<int, AdjustmentInterface>
      */
     public function getAdjustments(string $type = null): Collection
     {

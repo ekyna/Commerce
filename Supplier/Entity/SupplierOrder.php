@@ -32,11 +32,11 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     protected ?Model\SupplierCarrierInterface $carrier   = null;
     protected ?WarehouseInterface             $warehouse = null;
 
-    /** @var Collection<Model\SupplierOrderItemInterface> */
+    /** @var Collection<int, Model\SupplierOrderItemInterface> */
     protected Collection $items;
-    /** @var Collection<Model\SupplierDeliveryInterface> */
+    /** @var Collection<int, Model\SupplierDeliveryInterface> */
     protected Collection $deliveries;
-    /** @var Collection<Model\SupplierOrderAttachmentInterface> */
+    /** @var Collection<int, Model\SupplierOrderAttachmentInterface> */
     protected Collection $attachments;
 
     protected Decimal $shippingCost;

@@ -102,7 +102,7 @@ interface PaymentSubjectInterface extends ExchangeSubjectInterface
      *
      * @param bool|null $filter TRUE for payments, FALSE for refunds, NULL for all
      *
-     * @return Collection<PaymentInterface>
+     * @return Collection<int, PaymentInterface>
      */
     public function getPayments(bool $filter = null): Collection;
 

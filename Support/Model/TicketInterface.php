@@ -39,7 +39,7 @@ interface TicketInterface extends ResourceInterface, StateSubjectInterface, Numb
     public function setCustomer(?CustomerInterface $customer): TicketInterface;
 
     /**
-     * @return Collection<OrderInterface>
+     * @return Collection<int, OrderInterface>
      */
     public function getOrders(): Collection;
 
@@ -48,7 +48,7 @@ interface TicketInterface extends ResourceInterface, StateSubjectInterface, Numb
     public function removeOrder(OrderInterface $order): TicketInterface;
 
     /**
-     * @return Collection<QuoteInterface>
+     * @return Collection<int, QuoteInterface>
      */
     public function getQuotes(): Collection;
 
@@ -57,7 +57,7 @@ interface TicketInterface extends ResourceInterface, StateSubjectInterface, Numb
     public function removeQuote(QuoteInterface $quote): TicketInterface;
 
     /**
-     * @return Collection<TicketMessageInterface>
+     * @return Collection<int, TicketMessageInterface>
      */
     public function getMessages(): Collection;
 

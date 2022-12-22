@@ -51,7 +51,7 @@ interface SupplierOrderInterface extends
     public function removeItem(SupplierOrderItemInterface $item): SupplierOrderInterface;
 
     /**
-     * @return Collection<SupplierOrderItemInterface>
+     * @return Collection<int, SupplierOrderItemInterface>
      */
     public function getItems(): Collection;
 
@@ -70,7 +70,7 @@ interface SupplierOrderInterface extends
     public function removeDelivery(SupplierDeliveryInterface $delivery): SupplierOrderInterface;
 
     /**
-     * @return Collection<SupplierDeliveryInterface>
+     * @return Collection<int, SupplierDeliveryInterface>
      */
     public function getDeliveries(): Collection;
 
@@ -91,14 +91,14 @@ interface SupplierOrderInterface extends
     /**
      * Returns the supplier attachments.
      *
-     * @return Collection<SupplierOrderAttachmentInterface>
+     * @return Collection<int, SupplierOrderAttachmentInterface>
      */
     public function getSupplierAttachments(): Collection;
 
     /**
      * Returns the attachments.
      *
-     * @return Collection<SupplierOrderAttachmentInterface>
+     * @return Collection<int, SupplierOrderAttachmentInterface>
      */
     public function getAttachments(): Collection;
 

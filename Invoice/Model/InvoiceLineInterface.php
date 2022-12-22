@@ -22,7 +22,7 @@ interface InvoiceLineInterface extends DocumentLineInterface, ResourceInterface
     public function setChildren(array $children): InvoiceLineInterface;
 
     /**
-     * @return Collection<InvoiceLineInterface>
+     * @return Collection<int, InvoiceLineInterface>
      */
     public function getChildren(): Collection;
 

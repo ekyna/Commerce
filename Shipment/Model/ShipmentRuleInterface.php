@@ -23,7 +23,7 @@ interface ShipmentRuleInterface extends ResourceInterface
     public function setName(?string $name): ShipmentRuleInterface;
 
     /**
-     * @return Collection<ShipmentMethodInterface>
+     * @return Collection<int, ShipmentMethodInterface>
      */
     public function getMethods(): Collection;
 
@@ -32,7 +32,7 @@ interface ShipmentRuleInterface extends ResourceInterface
     public function removeMethod(ShipmentMethodInterface $method): ShipmentRuleInterface;
 
     /**
-     * @return Collection<CountryInterface>
+     * @return Collection<int, CountryInterface>
      */
     public function getCountries(): Collection;
 
@@ -41,7 +41,7 @@ interface ShipmentRuleInterface extends ResourceInterface
     public function removeCountry(CountryInterface $country): ShipmentRuleInterface;
 
     /**
-     * @return Collection<ShipmentMethodInterface>
+     * @return Collection<int, ShipmentMethodInterface>
      */
     public function getCustomerGroups(): Collection;
 
