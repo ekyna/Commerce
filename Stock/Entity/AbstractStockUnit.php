@@ -379,6 +379,7 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
     {
         return null === $this->supplierOrderItem
             && $this->stockAssignments->isEmpty()
+            && $this->stockAdjustments->isEmpty()
             && $this->orderedQuantity->isZero()
             && $this->adjustedQuantity->isZero()
             && $this->soldQuantity->isZero();
