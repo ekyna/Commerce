@@ -55,7 +55,23 @@ class CustomersSection implements SectionInterface
         }
 
         if (null === $customer = $resource->getCustomer()) {
-            return;
+            $customer = new class(0, 'Unknown') {
+                public function __construct(
+                    private readonly int $id,
+                    private readonly string $name,
+                ) {
+                }
+
+                public function getId(): int
+                {
+                    return $this->id;
+                }
+
+                public function __toString(): string
+                {
+                    return $this->name;
+                }
+            };
         }
 
         $gross = $this->util->getGrossCalculator()->calculateSale($resource);
