@@ -23,6 +23,7 @@ use function array_push;
 use function array_shift;
 use function get_class;
 use function min;
+use function sprintf;
 
 use const INF;
 
@@ -97,7 +98,11 @@ class AdjustHelper
         }
 
         if (!$quantity->isZero()) {
-            throw new StockLogicException('Failed to adjust stock subject.');
+            throw new StockLogicException(sprintf(
+                'Failed to adjust stock subject %d, %s remains.',
+                $subject->getId(),
+                $quantity->toFixed()
+            ));
         }
     }
 
