@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Stock\Updater;
 use DateTime;
 use DateTimeInterface;
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectStates;
@@ -113,11 +114,11 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $ordered += $o = $stockUnit->getOrderedQuantity();
             $received += $r = $stockUnit->getReceivedQuantity();
 
-            // Ignore EDA if stock unit his fully sold
+            // Ignore EDA if stock unit is fully sold
             if ($s >= $o + $a) {
                 continue;
             }
-            // Ignore EDA if stock unit his fully received
+            // Ignore EDA if stock unit is fully received
             if (0 < $o && 0 < $r && $r >= $o) {
                 continue;
             }
@@ -181,6 +182,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $inStock = $virtualStock = $availableStock = $eda = null;
         $replenishmentTime = 0;
 
+        $unit = $subject->getUnit();
         $composition = $this->getSorter()->sort($subject);
 
         foreach ($composition as $component) {
@@ -198,36 +200,36 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
             $quantity = $component->getQuantity();
 
             // In stock
-            $childInStock = $child->getInStock()->div($quantity);
+            $childInStock = Units::round($child->getInStock()->div($quantity), $unit);
             if (null === $inStock || $childInStock < $inStock) {
                 $inStock = $childInStock;
             }
 
             // Available stock
-            $childAvailableStock = $child->getAvailableStock()->div($quantity);
+            $childAvailableStock = Units::round($child->getAvailableStock()->div($quantity), $unit);
             if (null === $availableStock || $childAvailableStock < $availableStock) {
                 $availableStock = $childAvailableStock;
             }
 
             // Virtual stock
-            $childVirtualStock = $child->getVirtualStock()->div($quantity);
+            $childVirtualStock = Units::round($child->getVirtualStock()->div($quantity), $unit);
             if (null === $virtualStock || $childVirtualStock <= $virtualStock) {
                 $virtualStock = $childVirtualStock;
             }
 
             // Estimated date of arrival
-            if ($resupply) {
-                if (null !== $childEda = $child->getEstimatedDateOfArrival()) {
-                    if (
-                        null === $eda
-                        || (0 < $availableStock && $childEda < $eda)  // If available, gather the soonest eda
-                        || (0 >= $availableStock && $childEda > $eda) // If NOT available, gather the latest eda
-                    ) {
-                        $eda = $childEda;
+            if ($resupply && 0 < $childVirtualStock) {
+                if (null === $childEda = $child->getEstimatedDateOfArrival()) {
+                    if (0 >= $childAvailableStock) {
+                        $resupply = false;
+                        $eda = null;
                     }
-                } elseif (0 >= $availableStock) {
-                    $resupply = false;
-                    $eda = null;
+                } elseif (
+                    null === $eda
+                    || (0 < $childAvailableStock && $childEda < $eda)  // If available, gather the soonest eda
+                    || (0 >= $childAvailableStock && $childEda > $eda) // If NOT available, gather the latest eda
+                ) {
+                    $eda = $childEda;
                 }
             }
 
@@ -253,10 +255,12 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         } else {
             $mode = $justInTime ? StockSubjectModes::MODE_JUST_IN_TIME : StockSubjectModes::MODE_AUTO;
 
+            $min = $subject->getMinimumOrderQuantity();
+
             $state = StockSubjectStates::STATE_OUT_OF_STOCK;
-            if (0 < $availableStock) {
+            if ($min <= $availableStock) {
                 $state = StockSubjectStates::STATE_IN_STOCK;
-            } elseif (0 < $virtualStock && $eda) {
+            } elseif ($min <= $virtualStock && null !== $eda) {
                 $state = StockSubjectStates::STATE_PRE_ORDER;
             }
 

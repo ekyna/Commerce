@@ -139,7 +139,7 @@ class StockSubjectUpdaterTest extends TestCase
             $subject,
             [
                 Fixture::stockUnit([
-                    'state'    => StockUnitStates::STATE_NEW,
+                    'state'    => StockUnitStates::STATE_READY,
                     'sold'     => 20,
                     'shipped'  => 10,
                     'ordered'  => 20,
@@ -458,10 +458,55 @@ class StockSubjectUpdaterTest extends TestCase
 
         yield 'Compound 6' => [
             [
-                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'   => StockSubjectStates::STATE_IN_STOCK,
-                'virtual' => 15,
-                'eda'     => $eda,
+                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'     => StockSubjectStates::STATE_IN_STOCK,
+                'available' => 10,
+                'virtual'   => 15,
+                'eda'       => $eda,
+            ],
+            $subject,
+        ];
+
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
+        $subject->setStockCompound(true);
+        $subject->setStockComposition([
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 10,
+                    'available' => 10,
+                    'virtual'   => 10,
+                ]),
+                new Decimal(1)
+            ),
+            new StockComponent(
+                Fixture::subject([
+                    'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'   => StockSubjectStates::STATE_IN_STOCK,
+                    'virtual' => 10,
+                    'eda'     => $eda = new DateTime('+2 days'),
+                ]),
+                new Decimal(1)
+            ),
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 20,
+                    'virtual'   => 10,
+                ]),
+                new Decimal(1)
+            ),
+        ]);
+
+        yield 'Compound 7' => [
+            [
+                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'     => StockSubjectStates::STATE_IN_STOCK,
+                'virtual'   => 10,
+                'eda'       => $eda,
             ],
             $subject,
         ];
@@ -489,7 +534,7 @@ class StockSubjectUpdaterTest extends TestCase
             ),
         ]);
 
-        yield 'Compound 7' => [
+        yield 'Compound 8' => [
             [
                 'mode'      => StockSubjectModes::MODE_AUTO,
                 'state'     => StockSubjectStates::STATE_IN_STOCK,
@@ -513,9 +558,9 @@ class StockSubjectUpdaterTest extends TestCase
                 ),
                 new StockComponent(
                     Fixture::subject([
-                        'mode'      => StockSubjectModes::MODE_AUTO,
-                        'state'     => StockSubjectStates::STATE_IN_STOCK,
-                        'in'        => 40,
+                        'mode'  => StockSubjectModes::MODE_AUTO,
+                        'state' => StockSubjectStates::STATE_IN_STOCK,
+                        'in'    => 40,
                     ]),
                     new Decimal(3)
                 ),
@@ -542,10 +587,10 @@ class StockSubjectUpdaterTest extends TestCase
             ],
         ]);
 
-        yield 'Compound 8' => [
+        yield 'Compound 9' => [
             [
-                'mode'    => StockSubjectModes::MODE_AUTO,
-                'state'   => StockSubjectStates::STATE_PRE_ORDER,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
                 'virtual' => 10,
                 'eda'     => $eda,
             ],
