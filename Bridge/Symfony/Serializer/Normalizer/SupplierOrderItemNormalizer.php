@@ -54,6 +54,7 @@ class SupplierOrderItemNormalizer extends ResourceNormalizer
 
             $data = array_replace($data, [
                 'designation' => $object->getDesignation(),
+                'reference'   => $object->getReference(),
                 'net_price'   => $formatter->currency($object->getNetPrice(), $order->getCurrency()->getCode()),
                 'ordered'     => $formatter->number($object->getQuantity()),
                 'received'    => $formatter->number($received),

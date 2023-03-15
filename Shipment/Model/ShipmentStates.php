@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface as Shipment;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface as Subject;
 
 use function array_key_exists;
 use function in_array;
@@ -60,9 +62,9 @@ final class ShipmentStates
     /**
      * Returns whether the given state is valid or not.
      */
-    public static function isValidState(ShipmentInterface|string $state): bool
+    public static function isValidState(Shipment|Subject|string $state): bool
     {
-        return in_array(self::stateFormShipment($state), self::getStates(), true);
+        return in_array(self::stateFromShipment($state), self::getStates(), true);
     }
 
     /**
@@ -82,9 +84,9 @@ final class ShipmentStates
     /**
      * Returns whether the given state is a notifiable state.
      */
-    public static function isNotifiableState(ShipmentInterface|string $state): bool
+    public static function isNotifiableState(Shipment|Subject|string $state): bool
     {
-        return in_array(self::stateFormShipment($state), self::getNotifiableStates(), true);
+        return in_array(self::stateFromShipment($state), self::getNotifiableStates(), true);
     }
 
     /**
@@ -104,9 +106,9 @@ final class ShipmentStates
     /**
      * Returns whether the given state is a deletable state.
      */
-    public static function isDeletableState(ShipmentInterface|string $state): bool
+    public static function isDeletableState(Shipment|Subject|string $state): bool
     {
-        $state = self::stateFormShipment($state);
+        $state = self::stateFromShipment($state);
 
         return in_array($state, self::getDeletableStates(), true);
     }
@@ -128,9 +130,9 @@ final class ShipmentStates
     /**
      * Returns whether the given state is a preparable state.
      */
-    public static function isPreparableState(ShipmentInterface|string $state): bool
+    public static function isPreparableState(Shipment|Subject|string $state): bool
     {
-        $state = self::stateFormShipment($state);
+        $state = self::stateFromShipment($state);
 
         return in_array($state, self::getPreparableStates(), true);
     }
@@ -189,9 +191,9 @@ final class ShipmentStates
     /**
      * Returns whether the given state is a stockable state.
      */
-    public static function isStockableState(ShipmentInterface|string $state, bool $withPreparation): bool
+    public static function isStockableState(Shipment|Subject|string $state, bool $withPreparation): bool
     {
-        $state = self::stateFormShipment($state);
+        $state = self::stateFromShipment($state);
 
         return in_array($state, self::getStockableStates($withPreparation), true);
     }
@@ -303,14 +305,16 @@ final class ShipmentStates
     /**
      * Returns the shipment state.
      *
-     * @param ShipmentInterface|string $stateOrShipment
+     * @param Shipment|Subject|string $stateOrShipment
      *
      * @return string
      */
-    private static function stateFormShipment(ShipmentInterface|string $stateOrShipment): string
+    private static function stateFromShipment(Shipment|Subject|string $stateOrShipment): string
     {
-        if ($stateOrShipment instanceof ShipmentInterface) {
+        if ($stateOrShipment instanceof Shipment) {
             $stateOrShipment = $stateOrShipment->getState();
+        } elseif ($stateOrShipment instanceof Subject) {
+            $stateOrShipment = $stateOrShipment->getShipmentState();
         }
 
         if (!empty($stateOrShipment)) {

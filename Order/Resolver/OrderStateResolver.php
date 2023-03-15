@@ -40,7 +40,15 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
         // Sample sale case
         if ($subject->isSample()) {
             // COMPLETED If fully returned or released
-            if ($subject->isReleased() || ShipmentStates::STATE_RETURNED === $shipmentState) {
+            if (ShipmentStates::STATE_RETURNED === $shipmentState) {
+                return OrderStates::STATE_COMPLETED;
+            } elseif($subject->isReleased()) {
+                if (ShipmentStates::isDeletableState($subject)) {
+                    $subject->setShipmentState(ShipmentStates::STATE_CANCELED);
+                } else {
+                    $subject->setShipmentState(ShipmentStates::STATE_COMPLETED);
+                }
+
                 return OrderStates::STATE_COMPLETED;
             }
 
@@ -175,7 +183,7 @@ class OrderStateResolver extends AbstractSaleStateResolver implements StateResol
 
     private function cancelShipmentState(OrderInterface $order): void
     {
-        if (!ShipmentStates::isDeletableState($order->getShipmentState())) {
+        if (!ShipmentStates::isDeletableState($order)) {
             return;
         }
 
