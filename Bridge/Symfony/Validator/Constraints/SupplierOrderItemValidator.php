@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -18,20 +20,20 @@ class SupplierOrderItemValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($item, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $item) {
-            return;
-        }
-
-        if (!$item instanceof SupplierOrderItemInterface) {
-            throw new UnexpectedTypeException($item, SupplierOrderItemInterface::class);
+        if (!$value instanceof SupplierOrderItemInterface) {
+            throw new UnexpectedTypeException($value, SupplierOrderItemInterface::class);
         }
         if (!$constraint instanceof SupplierOrderItem) {
             throw new UnexpectedTypeException($constraint, SupplierOrderItem::class);
         }
 
-        if ($item->getId() && ($item->getQuantity() < $min = SupplierUtil::calculateReceivedQuantity($item))) {
+        if (null === $value->getId()) {
+            return;
+        }
+
+        if ($value->getQuantity() < $min = SupplierUtil::calculateReceivedQuantity($value)) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_must_be_greater_than_or_equal_received, [

@@ -24,6 +24,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
     protected ?Model\SupplierProductInterface $product   = null;
     protected ?StockUnitInterface             $stockUnit = null;
     protected Decimal                         $quantity;
+    protected Decimal                         $packing;
     protected Collection                      $deliveryItems;
 
     public function __construct()
@@ -31,6 +32,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         $this->initializeSubjectRelative();
 
         $this->quantity = new Decimal(1);
+        $this->packing = new Decimal(1);
         $this->deliveryItems = new ArrayCollection();
     }
 
@@ -109,8 +111,25 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this;
     }
 
+    public function getPacking(): Decimal
+    {
+        return $this->packing;
+    }
+
+    public function setPacking(Decimal $packing): Model\SupplierOrderItemInterface
+    {
+        $this->packing = $packing;
+
+        return $this;
+    }
+
     public function getDeliveryItems(): Collection
     {
         return $this->deliveryItems;
+    }
+
+    public function getSubjectQuantity(): Decimal
+    {
+        return $this->quantity->mul($this->packing);
     }
 }

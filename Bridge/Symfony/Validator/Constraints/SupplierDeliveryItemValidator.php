@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
@@ -18,14 +20,10 @@ class SupplierDeliveryItemValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($item, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $item) {
-            return;
-        }
-
-        if (!$item instanceof SupplierDeliveryItemInterface) {
-            throw new UnexpectedTypeException($item, SupplierDeliveryItemInterface::class);
+        if (!$value instanceof SupplierDeliveryItemInterface) {
+            throw new UnexpectedTypeException($value, SupplierDeliveryItemInterface::class);
         }
         if (!$constraint instanceof SupplierDeliveryItem) {
             throw new UnexpectedTypeException($constraint, SupplierDeliveryItem::class);
@@ -33,9 +31,9 @@ class SupplierDeliveryItemValidator extends ConstraintValidator
 
         // Assert that the delivery item's order item belongs to the delivery's order.
         $found = false;
-        $orderItems = $item->getDelivery()->getOrder()->getItems();
+        $orderItems = $value->getDelivery()->getOrder()->getItems();
         foreach ($orderItems as $orderItem) {
-            if ($item->getOrderItem()->getId() == $orderItem->getId()) {
+            if ($value->getOrderItem()->getId() == $orderItem->getId()) {
                 $found = true;
                 break;
             }
@@ -50,7 +48,7 @@ class SupplierDeliveryItemValidator extends ConstraintValidator
         }
 
         // Delivery item's quantity must be lower than or equals the order item's remaining delivery quantity
-        if ($item->getQuantity() > $max = SupplierUtil::calculateDeliveryRemainingQuantity($item)) {
+        if ($value->getQuantity() > $max = SupplierUtil::calculateDeliveryRemainingQuantity($value)) {
             $this
                 ->context
                 ->buildViolation($constraint->quantity_must_be_lower_than_or_equal_ordered, [

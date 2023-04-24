@@ -16,6 +16,7 @@
     "license": "MIT",
     "require": {
         "php": ">=8.1",
+        "ext-decimal": "*",
         "ext-zip": "*",
         "psr/http-message": "^1.0",
         "doctrine/collections": "^1.3",

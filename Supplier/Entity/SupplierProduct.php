@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Supplier\Entity;
 
 use DateTimeInterface;
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
@@ -22,6 +23,7 @@ class SupplierProduct implements SupplierProductInterface
     use TimestampableTrait;
 
     protected ?SupplierInterface $supplier               = null;
+    protected Decimal            $packing;
     protected Decimal            $availableStock;
     protected Decimal            $orderedStock;
     protected ?DateTimeInterface $estimatedDateOfArrival = null;
@@ -31,13 +33,22 @@ class SupplierProduct implements SupplierProductInterface
     {
         $this->initializeSubjectRelative();
 
+        $this->packing = new Decimal(1);
         $this->availableStock = new Decimal(0);
         $this->orderedStock = new Decimal(0);
     }
 
     public function __toString(): string
     {
-        return $this->designation ?: 'New supplier product';
+        if (empty($this->designation)) {
+            return 'New supplier product';
+        }
+
+        if (1 !== $this->packing->toInt()) {
+            return $this->designation . ' (x' . Units::round($this->packing, $this->unit) . ')';
+        }
+
+        return $this->designation;
     }
 
     public function getSupplier(): ?SupplierInterface
@@ -48,6 +59,18 @@ class SupplierProduct implements SupplierProductInterface
     public function setSupplier(?SupplierInterface $supplier): SupplierProductInterface
     {
         $this->supplier = $supplier;
+
+        return $this;
+    }
+
+    public function getPacking(): Decimal
+    {
+        return $this->packing;
+    }
+
+    public function setPacking(Decimal $packing): SupplierProductInterface
+    {
+        $this->packing = $packing;
 
         return $this;
     }

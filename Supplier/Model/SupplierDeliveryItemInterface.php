@@ -29,4 +29,6 @@ interface SupplierDeliveryItemInterface extends ResourceInterface
     public function getGeocode(): ?string;
 
     public function setGeocode(?string $geocode): SupplierDeliveryItemInterface;
+
+    public function getSubjectQuantity(): Decimal;
 }

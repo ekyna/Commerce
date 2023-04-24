@@ -67,7 +67,7 @@ class UnitReceivedChecker extends AbstractChecker
     {
         /** @noinspection SqlAggregates */
         return <<<SQL
-SELECT u.id, u.product_id, u.received_quantity AS received_qty, SUM(di.quantity) AS received_sum
+SELECT u.id, u.product_id, u.received_quantity AS received_qty, SUM(di.quantity * oi.packing) AS received_sum
 FROM commerce_stock_unit AS u
 JOIN commerce_supplier_order_item AS oi ON oi.id=u.supplier_order_item_id
 JOIN commerce_supplier_order AS o ON o.id=oi.supplier_order_id

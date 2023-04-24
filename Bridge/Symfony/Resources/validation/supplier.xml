@@ -142,6 +142,11 @@
                 <option name="value">1</option>
             </constraint>
         </property>
+        <property name="packing">
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
         <property name="netPrice">
             <constraint name="GreaterThanOrEqual">
                 <option name="value">0</option>
@@ -228,6 +233,11 @@
         <property name="weight">
             <constraint name="NotBlank" />
             <constraint name="GreaterThanOrEqual">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="packing">
+            <constraint name="GreaterThan">
                 <option name="value">0</option>
             </constraint>
         </property>

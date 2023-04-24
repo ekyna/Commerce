@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
+use Ekyna\Component\Commerce\Supplier\Event\SupplierDeliveryItemEvents;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -55,7 +56,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
             ->setSupplierOrderItem($item)
             ->setWarehouse($item->getOrder()->getWarehouse());
 
-        $this->stockUnitUpdater->updateOrdered($unit, $item->getQuantity(), false);
+        $this->stockUnitUpdater->updateOrdered($unit, $item->getSubjectQuantity(), false);
 
         $this->updateData($item);
     }
@@ -66,21 +67,24 @@ class StockUnitLinker implements StockUnitLinkerInterface
             return false;
         }
 
+        // Update ordered quantity if needed
+        if (!$this->persistenceHelper->isChanged($item, ['quantity', 'packing'])) {
+            return false;
+        }
+
         // Supplier order item has been previously linked to a stock unit.
         $unit = $item->getStockUnit();
 
-        $changed = false;
+        $this->stockUnitUpdater->updateOrdered($unit, $item->getSubjectQuantity(), false);
 
-        // Update ordered quantity if needed
-        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
-            $cs = $this->persistenceHelper->getChangeSet($item, 'quantity');
-            if (!($cs[1] ?? new Decimal(0))->equals($cs[0] ?? new Decimal(0))) {
-                $this->stockUnitUpdater->updateOrdered($unit, $item->getQuantity(), false);
-                $changed = true;
+        // If packing changed, update received quantity too (deliveries)
+        if ($this->persistenceHelper->isChanged($item, 'packing')) {
+            foreach ($item->getDeliveryItems() as $deliveryItem) {
+                $this->persistenceHelper->scheduleEvent($deliveryItem, SupplierDeliveryItemEvents::UPDATE);
             }
         }
 
-        return $changed;
+        return true;
     }
 
     public function unlinkItem(SupplierOrderItemInterface $item): void

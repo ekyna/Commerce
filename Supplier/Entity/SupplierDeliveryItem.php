@@ -83,4 +83,9 @@ class SupplierDeliveryItem extends AbstractResource implements Model\SupplierDel
 
         return $this;
     }
+
+    public function getSubjectQuantity(): Decimal
+    {
+        return $this->quantity->mul($this->orderItem->getPacking());
+    }
 }

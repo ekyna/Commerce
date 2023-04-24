@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Resolver;
 
 use Ekyna\Component\Commerce\Common\Resolver\AbstractStateResolver;
@@ -51,9 +53,9 @@ class SupplierOrderStateResolver extends AbstractStateResolver
             // Gather ordered quantity and received quantities.
             foreach ($subject->getItems() as $orderItem) {
                 $ordered += $orderItem->getQuantity();
-                // For each deliveries
+                // For each delivery
                 foreach ($subject->getDeliveries() as $delivery) {
-                    // For each delivery items
+                    // For each delivery item
                     foreach ($delivery->getItems() as $deliveryItem) {
                         // If delivery item concerns current order item
                         if ($orderItem === $deliveryItem->getOrderItem()) {

@@ -67,7 +67,7 @@ class UnitOrderedChecker extends AbstractChecker
     {
         /** @noinspection SqlAggregates */
         return <<<SQL
-SELECT u.id, u.product_id, u.ordered_quantity AS ordered_qty, SUM(oi.quantity) AS ordered_sum
+SELECT u.id, u.product_id, u.ordered_quantity AS ordered_qty, SUM(oi.quantity * oi.packing) AS ordered_sum
 FROM commerce_stock_unit AS u
 JOIN commerce_supplier_order_item AS oi ON oi.id=u.supplier_order_item_id
 JOIN commerce_supplier_order AS o ON o.id=oi.supplier_order_id

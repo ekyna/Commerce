@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
@@ -31,7 +30,7 @@ class SupplierDeliveryItemListener extends AbstractListener
         if (null !== $stockUnit = $orderItem->getStockUnit()) {
             $stockUnit->addGeocode($item->getGeocode());
 
-            $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity(), true);
+            $this->stockUnitUpdater->updateReceived($stockUnit, $item->getSubjectQuantity(), true);
         } elseif ($orderItem->hasSubjectIdentity()) {
             throw new RuntimeException('Failed to retrieve stock unit.');
         }
@@ -65,7 +64,7 @@ class SupplierDeliveryItemListener extends AbstractListener
             }
         }
 
-        if ($this->persistenceHelper->isChanged($item, 'quantity')) {
+        if ($this->hasQuantityChanged($item)) {
             $this->handleQuantityChange($item);
 
             // Dispatch supplier order content change event
@@ -75,10 +74,16 @@ class SupplierDeliveryItemListener extends AbstractListener
             $this->scheduleSupplierOrderContentChangeEvent($order);
 
             // Remove item with zero quantity without event schedule
-            if (0 == $item->getQuantity()) {
+            if ($item->getSubjectQuantity()->isZero()) {
                 $this->persistenceHelper->remove($item, false);
             }
         }
+    }
+
+    private function hasQuantityChanged(SupplierDeliveryItemInterface $item): bool
+    {
+        return $this->persistenceHelper->isChanged($item, 'quantity')
+            || $this->persistenceHelper->isChanged($item->getOrderItem(), 'packing');
     }
 
     public function onDelete(ResourceEventInterface $event): void
@@ -97,12 +102,12 @@ class SupplierDeliveryItemListener extends AbstractListener
             throw new RuntimeException('Failed to retrieve stock unit.');
         }
 
-        if ($this->persistenceHelper->isChanged($item, ['quantity'])) {
+        if ($this->hasQuantityChanged($item)) {
             $this->handleQuantityChange($item);
         } else {
             if (null !== $stockUnit) {
                 // Debit stock unit received quantity
-                $this->stockUnitUpdater->updateReceived($stockUnit, $item->getQuantity()->negate(), true);
+                $this->stockUnitUpdater->updateReceived($stockUnit, $item->getSubjectQuantity()->negate(), true);
             }
 
             // Trigger the supplier order update
@@ -125,16 +130,28 @@ class SupplierDeliveryItemListener extends AbstractListener
      */
     protected function handleQuantityChange(SupplierDeliveryItemInterface $item): void
     {
-        $changeSet = $this->persistenceHelper->getChangeSet($item);
-
         // Delta quantity (difference between new and old)
         if (null === $orderItem = $item->getOrderItem()) {
             throw new RuntimeException('Failed to retrieve order item.');
         }
+
         if (null !== $stockUnit = $orderItem->getStockUnit()) {
+            if (empty($quantityCs = $this->persistenceHelper->getChangeSet($item, 'quantity'))) {
+                $quantityCs = [
+                    0 => $item->getQuantity(),
+                    1 => $item->getQuantity(),
+                ];
+            }
+
+            if (empty($packingCs = $this->persistenceHelper->getChangeSet($item->getOrderItem(), 'packing'))) {
+                $packingCs = [
+                    0 => $item->getOrderItem()->getPacking(),
+                    1 => $item->getOrderItem()->getPacking(),
+                ];
+            }
+
             // TODO use packaging format
-            $deltaQuantity = ($changeSet['quantity'][1] ?? new Decimal(0))
-                ->sub($changeSet['quantity'][0] ?? new Decimal(0));
+            $deltaQuantity = $quantityCs[1]->mul($packingCs[1])->sub($quantityCs[0]->mul($packingCs[0]));
             if (!$deltaQuantity->isZero()) {
                 // Update stock unit received quantity
                 $this->stockUnitUpdater->updateReceived($stockUnit, $deltaQuantity, true);

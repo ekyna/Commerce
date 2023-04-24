@@ -11,7 +11,9 @@ namespace Ekyna\Component\Commerce\Supplier\Model;
  */
 final class SupplierOrderAttachmentTypes
 {
+    public const TYPE_QUOTE     = 'quote';
     public const TYPE_FORM      = 'form';
+    public const TYPE_INVOICE   = 'invoice';
     public const TYPE_PROFORMA  = 'proforma';
     public const TYPE_PAYMENT   = 'payment';
     public const TYPE_FORWARDER = 'forwarder';

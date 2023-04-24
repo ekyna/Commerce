@@ -28,6 +28,10 @@ interface SupplierProductInterface extends SubjectRelativeInterface, Timestampab
 
     public function setOrderedStock(Decimal $stock): SupplierProductInterface;
 
+    public function getPacking(): Decimal;
+
+    public function setPacking(Decimal $packing): SupplierProductInterface;
+
     public function getEstimatedDateOfArrival(): ?DateTimeInterface;
 
     public function setEstimatedDateOfArrival(?DateTimeInterface $date): SupplierProductInterface;

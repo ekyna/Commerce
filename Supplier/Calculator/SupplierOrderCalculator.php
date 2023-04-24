@@ -149,12 +149,14 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         }
 
         if ($order->getDiscountTotal()->isZero()) {
-            return $this->convertPrice($item->getNetPrice(), $order, false)->round(5);
+            $price = $item->getNetPrice()->div($item->getPacking());
+        } else {
+            $discount = $order->getDiscountTotal() * $this->getWeighting($item, false);
+
+            $price = $item->getNetPrice()->sub($discount)->div($item->getPacking());
         }
 
-        $discount = $order->getDiscountTotal() * $this->getWeighting($item, false);
-
-        return $this->convertPrice($item->getNetPrice() - $discount, $order, false)->round(5);
+        return $this->convertPrice($price, $order, false)->round(5);
     }
 
     public function calculateStockUnitShippingPrice(SupplierOrderItemInterface $item): Decimal
@@ -171,7 +173,7 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
             return $total;
         }
 
-        return $total->mul($this->getWeighting($item))->round(5);
+        return $total->mul($this->getWeighting($item))->div($item->getPacking())->round(5);
     }
 
     /**
