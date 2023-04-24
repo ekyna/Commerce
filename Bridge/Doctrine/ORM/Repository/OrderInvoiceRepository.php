@@ -245,6 +245,23 @@ class OrderInvoiceRepository extends ResourceRepository implements OrderInvoiceR
     /**
      * @inheritDoc
      */
+    public function findLatestNumber(bool $credit): ?string
+    {
+        $qb = $this->createQueryBuilder('i');
+
+        return $qb
+            ->select('i.number')
+            ->andWhere($qb->expr()->eq('i.credit', ':credit'))
+            ->orderBy('i.number', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->setParameter('credit', $credit)
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findDueInvoices(CustomerInterface $customer = null, string $currency = null): array
     {
         return $this

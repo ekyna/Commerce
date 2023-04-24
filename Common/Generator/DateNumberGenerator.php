@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Generator;
+
+use DateTime;
 
 /**
  * Class DateNumberGenerator
@@ -14,6 +18,6 @@ class DateNumberGenerator extends AbstractGenerator
      */
     protected function getPrefix(): string
     {
-        return (new \DateTime())->format($this->prefix);
+        return (new DateTime())->format($this->prefix);
     }
 }

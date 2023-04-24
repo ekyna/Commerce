@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Generator;
 
 /**
@@ -13,9 +15,8 @@ interface GeneratorInterface
      * Sets the storage.
      *
      * @param string|StorageInterface $storage
-     * @param int                     $length
      */
-    public function setStorage($storage, int $length = null): void;
+    public function setStorage(string|StorageInterface $storage): void;
 
     /**
      * Generates a new value.

@@ -61,4 +61,13 @@ interface InvoiceRepositoryInterface extends ResourceRepositoryInterface
      * @return array<I>
      */
     public function findByOrderId(int $id): array;
+
+    /**
+     * Finds the latest invoice (or credit) number.
+     *
+     * @param bool $credit
+     *
+     * @return string|null
+     */
+    public function findLatestNumber(bool $credit): ?string;
 }
