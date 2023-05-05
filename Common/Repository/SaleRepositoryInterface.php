@@ -45,7 +45,12 @@ interface SaleRepositoryInterface extends ResourceRepositoryInterface
      *
      * @return array<S>
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = [], bool $withChildren = false): array;
+    public function findByCustomer(
+        CustomerInterface $customer,
+        array             $states = [],
+        bool              $withChildren = false,
+        int               $limit = 0
+    ): array;
 
     /**
      * Finds the sale by customer and number.

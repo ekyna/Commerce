@@ -12,6 +12,7 @@ use Ekyna\Component\Commerce\Accounting\Model\AccountingTypes;
 use Ekyna\Component\Commerce\Accounting\Repository\AccountingRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
@@ -106,11 +107,10 @@ class AccountingExporter implements AccountingExporterInterface
 
         $zip = new ZipArchive();
 
-        if (false === $zip->open($path)) {
+        if (true !== $zip->open($path)) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        /** @var DateTime $month */
         foreach ($months as $month) {
             $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.csv', $month->format('Y-m')));
 
@@ -575,7 +575,7 @@ class AccountingExporter implements AccountingExporterInterface
     /**
      * Returns the sale discounts included in the current invoice.
      *
-     * @return \Ekyna\Component\Commerce\Common\Model\AdjustmentInterface[]
+     * @return AdjustmentInterface[]
      */
     protected function getSaleDiscounts(): array
     {

@@ -35,7 +35,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
      *
      * @return array<int, OrderInterface>
      */
-    public function findByOriginCustomer(CustomerInterface $customer, array $states = []): array;
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], int $limit = 0): array;
 
     /**
      * Finds orders initiated by the given customer or its children.

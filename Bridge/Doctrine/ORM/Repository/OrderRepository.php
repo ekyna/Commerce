@@ -94,20 +94,16 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         return $sale;
     }
 
-    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], bool $strict = false): array
+    public function findByOriginCustomer(CustomerInterface $customer, array $states = [], int $limit = 0): array
     {
         $qb = $this->createQueryBuilder('o');
 
-        if ($strict) {
-            $qb->andWhere($qb->expr()->eq('o.originCustomer', ':customer'));
-        } else {
-            $qb->andWhere($qb->expr()->orX(
+        $qb
+            ->andWhere($qb->expr()->orX(
                 $qb->expr()->eq('o.customer', ':customer'),
                 $qb->expr()->eq('o.originCustomer', ':customer')
-            ));
-        }
-
-        $qb->addOrderBy('o.createdAt', 'DESC');
+            ))
+            ->addOrderBy('o.createdAt', 'DESC');
 
         $parameters = ['customer' => $customer];
 
@@ -115,6 +111,10 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             $qb->andWhere($qb->expr()->in('o.state', ':states'));
 
             $parameters['states'] = $states;
+        }
+
+        if (0 < $limit) {
+            $qb->setMaxResults($limit);
         }
 
         return $qb

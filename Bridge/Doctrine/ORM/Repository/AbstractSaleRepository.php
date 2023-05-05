@@ -82,8 +82,12 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
     /**
      * @inheritDoc
      */
-    public function findByCustomer(CustomerInterface $customer, array $states = [], bool $withChildren = false): array
-    {
+    public function findByCustomer(
+        CustomerInterface $customer,
+        array             $states = [],
+        bool              $withChildren = false,
+        int               $limit = 0
+    ): array {
         $qb = $this->createQueryBuilder('o');
 
         if ($withChildren && $customer->hasChildren()) {
@@ -102,6 +106,10 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
             $parameters['states'] = $states;
         }
 
+        if (0 < $limit) {
+            $qb->setMaxResults($limit);
+        }
+
         return $qb
             ->getQuery()
             ->setParameters($parameters)
@@ -117,10 +125,12 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
 
         $sale = $qb
             ->join('o.customer', 'c')
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->eq('c', ':customer'),
-                $qb->expr()->eq('c.parent', ':customer')
-            ))
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->eq('c', ':customer'),
+                    $qb->expr()->eq('c.parent', ':customer')
+                )
+            )
             ->andWhere($qb->expr()->eq('o.number', ':number'))
             ->getQuery()
             ->setParameters([
@@ -148,20 +158,22 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
             ->join('o.items', 'i')
             ->leftJoin('i.children', 'c')
             ->leftJoin('c.children', 'sc')
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->andX(
-                    $qb->expr()->eq('i.subjectIdentity.provider', ':provider'),
-                    $qb->expr()->eq('i.subjectIdentity.identifier', ':identifier')
-                ),
-                $qb->expr()->andX(
-                    $qb->expr()->eq('c.subjectIdentity.provider', ':provider'),
-                    $qb->expr()->eq('c.subjectIdentity.identifier', ':identifier')
-                ),
-                $qb->expr()->andX(
-                    $qb->expr()->eq('sc.subjectIdentity.provider', ':provider'),
-                    $qb->expr()->eq('sc.subjectIdentity.identifier', ':identifier')
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('i.subjectIdentity.provider', ':provider'),
+                        $qb->expr()->eq('i.subjectIdentity.identifier', ':identifier')
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('c.subjectIdentity.provider', ':provider'),
+                        $qb->expr()->eq('c.subjectIdentity.identifier', ':identifier')
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('sc.subjectIdentity.provider', ':provider'),
+                        $qb->expr()->eq('sc.subjectIdentity.identifier', ':identifier')
+                    )
                 )
-            ));
+            );
 
         $parameters = [
             'provider'   => $subject::getProviderName(),
@@ -201,12 +213,12 @@ abstract class AbstractSaleRepository extends ResourceRepository implements Sale
                 'shipment_method',
                 'currency'
             )
-            ->leftJoin($alias . '.customer', 'customer')
-            ->leftJoin($alias . '.customerGroup', 'customer_group')
-            ->leftJoin($alias . '.invoiceAddress', 'invoice_address')
-            ->leftJoin($alias . '.deliveryAddress', 'delivery_address')
-            ->leftJoin($alias . '.shipmentMethod', 'shipment_method')
-            ->leftJoin($alias . '.currency', 'currency')
+            ->leftJoin($alias.'.customer', 'customer')
+            ->leftJoin($alias.'.customerGroup', 'customer_group')
+            ->leftJoin($alias.'.invoiceAddress', 'invoice_address')
+            ->leftJoin($alias.'.deliveryAddress', 'delivery_address')
+            ->leftJoin($alias.'.shipmentMethod', 'shipment_method')
+            ->leftJoin($alias.'.currency', 'currency')
             ->setMaxResults(1);
     }
 

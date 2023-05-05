@@ -89,12 +89,12 @@ abstract class AbstractGenerator implements GeneratorInterface
             $number = intval($number);
         }
 
-        /*if ($this->debug) {
+        if ($this->debug) {
             $test = intval(str_pad('9', $this->length - strlen($prefix) - 1, '9'));
             if ($test > $number) {
                 $number = $test;
             }
-        }*/
+        }
 
         return $prefix . str_pad((string)($number + 1), $this->length - strlen($prefix), '0', STR_PAD_LEFT);
     }
