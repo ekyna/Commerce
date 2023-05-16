@@ -391,12 +391,30 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $qb
             ->select('o')
+            ->leftJoin('o.invoices', 'i', Expr\Join::WITH, $ex->eq('i.credit', ':credit')) // Only invoices
             ->where($ex->andX(
-                $ex->eq('o.sample', ':sample'),           // Not sample
-                $ex->eq('o.state', ':state'),             // Accepted
-                $ex->lt('o.invoiceTotal', 'o.grandTotal') // invoice total lower than grand total
+                $ex->eq('o.sample', ':sample'), // Not sample
+                $ex->eq('o.state', ':state')    // Accepted
+            ))
+            ->groupBy('o.id')
+            ->having($ex->orX(
+                $ex->eq($ex->count('i'), 0), // Not invoiced
+                $ex->andX(
+                    $ex->eq($ex->count('i'), 1), // Single invoice
+                    $ex->lt('o.invoiceTotal', 'o.grandTotal') // invoice total lower than grand total
+                ),
+                $ex->andX(
+                    $ex->gt($ex->count('i'), 1), // Multiple invoices
+                    // Allow difference between grand total and invoice total
+                    // by two cents per invoice
+                    $ex->gt(
+                        $ex->diff('o.grandTotal', 'o.invoiceTotal'),
+                        $ex->prod($ex->count('i'), '0.02')
+                    )
+                )
             ))
             ->addOrderBy('o.createdAt', 'ASC')
+            ->setParameter('credit', false)
             ->setParameter('sample', false)
             ->setParameter('state', OrderStates::STATE_ACCEPTED);
 
