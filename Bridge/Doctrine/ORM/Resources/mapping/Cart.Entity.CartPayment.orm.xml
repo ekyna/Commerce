@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <entity name="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
             table="commerce_cart_payment">
 
         <indexes>
@@ -25,6 +26,6 @@
             <join-column name="cart_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
-    </entity>
+    </mapped-superclass>
 
 </doctrine-mapping>

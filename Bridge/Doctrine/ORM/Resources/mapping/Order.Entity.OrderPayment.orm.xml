@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <entity name="Ekyna\Component\Commerce\Order\Entity\OrderPayment"
+    <mapped-superclass
+            name="Ekyna\Component\Commerce\Order\Entity\OrderPayment"
             table="commerce_order_payment">
 
         <indexes>
@@ -29,6 +30,6 @@
             <join-column name="order_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>
 
-    </entity>
+    </mapped-superclass>
 
 </doctrine-mapping>
