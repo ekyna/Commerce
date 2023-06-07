@@ -25,7 +25,7 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface"
                     field="shipment" mapped-by="invoice"/>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoiceLine"

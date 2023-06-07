@@ -25,7 +25,7 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoice"
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface"
                     field="invoice" inversed-by="shipment">
             <join-column name="invoice_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </one-to-one>

@@ -25,7 +25,7 @@
             <join-column name="order_item_id" referenced-column-name="id" on-delete="RESTRICT" nullable="false"/>
         </many-to-one>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
+        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface"
                      field="shipment" inversed-by="items">
             <join-column name="shipment_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>

@@ -96,7 +96,7 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderPayment"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Model\OrderPaymentInterface"
                      field="payments" mapped-by="order" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
@@ -107,7 +107,7 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface"
                      field="shipments" mapped-by="order" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
@@ -118,7 +118,7 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoice"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface"
                      field="invoices" mapped-by="order" orphan-removal="true">
             <cascade>
                 <cascade-persist/>

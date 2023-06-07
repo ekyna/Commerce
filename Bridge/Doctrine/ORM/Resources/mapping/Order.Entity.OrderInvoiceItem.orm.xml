@@ -17,7 +17,7 @@
             <gedmo:sortable-position/>
         </field>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderInvoice"
+        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface"
                      field="invoice" inversed-by="items">
             <join-column name="invoice_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
             <gedmo:sortable-group/>

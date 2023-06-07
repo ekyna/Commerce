@@ -81,7 +81,7 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Entity\CartPayment"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Cart\Model\CartPaymentInterface"
                      field="payments" mapped-by="cart" orphan-removal="true">
             <cascade>
                 <cascade-persist/>

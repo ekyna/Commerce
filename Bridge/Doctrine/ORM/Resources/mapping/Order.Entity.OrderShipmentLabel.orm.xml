@@ -12,7 +12,7 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Entity\OrderShipment"
+        <many-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderShipmentInterface"
                      field="shipment" inversed-by="labels">
             <join-column name="shipment_id" referenced-column-name="id" on-delete="CASCADE" nullable="true"/>
         </many-to-one>

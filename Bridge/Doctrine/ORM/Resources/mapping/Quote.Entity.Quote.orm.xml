@@ -82,7 +82,7 @@
             </order-by>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Entity\QuotePayment"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Quote\Model\QuotePaymentInterface"
                      field="payments" mapped-by="quote" orphan-removal="true">
             <cascade>
                 <cascade-persist/>
