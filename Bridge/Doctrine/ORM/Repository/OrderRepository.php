@@ -176,7 +176,8 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $ex->andX(                                             // Outstanding
                     $ex->isNotNull('o.paymentTerm'),                   // - With payment term
                     $this->getDueClauses(),                            // - Terms triggered
-                    $qb->expr()->lte('o.outstandingDate', ':today')    // - Payment limit date lower than or equal today
+                    // - Payment limit date lower than or equal today
+                    $qb->expr()->lte('o.outstandingDate', ':today')
                 ),
                 $ex->andX(                                             // Regular
                     $ex->isNull('o.paymentTerm'),                      // - Without payment term
@@ -309,15 +310,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
     public function getRemainingTotal(): Decimal
     {
-        $total = $this
+        $orders = $this
             ->getRemainingQueryBuilder()
-            ->select('SUM(o.grandTotal - o.invoiceTotal)')
+            ->select('o.grandTotal, o.invoiceTotal')
             ->getQuery()
             ->useQueryCache(true)
             ->enableResultCache(300)
-            ->getSingleScalarResult();
+            ->getArrayResult();
 
-        return new Decimal($total ?: 0);
+        $total = new Decimal(0);
+        foreach ($orders as $order) {
+            $total+= $order['grandTotal']->sub($order['invoiceTotal']);
+        }
+
+        return $total;
     }
 
     public function getRemainingOrders(): array
@@ -401,11 +407,12 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 $ex->eq($ex->count('i'), 0), // Not invoiced
                 $ex->andX(
                     $ex->eq($ex->count('i'), 1), // Single invoice
-                    $ex->lt('o.invoiceTotal', 'o.grandTotal') // invoice total lower than grand total
+                    // invoice-credit total lower than grand total
+                    $ex->lt('o.invoiceTotal', 'o.grandTotal')
                 ),
                 $ex->andX(
                     $ex->gt($ex->count('i'), 1), // Multiple invoices
-                    // Allow difference between grand total and invoice total
+                    // Allow difference between grand total and invoice-credit total
                     // by two cents per invoice
                     $ex->gt(
                         $ex->diff('o.grandTotal', 'o.invoiceTotal'),
