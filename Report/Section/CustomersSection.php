@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Report\Section;
 
-use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
-use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
-use Ekyna\Component\Commerce\Report\Section\Model\OrderData;
-use Ekyna\Component\Commerce\Report\Util\OrderUtil;
 use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
 use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
-use function array_walk;
 use function Symfony\Component\Translation\t;
-use function uasort;
 
 /**
  * Class CustomersSection
@@ -29,17 +25,12 @@ class CustomersSection implements SectionInterface
 {
     final public const NAME = 'customers';
 
-    /** @var array<int, array<string, OrderData> */
+    /** @var array<int, array<string, Margin> */
     private array $data;
     /** @var array<int, string> */
     private array $names;
     /** @var array<int, string> */
     private array $years;
-
-    public function __construct(
-        private readonly OrderUtil $util
-    ) {
-    }
 
     public function initialize(ReportConfig $config): void
     {
@@ -50,14 +41,14 @@ class CustomersSection implements SectionInterface
 
     public function read(ResourceInterface $resource): void
     {
-        if (!$resource instanceof OrderInterface) {
-            throw new UnexpectedTypeException($resource, OrderInterface::class);
+        if (!$resource instanceof OrderInvoiceInterface) {
+            throw new UnexpectedTypeException($resource, OrderInvoiceInterface::class);
         }
 
-        if (null === $customer = $resource->getCustomer()) {
+        if (null === $customer = $resource->getOrder()->getCustomer()) {
             $customer = new class(0, 'Unknown') {
                 public function __construct(
-                    private readonly int $id,
+                    private readonly int    $id,
                     private readonly string $name,
                 ) {
                 }
@@ -74,28 +65,18 @@ class CustomersSection implements SectionInterface
             };
         }
 
-        $gross = $this->util->getGrossCalculator()->calculateSale($resource);
-        $commercial = $this->util->getCommercialCalculator()->calculateSale($resource);
-
-        if ($gross->getSellingPrice()->isZero() && $commercial->getSellingPrice()->isZero()) {
-            return;
-        }
-
         $id = $customer->getId();
-        $year = $resource->getAcceptedAt()->format('Y');
+        $year = $resource->getCreatedAt()->format('Y');
 
         if (!isset($this->names[$id])) {
             $this->names[$id] = (string)$customer;
         }
 
         if (!isset($this->data[$id][$year])) {
-            $this->data[$id][$year] = $this->util->create();
+            $this->data[$id][$year] = new Margin();
         }
 
-        $data = $this->data[$id][$year];
-
-        $data->grossMargin->merge($gross);
-        $data->commercialMargin->merge($commercial);
+        $this->data[$id][$year]->merge($resource->getMargin());
     }
 
     public function write(WriterInterface $writer): void
@@ -111,46 +92,30 @@ class CustomersSection implements SectionInterface
 
     private function writeXls(XlsWriter $writer): void
     {
-        $sheet = $writer->createSheet('Customers'); // TODO Trans
+        $sheet = $writer->createSheet('Customers'); // TODO trans
 
-        $writer->writeOrderStatHeaders('Customers', 120, $this->years); // TODO Trans
-
-        // Calculate total
-        array_walk($this->data, function (array &$data) {
-            $total = new Decimal(0);
-            /** @var OrderData $datum */
-            foreach ($data as $datum) {
-                $total += $datum->grossMargin->getRevenue();
-            }
-            $data['total'] = $total;
-        });
-
-        // Sort by highest revenue
-        uasort($this->data, function (array $a, array $b): int {
-            return $b['total'] <=> $a['total'];
-        });
+        $writer->writeMarginHeaders('Customer', 23, $this->years); // TODO trans
 
         // Values
-        $row = 2;
-        foreach ($this->data as $id => $years) {
+        $row = 3;
+        foreach ($this->names as $id => $name) {
             $row++;
 
             // Row header
-            $sheet->getCell([1, $row])->setValue($this->names[$id]);
+            $sheet->getCell([1, $row])->setValue($name);
 
-            foreach ($this->years as $index => $year) {
-                $col = 2 + $index * 3;
+            // Values
+            foreach ($this->years as $yearIndex => $year) {
+                $data = $this->data[$id][$year] ?? new Margin();
 
-                $datum = $years[$year] ?? $this->util->create();
-
-                $writer->writeOrderStatCells($datum, $col, $row);
+                $writer->writeMarginCells($data, $yearIndex, $row);
             }
         }
     }
 
     public function requiresResources(): array
     {
-        return [OrderInterface::class];
+        return [OrderInvoiceInterface::class];
     }
 
     public function supportsWriter(string $writerClass): bool

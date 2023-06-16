@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Tests\Invoice\Calculator;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculator;
 use Ekyna\Component\Commerce\Shipment\Calculator\ShipmentSubjectCalculatorInterface;
+use Ekyna\Component\Commerce\Tests\Data;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 use Generator;
@@ -14,6 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 use function array_keys;
 use function array_map;
+use function array_replace;
 use function array_values;
 
 /**
@@ -49,7 +51,6 @@ class InvoiceSubjectCalculatorTest extends TestCase
         Fixture::order($order);
 
         foreach ($result as $reference => $expected) {
-            /** @noinspection PhpParamsInspection */
             self::assertEquals($expected, $this->invoiceCalculator->isInvoiced(Fixture::get($reference)));
         }
     }
@@ -148,7 +149,6 @@ class InvoiceSubjectCalculatorTest extends TestCase
         foreach ($result as $reference => $expected) {
             $element = Fixture::get($reference);
 
-            /** @noinspection PhpParamsInspection */
             $actual = $this->invoiceCalculator->calculateInvoiceableQuantity($element);
 
             self::assertEquals(new Decimal($expected), $actual);
@@ -363,7 +363,6 @@ class InvoiceSubjectCalculatorTest extends TestCase
         foreach ($result as $reference => $expected) {
             $element = Fixture::get($reference);
 
-            /** @noinspection PhpParamsInspection */
             $actual = $this->invoiceCalculator->calculateInvoicedQuantity($element);
 
             self::assertEquals(new Decimal($expected), $actual);
@@ -584,7 +583,6 @@ class InvoiceSubjectCalculatorTest extends TestCase
                     $message = $adjustment ? 'Only adjustments' : 'Excluding adjustments';
                 }
 
-                /** @noinspection PhpParamsInspection */
                 $calculated = $this->invoiceCalculator->calculateCreditedQuantity($subject, null, $adjustment);
 
                 self::assertEquals(new Decimal($expected), $calculated, $message);
@@ -997,6 +995,47 @@ class InvoiceSubjectCalculatorTest extends TestCase
             [
                 Fixture::CURRENCY_EUR => '89.29',
                 Fixture::CURRENCY_USD => '100',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideCalculateCreditTotal
+     */
+    public function testCalculateSoldQuantity(array $order, array $amounts): void
+    {
+        $order = Fixture::order($order);
+
+        foreach ($amounts as $currency => $expected) {
+            $actual = $this->invoiceCalculator->calculateCreditTotal($order, $currency);
+            self::assertEquals(new Decimal($expected), $actual);
+        }
+    }
+
+    public function provideCalculateSoldQuantity(): Generator
+    {
+        yield 'Case 1' => [
+            array_replace(Data::order1(), [
+                'invoices' => [
+                    [
+                        'lines' => [
+                            ['item' => ['_reference' => 'order1_item1'], 'quantity' => 3],
+                            ['item' => ['_reference' => 'order1_item2_1'], 'quantity' => 20],
+                            ['item' => ['_reference' => 'order1_item2_2'], 'quantity' => 8],
+                            ['item' => ['_reference' => 'order1_item2_2_1'], 'quantity' => 16],
+                            ['item' => ['_reference' => 'order1_item2_2_2'], 'quantity' => 24],
+                            ['item' => ['_reference' => 'order1_item3'], 'quantity' => 6],
+                            ['item' => ['_reference' => 'order1_item3_1'], 'quantity' => 12],
+                        ]
+                    ],
+                    ['grand_total' => 50],
+                    ['grand_total' => 100, 'credit' => true],
+                    ['grand_total' => 50, 'credit' => true],
+                ],
+            ]),
+            [
+                Fixture::CURRENCY_EUR => '150',
+                Fixture::CURRENCY_USD => '187.50',
             ],
         ];
     }

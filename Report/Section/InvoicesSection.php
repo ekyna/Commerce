@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Report\Section;
 
+use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
-use Ekyna\Component\Commerce\Report\Section\Model\InvoiceData;
 use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
 use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -28,7 +28,7 @@ class InvoicesSection implements SectionInterface
     final public const NAME = 'invoices';
 
     private string $locale;
-    /** @var array<string, array<int, InvoiceData>> */
+    /** @var array<string, array<int, Margin>> */
     private array $data;
     /** @var array<int, string> */
     private array $years;
@@ -55,22 +55,10 @@ class InvoicesSection implements SectionInterface
         [$year, $month] = explode('-', $resource->getCreatedAt()->format('Y-n'));
 
         if (!isset($this->data[$year][$month])) {
-            $this->data[$year][$month] = new InvoiceData();
+            $this->data[$year][$month] = new Margin();
         }
 
-        $data = $this->data[$year][$month];
-
-        if ($resource->isCredit()) {
-            $data->good -= $resource->getGoodsBase();
-            $data->shipment -= $resource->getShipmentBase();
-            $data->discount -= $resource->getDiscountBase();
-
-            return;
-        }
-
-        $data->good += $resource->getGoodsBase();
-        $data->shipment += $resource->getShipmentBase();
-        $data->discount += $resource->getDiscountBase();
+        $this->data[$year][$month]->merge($resource->getMargin());
     }
 
     /**
@@ -89,38 +77,23 @@ class InvoicesSection implements SectionInterface
 
     private function writeXls(XlsWriter $writer): void
     {
-        $sheet = $writer->createSheet('Invoices');
+        $sheet = $writer->createSheet('Invoices'); // TODO trans
 
-        // Column headers
-        $headerStyle = XlsWriter::STYLE_BOLD + XlsWriter::STYLE_BACKGROUND + XlsWriter::STYLE_BORDER_BOTTOM;
+        $writer->writeMarginHeaders('Month', 23, $this->years); // TODO Trans
 
-        $sheet->getColumnDimension('A')->setWidth(30, 'mm');
-        $sheet->getCell([1, 1])->getStyle()->applyFromArray($headerStyle);
-        $sheet->getCell([1, 1])->setValue('Month');
-
-        foreach ($this->years as $index => $year) {
-            $col = 2 + $index;
-            $sheet->getColumnDimensionByColumn($col)->setWidth(25, 'mm');
-            $sheet->getCell([$col, 1])->getStyle()->applyFromArray($headerStyle);
-            $sheet->getCell([$col, 1])->setValue($year);
-        }
-
-        // Rows
+        // Values
+        $row = 3;
         foreach (DateUtil::getMonths($this->locale) as $monthIndex => $month) {
-            $row = 1 + $monthIndex; // monthIndex is 1 based
+            $row++;
 
             // Row header
             $sheet->getCell([1, $row])->setValue($month);
 
             // Values
             foreach ($this->years as $yearIndex => $year) {
-                $col = 2 + $yearIndex; // yearIndex is 0 based
+                $data = $this->data[$year][$monthIndex] ?? new Margin();
 
-                $data = $this->data[$year][$monthIndex] ?? new InvoiceData();
-
-                $value = $data->good->add($data->shipment)->sub($data->discount);
-
-                $sheet->getCell([$col, $row])->setValue($value->toFixed(2));
+                $writer->writeMarginCells($data, $yearIndex, $row);
             }
         }
     }

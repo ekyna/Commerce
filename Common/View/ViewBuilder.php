@@ -30,7 +30,7 @@ class ViewBuilder
     private ?OptionsResolver $optionsResolver = null;
     private array            $options;
     private SaleView         $view;
-    /** @var ViewTypeInterface[] */
+    /** @var array<int, ViewTypeInterface> */
     private array                     $types;
     private int                       $lineNumber;
     private Formatter                 $formatter;
@@ -77,30 +77,34 @@ class ViewBuilder
             $this->currency($finalResult->getTotal())
         );
 
-        if ($this->options['private'] && ($margin = $this->marginCalculator->calculateSale($sale))) {
+        if ($this->options['private']) {
+            // TODO if ($sale instanceof MarginSubjectInterface) $margin = $sale->getMargin()
+            $margin = $this->marginCalculator->calculateSale($sale);
             $this->view->vars['show_margin'] = true;
 
-            // Commercial margin
+            // Gross margin
             $prefix = $margin->isAverage() ? '~' : '';
 
-            $amount = $this->currencyConverter->convertWithSubject($margin->getAmount(), $sale, $c);
+            $amount = $this
+                ->currencyConverter
+                ->convertWithSubject($margin->getTotal(true), $sale, $c);
 
-            $this->view->commercialMargin = new MarginView(
+            $this->view->grossMargin = new MarginView(
                 $this->currency($amount, $prefix),
-                $this->percent($margin->getPercent(), $prefix)
+                $this->percent($margin->getPercent(true), $prefix)
             );
 
-            // Profit margin
-            if ($margin = $this->marginCalculatorFactory->create($c, true)->calculateSale($sale)) {
-                $prefix = $margin->isAverage() ? '~' : '';
+            // Net margin
+            $prefix = $margin->isAverage() ? '~' : '';
 
-                $amount = $this->currencyConverter->convertWithSubject($margin->getAmount(), $sale, $c);
+            $amount = $this
+                ->currencyConverter
+                ->convertWithSubject($margin->getTotal(false), $sale, $c);
 
-                $this->view->profitMargin = new MarginView(
-                    $this->currency($amount, $prefix),
-                    $this->percent($margin->getPercent(), $prefix)
-                );
-            }
+            $this->view->netMargin = new MarginView(
+                $this->currency($amount, $prefix),
+                $this->percent($margin->getPercent(false), $prefix)
+            );
         }
 
         // Items lines
@@ -321,9 +325,8 @@ class ViewBuilder
         }
 
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
-            if ($margin = $this->marginCalculator->calculateSaleItem($item)) {
-                $view->margin = $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '');
-            }
+            $margin = $this->marginCalculator->calculateSaleItem($item, $item->isPrivate());
+            $view->margin = $this->percent($margin->getPercent(false), $margin->isAverage() ? '~' : '');
         }
 
         if (!$item->hasParent() && !$this->saleItemHelper->isShippedOrInvoiced($item)) {
@@ -425,8 +428,9 @@ class ViewBuilder
             $type->buildShipmentView($sale, $view, $this->options);
         }
 
-        if ($this->view->vars['show_margin'] && $margin = $this->marginCalculator->calculateSaleShipment($sale)) {
-            $view->margin = $this->percent($margin->getPercent(), $margin->isAverage() ? '~' : '');
+        if ($this->view->vars['show_margin']) {
+            $margin = $this->marginCalculator->calculateSaleShipment($sale);
+            $view->margin = $this->percent($margin->getPercent(false), $margin->isAverage() ? '~' : '');
         }
 
         $this->view->shipment = $view;
@@ -459,13 +463,13 @@ class ViewBuilder
     /**
      * Formats number.
      */
-    private function number(Decimal $value, string $prefix = ''): string
+    private function number(Decimal $value): string
     {
         if ($this->options['export']) {
             return $value->toFixed(2);
         }
 
-        return $prefix . $this->formatter->number($value);
+        return $this->formatter->number($value);
     }
 
     /**

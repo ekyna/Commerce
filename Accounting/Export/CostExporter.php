@@ -6,8 +6,8 @@ namespace Ekyna\Component\Commerce\Accounting\Export;
 
 use DateTime;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCostCalculator;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
@@ -32,7 +32,7 @@ class CostExporter
     protected InvoiceRepositoryInterface         $invoiceRepository;
     protected StockAdjustmentRepositoryInterface $adjustmentRepository;
     protected CurrencyConverterInterface         $currencyConverter;
-    protected DocumentCalculatorInterface        $invoiceCalculator;
+    protected InvoiceCalculatorInterface         $invoiceCalculator;
     protected InvoiceCostCalculator              $costCalculator;
     protected bool                               $debug;
 
@@ -41,7 +41,7 @@ class CostExporter
         InvoiceRepositoryInterface         $invoiceRepository,
         StockAdjustmentRepositoryInterface $adjustmentRepository,
         CurrencyConverterInterface         $currencyConverter,
-        DocumentCalculatorInterface        $invoiceCalculator,
+        InvoiceCalculatorInterface         $invoiceCalculator,
         InvoiceCostCalculator              $costCalculator,
         bool                               $debug
     ) {
@@ -67,7 +67,6 @@ class CostExporter
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        /** @var DateTime $month */
         foreach ($months as $month) {
             $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.csv', $month->format('Y-m')));
             $zip->addFile($this->exportAdjustment($month), sprintf('%s_adjustments.csv', $month->format('Y-m')));

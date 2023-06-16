@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Tests;
 
 use Decimal\Decimal;
@@ -13,6 +15,7 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverter;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelper;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CurrencyRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Customer\Repository\CustomerGroupRepositoryInterface;
@@ -24,7 +27,7 @@ use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 use Ekyna\Component\Commerce\Stock\Provider\WarehouseProviderInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
-use Ekyna\Component\Commerce\Subject\Guesser\PurchaseCostGuesserInterface;
+use Ekyna\Component\Commerce\Subject\Guesser\SubjectCostGuesserInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
@@ -50,25 +53,16 @@ abstract class TestCase extends BaseTestCase
     protected const PAYMENT_METHOD_CREDIT      = 3;
 
     /**
-     * @var array
+     * @var array<string, MockObject>
      */
-    private $mocks;
+    private array                       $mocks;
+    private ?CurrencyConverterInterface $currencyConverter = null;
+    private ?FactoryHelperInterface     $saleFactory       = null;
 
     /**
-     * @var CurrencyConverterInterface
+     * @var array<int, PaymentMethodInterface>
      */
-    private $currencyConverter;
-
-    /**
-     * @var FactoryHelperInterface
-     */
-    private $saleFactory;
-
-    /**
-     * @var array|PaymentMethodInterface[]
-     */
-    private $paymentMethods = [];
-
+    private array $paymentMethods = [];
 
     protected function tearDown(): void
     {
@@ -103,10 +97,7 @@ abstract class TestCase extends BaseTestCase
         return $this->mocks[$interface];
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function mockService($interface): MockObject
+    protected function mockService(string $interface): MockObject
     {
         if ($this->hasMock($interface)) {
             return $this->getMock($interface);
@@ -117,40 +108,32 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Returns the amount calculator mock.
-     *
-     * @return AmountCalculatorInterface|MockObject
      */
-    protected function getAmountCalculatorMock(): AmountCalculatorInterface
+    protected function getAmountCalculatorMock(): AmountCalculatorInterface|MockObject
     {
         return $this->mockService(AmountCalculatorInterface::class);
     }
 
     /**
      * Returns the (common) weight calculator mock.
-     *
-     * @return CommonWeightCalculator|MockObject
      */
-    protected function getCommonWeightCalculatorMock(): CommonWeightCalculator
+    protected function getCommonWeightCalculatorMock(): CommonWeightCalculator|MockObject
     {
         return $this->mockService(CommonWeightCalculator::class);
     }
 
     /**
      * Returns the context provider mock.
-     *
-     * @return ContextProviderInterface|MockObject
      */
-    protected function getContextProviderMock(): ContextProviderInterface
+    protected function getContextProviderMock(): ContextProviderInterface|MockObject
     {
         return $this->mockService(ContextProviderInterface::class);
     }
 
     /**
      * Returns the country provider mock.
-     *
-     * @return CountryProviderInterface|MockObject
      */
-    protected function getCountryProviderMock(): CountryProviderInterface
+    protected function getCountryProviderMock(): CountryProviderInterface|MockObject
     {
         if ($this->hasMock(CountryProviderInterface::class)) {
             return $this->getMock(CountryProviderInterface::class);
@@ -162,6 +145,45 @@ abstract class TestCase extends BaseTestCase
 
         $mock->method('getDefault')->willReturn($fr);
         $mock->method('getCountry')->willReturn($fr);
+
+        return $mock;
+    }
+
+    /**
+     * Returns a currency repository mock.
+     */
+    protected function getCountryRepositoryMock(): CountryRepositoryInterface|MockObject
+    {
+        if ($this->hasMock(CountryRepositoryInterface::class)) {
+            return $this->getMock(CountryRepositoryInterface::class);
+        }
+
+        $mock = $this->mockService(CountryRepositoryInterface::class);
+
+        $mock
+            ->method('findDefault')
+            ->willReturn(Fixture::country());
+
+        $mock
+            ->method('getDefaultCode')
+            ->willReturn(Fixture::COUNTRY_FR);
+
+        $mock
+            ->method('findOneByCode')
+            ->willReturnMap([
+                [Fixture::COUNTRY_FR, Fixture::country(Fixture::COUNTRY_FR)],
+                [Fixture::COUNTRY_US, Fixture::country(Fixture::COUNTRY_US)],
+            ]);
+
+//        $mock
+//            ->method('findOneByCode')
+//            ->with(Fixture::COUNTRY_FR)
+//            ->willReturn(Fixture::country(Fixture::COUNTRY_FR));
+//
+//        $mock
+//            ->method('findOneByCode')
+//            ->with(Fixture::COUNTRY_US)
+//            ->willReturn(Fixture::country(Fixture::COUNTRY_US));
 
         return $mock;
     }
@@ -189,10 +211,8 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Returns a currency repository mock.
-     *
-     * @return CurrencyRepositoryInterface|MockObject
      */
-    protected function getCurrencyRepositoryMock(): CurrencyRepositoryInterface
+    protected function getCurrencyRepositoryMock(): CurrencyRepositoryInterface|MockObject
     {
         if ($this->hasMock(CurrencyRepositoryInterface::class)) {
             return $this->getMock(CurrencyRepositoryInterface::class);
@@ -206,23 +226,28 @@ abstract class TestCase extends BaseTestCase
 
         $mock
             ->method('findOneByCode')
-            ->with(Fixture::CURRENCY_EUR)
-            ->willReturn(Fixture::currency(Fixture::CURRENCY_EUR));
+            ->willReturnMap([
+                [Fixture::CURRENCY_EUR, Fixture::currency(Fixture::CURRENCY_EUR)],
+                [Fixture::CURRENCY_USD, Fixture::currency(Fixture::CURRENCY_USD)],
+            ]);
 
-        $mock
-            ->method('findOneByCode')
-            ->with(Fixture::CURRENCY_USD)
-            ->willReturn(Fixture::currency(Fixture::CURRENCY_USD));
+//        $mock
+//            ->method('findOneByCode')
+//            ->with(Fixture::CURRENCY_EUR)
+//            ->willReturn(Fixture::currency(Fixture::CURRENCY_EUR));
+//
+//        $mock
+//            ->method('findOneByCode')
+//            ->with(Fixture::CURRENCY_USD)
+//            ->willReturn(Fixture::currency(Fixture::CURRENCY_USD));
 
         return $mock;
     }
 
     /**
      * Returns a customer group repository mock.
-     *
-     * @return CustomerGroupRepositoryInterface|MockObject
      */
-    protected function getCustomerGroupRepositoryMock(): CustomerGroupRepositoryInterface
+    protected function getCustomerGroupRepositoryMock(): CustomerGroupRepositoryInterface|MockObject
     {
         if ($this->hasMock(CustomerGroupRepositoryInterface::class)) {
             return $this->getMock(CustomerGroupRepositoryInterface::class);
@@ -237,20 +262,16 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Returns the discount resolver mock.
-     *
-     * @return DiscountResolverInterface|MockObject
      */
-    protected function getDiscountResolverMock(): DiscountResolverInterface
+    protected function getDiscountResolverMock(): DiscountResolverInterface|MockObject
     {
         return $this->mockService(DiscountResolverInterface::class);
     }
 
     /**
      * Returns the event dispatcher mock.
-     *
-     * @return EventDispatcherInterface|MockObject
      */
-    protected function getEventDispatcherMock(): EventDispatcherInterface
+    protected function getEventDispatcherMock(): EventDispatcherInterface|MockObject
     {
         return $this->mockService(EventDispatcherInterface::class);
     }
@@ -258,23 +279,17 @@ abstract class TestCase extends BaseTestCase
     /**
      * Returns the entity manager mock.
      *
-     * @return EntityManagerInterface|MockObject
-     *
      * @TODO break dependency
      */
-    protected function getEntityManagerMock(): EntityManagerInterface
+    protected function getEntityManagerMock(): EntityManagerInterface|MockObject
     {
         return $this->mockService(EntityManagerInterface::class);
     }
 
     /**
      * Returns a payment method mock.
-     *
-     * @param int $type
-     *
-     * @return PaymentMethodInterface|MockObject
      */
-    protected function getPaymentMethodMock(int $type = 0): PaymentMethodInterface
+    protected function getPaymentMethodMock(int $type = 0): PaymentMethodInterface|MockObject
     {
         if (isset($this->paymentMethods[$type])) {
             return $this->paymentMethods[$type];
@@ -292,22 +307,18 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Returns the persistence helper mock.
-     *
-     * @return PersistenceHelperInterface|MockObject
      */
-    protected function getPersistenceHelperMock(): PersistenceHelperInterface
+    protected function getPersistenceHelperMock(): PersistenceHelperInterface|MockObject
     {
         return $this->mockService(PersistenceHelperInterface::class);
     }
 
     /**
      * Returns the purchase cost guesser mock.
-     *
-     * @return PurchaseCostGuesserInterface|MockObject
      */
-    protected function getPurchaseCostGuesserMock(): PurchaseCostGuesserInterface
+    protected function getPurchaseCostGuesserMock(): SubjectCostGuesserInterface|MockObject
     {
-        return $this->mockService(PurchaseCostGuesserInterface::class);
+        return $this->mockService(SubjectCostGuesserInterface::class);
     }
 
     /**
@@ -326,100 +337,80 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Returns the shipment address resolver mock.
-     *
-     * @return ShipmentAddressResolverInterface|MockObject
      */
-    protected function getShipmentAddressResolverMock(): ShipmentAddressResolverInterface
+    protected function getShipmentAddressResolverMock(): ShipmentAddressResolverInterface|MockObject
     {
         return $this->mockService(ShipmentAddressResolverInterface::class);
     }
 
     /**
      * Returns the (shipment) weight calculator mock.
-     *
-     * @return ShipmentWeightCalculator|MockObject
      */
-    protected function getShipmentWeightCalculatorMock(): ShipmentWeightCalculator
+    protected function getShipmentWeightCalculatorMock(): ShipmentWeightCalculator|MockObject
     {
         return $this->mockService(ShipmentWeightCalculator::class);
     }
 
     /**
      * Returns the shipment price resolver mock.
-     *
-     * @return ShipmentPriceResolverInterface|MockObject
      */
-    protected function getShipmentPriceResolverMock(): ShipmentPriceResolverInterface
+    protected function getShipmentPriceResolverMock(): ShipmentPriceResolverInterface|MockObject
     {
         return $this->mockService(ShipmentPriceResolverInterface::class);
     }
 
     /**
      * Returns the stock unit repository mock.
-     *
-     * @return StockUnitRepositoryInterface|MockObject
      */
-    protected function getStockUnitRepositoryMock(): StockUnitRepositoryInterface
+    protected function getStockUnitRepositoryMock(): StockUnitRepositoryInterface|MockObject
     {
         return $this->mockService(StockUnitRepositoryInterface::class);
     }
 
     /**
      * Returns the subject helper mock.
-     *
-     * @return SubjectHelperInterface|MockObject
      */
-    protected function getSubjectHelperMock(): SubjectHelperInterface
+    protected function getSubjectHelperMock(): SubjectHelperInterface|MockObject
     {
         return $this->mockService(SubjectHelperInterface::class);
     }
 
     /**
      * Returns the supplier order item repository mock.
-     *
-     * @return SupplierOrderItemRepositoryInterface|MockObject
      */
-    protected function getSupplierOrderItemRepositoryMock(): SupplierOrderItemRepositoryInterface
+    protected function getSupplierOrderItemRepositoryMock(): SupplierOrderItemRepositoryInterface|MockObject
     {
         return $this->mockService(SupplierOrderItemRepositoryInterface::class);
     }
 
     /**
      * Returns the supplier product repository mock.
-     *
-     * @return SupplierProductRepositoryInterface|MockObject
      */
-    protected function getSupplierProductRepositoryMock(): SupplierProductRepositoryInterface
+    protected function getSupplierProductRepositoryMock(): SupplierProductRepositoryInterface|MockObject
     {
         return $this->mockService(SupplierProductRepositoryInterface::class);
     }
 
     /**
      * Returns the tax resolver mock.
-     *
-     * @return TaxResolverInterface|MockObject
      */
-    protected function getTaxResolverMock(): TaxResolverInterface
+    protected function getTaxResolverMock(): TaxResolverInterface|MockObject
     {
         return $this->mockService(TaxResolverInterface::class);
     }
 
     /**
      * Returns a tax rule repository mock.
-     *
-     * @return TaxRuleRepositoryInterface|MockObject
      */
-    protected function getTaxRuleRepositoryMock(): TaxRuleRepositoryInterface
+    protected function getTaxRuleRepositoryMock(): TaxRuleRepositoryInterface|MockObject
     {
         return $this->mockService(TaxRuleRepositoryInterface::class);
     }
 
     /**
      * Returns the warehouse provider mock.
-     *
-     * @return WarehouseProviderInterface|MockObject
      */
-    protected function getWarehouseProviderMock(): WarehouseProviderInterface
+    protected function getWarehouseProviderMock(): WarehouseProviderInterface|MockObject
     {
         return $this->mockService(WarehouseProviderInterface::class);
     }
@@ -452,7 +443,7 @@ abstract class TestCase extends BaseTestCase
 
         $this
             ->getPersistenceHelperMock()
-            ->expects($options['order'] ?? $this->once())
+            ->expects($options['order'] ?? self::once())
             ->method($options['remove'] ? 'remove' : 'persistAndRecompute')
             ->with(...$arguments);
     }

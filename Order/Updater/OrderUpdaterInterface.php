@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Updater;
 
 
@@ -13,13 +15,13 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 interface OrderUpdaterInterface
 {
     /**
-     * Updates the order margin totals (+ revenue).
+     * Updates the order margin.
      *
      * @param OrderInterface $order
      *
-     * @return bool Whether the margin total has changed.
+     * @return bool Whether the margin has changed.
      */
-    public function updateMarginTotals(OrderInterface $order): bool;
+    public function updateMargin(OrderInterface $order): bool;
 
     /**
      * Updates the order items count.

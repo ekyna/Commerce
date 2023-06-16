@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
+use DateTime;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 
@@ -15,9 +18,9 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolve(StockUnitInterface $stockUnit)
+    public function resolve(StockUnitInterface $stockUnit): bool
     {
-        // TODO use bccomp() with packaging precision to compare quantities
+        // TODO Compare using \Ekyna\Component\Commerce\Common\Model\Units precision
 
         // Just created
         $resolvedState = StockUnitStates::STATE_NEW;
@@ -67,7 +70,7 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
 
             if ($resolvedState === StockUnitStates::STATE_CLOSED) {
                 if (null === $stockUnit->getClosedAt()) {
-                    $stockUnit->setClosedAt(new \DateTime());
+                    $stockUnit->setClosedAt(new DateTime());
                 }
             } elseif (null != $stockUnit->getClosedAt()) {
                 $stockUnit->setClosedAt(null);

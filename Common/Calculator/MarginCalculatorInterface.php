@@ -6,8 +6,7 @@ namespace Ekyna\Component\Commerce\Common\Calculator;
 
 use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleInterface as Sale;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface as Item;
+use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 
 /**
  * Interface MarginCalculatorInterface
@@ -19,15 +18,15 @@ interface MarginCalculatorInterface
     /**
      * Calculates the sale margin.
      */
-    public function calculateSale(SaleInterface $sale): ?Margin;
+    public function calculateSale(SaleInterface $sale): Margin;
 
     /**
      * Calculates the sale item margin.
      */
-    public function calculateSaleItem(Item $item, bool $single = false): ?Margin;
+    public function calculateSaleItem(SaleItemInterface $item, bool $single = false): Margin;
 
     /**
      * Calculates the sale shipment margin.
      */
-    public function calculateSaleShipment(Sale $sale): ?Margin;
+    public function calculateSaleShipment(SaleInterface $sale): Margin;
 }

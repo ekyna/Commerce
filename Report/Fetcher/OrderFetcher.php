@@ -7,7 +7,6 @@ namespace Ekyna\Component\Commerce\Report\Fetcher;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
-use Ekyna\Component\Commerce\Report\Util\OrderUtil;
 use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
 use Ekyna\Component\Resource\Model\DateRange;
 
@@ -23,13 +22,11 @@ class OrderFetcher implements FetcherInterface
     public function __construct(
         private readonly OrderRepositoryInterface $repository,
         private readonly ResourceManagerInterface $manager,
-        private readonly OrderUtil $orderUtil
     ) {
     }
 
     public function initialize(ReportConfig $config): void
     {
-
     }
 
     /**
@@ -39,8 +36,6 @@ class OrderFetcher implements FetcherInterface
     {
         $this->manager->clear();
         gc_collect_cycles();
-
-        $this->orderUtil->clear();
 
         return $this->repository->findByAcceptedAt($range, $page, $size);
     }

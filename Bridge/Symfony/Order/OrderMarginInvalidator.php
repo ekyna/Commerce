@@ -8,32 +8,23 @@ use Doctrine\DBAL\Exception\ConnectionException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Ekyna\Component\Commerce\Order\Invalidator\OrderMarginInvalidator as BaseInvalidator;
+use Ekyna\Component\Commerce\Order\Message\UpdateOrderMargin;
+use Ekyna\Component\Resource\Message\MessageQueueInterface;
 use Exception;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Class OrderMarginInvalidator
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Order
  * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberInterface
+class OrderMarginInvalidator extends BaseInvalidator
 {
-    private EntityManagerInterface $entityManager;
-    private string $assignmentClass;
-    private string $orderClass;
-
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        string $assignmentClass,
-        string $orderClass
+        private readonly EntityManagerInterface $entityManager,
+        private readonly MessageQueueInterface  $messageQueue,
+        private readonly string                 $assignmentClass
     ) {
         parent::__construct();
-
-        $this->entityManager = $entityManager;
-        $this->assignmentClass = $assignmentClass;
-        $this->orderClass = $orderClass;
     }
 
     /**
@@ -95,34 +86,8 @@ class OrderMarginInvalidator extends BaseInvalidator implements EventSubscriberI
             return;
         }
 
-        $this
-            ->entityManager
-            ->createQueryBuilder()
-            ->update($this->orderClass, 'o')
-            ->set('o.marginTotal', ':value')
-            ->set('o.revenueTotal', ':value')
-            ->where($ex->in('o.id', ':order_ids'))
-            ->getQuery()
-            ->setParameters([
-                'order_ids' => $orderIds,
-                'value'     => null,
-            ])
-            ->execute();
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        $listeners = [
-            KernelEvents::TERMINATE => ['invalidate', 1024], // Before Symfony EmailSenderListener
-        ];
-
-        if (class_exists('Symfony\Component\Console\ConsoleEvents')) {
-            $listeners[constant('Symfony\Component\Console\ConsoleEvents::TERMINATE')] = [
-                'invalidate',
-                1024,
-            ]; // Before Symfony EmailSenderListener
+        foreach ($orderIds as $orderId) {
+            $this->messageQueue->addMessage(new UpdateOrderMargin((int)$orderId));
         }
-
-        return $listeners;
     }
 }

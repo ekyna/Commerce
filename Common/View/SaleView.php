@@ -24,8 +24,8 @@ class SaleView extends AbstractView
     public ?LineView   $shipment;
     public TotalView   $gross;
     public TotalView   $final;
-    public ?MarginView $commercialMargin = null;
-    public ?MarginView $profitMargin     = null;
+    public ?MarginView $grossMargin = null;
+    public ?MarginView $netMargin   = null;
 
     /** @var array<int, LineView> */
     private array $items = [];
@@ -207,8 +207,8 @@ class SaleView extends AbstractView
             'tax_total'                 => 'Tax total',
             'grand_total'               => 'Grand total',
             'margin'                    => 'Margin',
-            'commercial_margin'         => 'Commercial margin',
-            'profit_margin'             => 'Profit margin',
+            'margin_net'                => 'Net margin',
+            'margin_gross'              => 'Brut margin',
             'btn_batch_remove'          => 'Removes lines',
             'btn_batch_synchronize'     => 'Synchronize lines',
             'confirm_batch_remove'      =>

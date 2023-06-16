@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Invoice\Model;
 
 use DateTimeInterface;
 use Decimal\Decimal;
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
@@ -17,6 +18,9 @@ use Ekyna\Component\Resource\Model as Resource;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * @method Common\SaleInterface|InvoiceSubjectInterface getSale()
+ * @method Collection<int, InvoiceLineInterface> getLines()
+ * @method array<int, InvoiceLineInterface> getLinesByType()
+ * @method Collection<int, InvoiceItemInterface> getItems()
  */
 interface InvoiceInterface extends
     DocumentInterface,

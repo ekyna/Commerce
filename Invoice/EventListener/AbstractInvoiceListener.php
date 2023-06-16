@@ -6,10 +6,12 @@ namespace Ekyna\Component\Commerce\Invoice\EventListener;
 
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Model\LockCheckerAwareTrait;
+use Ekyna\Component\Commerce\Common\Model\MarginSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Document\Builder\DocumentBuilderInterface;
-use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Exception;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceMarginCalculatorFactory;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
@@ -34,9 +36,10 @@ abstract class AbstractInvoiceListener
     protected readonly GeneratorInterface              $invoiceNumberGenerator;
     protected readonly GeneratorInterface              $creditNumberGenerator;
     protected readonly DocumentBuilderInterface        $invoiceBuilder;
-    protected readonly DocumentCalculatorInterface     $invoiceCalculator;
+    protected readonly InvoiceCalculatorInterface      $invoiceCalculator;
+    protected readonly InvoiceMarginCalculatorFactory  $marginCalculatorFactory;
     protected readonly InvoicePaymentResolverInterface $invoicePaymentResolver;
-    protected readonly AuthorizationCheckerInterface $authorizationChecker;
+    protected readonly AuthorizationCheckerInterface   $authorizationChecker;
 
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
@@ -58,19 +61,24 @@ abstract class AbstractInvoiceListener
         $this->invoiceBuilder = $builder;
     }
 
-    public function setInvoiceCalculator(DocumentCalculatorInterface $calculator): void
+    public function setInvoiceCalculator(InvoiceCalculatorInterface $calculator): void
     {
         $this->invoiceCalculator = $calculator;
     }
 
-    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $invoicePaymentResolver): void
+    public function setMarginCalculatorFactory(InvoiceMarginCalculatorFactory $factory): void
     {
-        $this->invoicePaymentResolver = $invoicePaymentResolver;
+        $this->marginCalculatorFactory = $factory;
     }
 
-    public function setAuthorizationChecker(AuthorizationCheckerInterface $authorizationChecker): void
+    public function setInvoicePaymentResolver(InvoicePaymentResolverInterface $resolver): void
     {
-        $this->authorizationChecker = $authorizationChecker;
+        $this->invoicePaymentResolver = $resolver;
+    }
+
+    public function setAuthorizationChecker(AuthorizationCheckerInterface $checker): void
+    {
+        $this->authorizationChecker = $checker;
     }
 
     public function onInsert(ResourceEventInterface $event): void
@@ -89,6 +97,9 @@ abstract class AbstractInvoiceListener
 
         // Updates the totals
         $changed = $this->updateTotals($invoice) || $changed;
+
+        // Updates the margin
+        $changed = $this->updateMargin($invoice) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($invoice, false);
@@ -134,7 +145,11 @@ abstract class AbstractInvoiceListener
         $invoice = $this->getInvoiceFromEvent($event);
 
         if (!$this->persistenceHelper->isScheduledForRemove($invoice)) {
-            if ($this->updateTotals($invoice)) {
+            $changed = $this->updateTotals($invoice);
+
+            $changed = $this->updateMargin($invoice) || $changed;
+
+            if ($changed) {
                 $this->persistenceHelper->persistAndRecompute($invoice, false);
             }
         }
@@ -177,6 +192,26 @@ abstract class AbstractInvoiceListener
         }
 
         return $changed;
+    }
+
+    protected function updateMargin(InvoiceInterface $invoice): bool
+    {
+        if (!$invoice instanceof MarginSubjectInterface) {
+            return false;
+        }
+
+        $margin = $this
+            ->marginCalculatorFactory
+            ->create()
+            ->calculateInvoice($invoice);
+
+        if ($invoice->getMargin()->equals($margin)) {
+            return false;
+        }
+
+        $invoice->setMargin($margin);
+
+        return true;
     }
 
     /**
@@ -234,10 +269,8 @@ abstract class AbstractInvoiceListener
 
     /**
      * Returns the invoice's sale.
-     *
-     * @return SaleInterface|InvoiceSubjectInterface
      */
-    protected function getSaleFromInvoice(InvoiceInterface $invoice): SaleInterface
+    protected function getSaleFromInvoice(InvoiceInterface $invoice): SaleInterface|InvoiceSubjectInterface
     {
         if (null === $sale = $invoice->getSale()) {
             $cs = $this->persistenceHelper->getChangeSet($invoice, $this->getSalePropertyPath());

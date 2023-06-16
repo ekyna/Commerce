@@ -23,6 +23,7 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 class Order extends AbstractSale implements Model\OrderInterface
 {
     use Common\InitiatorSubjectTrait;
+    use Common\MarginSubjectTrait;
     use Shipment\ShipmentSubjectTrait;
     use Invoice\InvoiceSubjectTrait;
 
@@ -31,8 +32,6 @@ class Order extends AbstractSale implements Model\OrderInterface
     protected bool               $first          = false;
     protected ?CustomerInterface $originCustomer = null;
     protected ?DateTimeInterface $completedAt    = null;
-    protected ?Decimal           $revenueTotal   = null;
-    protected ?Decimal           $marginTotal    = null;
     protected int                $itemsCount     = 0;
 
 
@@ -40,6 +39,7 @@ class Order extends AbstractSale implements Model\OrderInterface
     {
         parent::__construct();
 
+        $this->initializeMargin();
         $this->initializeShipmentSubject();
         $this->initializeInvoiceSubject();
 
@@ -435,26 +435,12 @@ class Order extends AbstractSale implements Model\OrderInterface
 
     public function getRevenueTotal(): ?Decimal
     {
-        return $this->revenueTotal;
-    }
-
-    public function setRevenueTotal(?Decimal $amount): Model\OrderInterface
-    {
-        $this->revenueTotal = $amount;
-
-        return $this;
+        return $this->margin->getRevenueTotal(false);
     }
 
     public function getMarginTotal(): ?Decimal
     {
-        return $this->marginTotal;
-    }
-
-    public function setMarginTotal(?Decimal $amount): Model\OrderInterface
-    {
-        $this->marginTotal = $amount;
-
-        return $this;
+        return $this->margin->getTotal(false);
     }
 
     public function getItemsCount(): int

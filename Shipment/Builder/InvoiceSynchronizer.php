@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Builder;
 
 use Ekyna\Component\Commerce\Common\Model as Common;
-use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model as Document;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Invoice\Builder\InvoiceBuilderInterface;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
@@ -24,21 +24,12 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
 {
     use Common\LockCheckerAwareTrait;
 
-    protected InvoiceBuilderInterface           $invoiceBuilder;
-    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    protected DocumentCalculatorInterface       $documentCalculator;
-    protected PersistenceHelperInterface        $persistenceHelper;
-
     public function __construct(
-        InvoiceBuilderInterface           $invoiceBuilder,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator,
-        DocumentCalculatorInterface       $documentCalculator,
-        PersistenceHelperInterface        $persistenceHelper
+        private readonly InvoiceBuilderInterface           $invoiceBuilder,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceSubjectCalculator,
+        private readonly InvoiceCalculatorInterface        $invoiceCalculator,
+        private readonly PersistenceHelperInterface        $persistenceHelper
     ) {
-        $this->invoiceBuilder = $invoiceBuilder;
-        $this->invoiceCalculator = $invoiceCalculator;
-        $this->documentCalculator = $documentCalculator;
-        $this->persistenceHelper = $persistenceHelper;
     }
 
     public function synchronize(Shipment\ShipmentInterface $shipment, bool $force = false): void
@@ -105,7 +96,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      *
      * @param Invoice\InvoiceInterface $invoice
      */
-    private function persistInvoice(Invoice\InvoiceInterface $invoice)
+    private function persistInvoice(Invoice\InvoiceInterface $invoice): void
     {
         $this->persistenceHelper->persistAndRecompute($invoice, true);
 
@@ -122,7 +113,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      *
      * @param Invoice\InvoiceInterface $invoice
      */
-    private function removeInvoice(Invoice\InvoiceInterface $invoice)
+    private function removeInvoice(Invoice\InvoiceInterface $invoice): void
     {
         // Never remove an existing invoice
         if ($invoice->getId()) {
@@ -142,7 +133,7 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
      *
      * @throws LogicException
      */
-    private function checkShipmentInvoice(Invoice\InvoiceInterface $invoice)
+    private function checkShipmentInvoice(Invoice\InvoiceInterface $invoice): void
     {
         if (null === $shipment = $invoice->getShipment()) {
             throw new LogicException("Invoice's shipment must be set at this point.");

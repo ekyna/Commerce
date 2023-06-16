@@ -294,7 +294,6 @@ class Fixture
             $code = strtoupper($data);
             $reference = 'currency_' . $code;
             if (self::has($reference)) {
-                /** @noinspection PhpIncompatibleReturnTypeInspection */
                 return self::get($reference);
             }
             $data = [
@@ -427,7 +426,6 @@ class Fixture
             $code = strtoupper($data);
             $reference = 'country_' . $code;
             if (self::has($reference)) {
-                /** @noinspection PhpIncompatibleReturnTypeInspection */
                 return self::get($reference);
             }
             $data = [
@@ -1007,7 +1005,7 @@ class Fixture
             'customs_vat'     => 0,
             'forwarder_fee'   => 0,
             'forwarder_total' => 0,
-            'exchange_rate'   => 1,
+            'exchange_rate'   => null,
             'exchange_date'   => null,
             'created_at'      => 'now',
             'ordered_at'      => null,
@@ -1026,8 +1024,11 @@ class Fixture
             ->setCustomsTax(self::decimal($data['customs_tax']))
             ->setCustomsVat(self::decimal($data['customs_vat']))
             ->setForwarderFee(self::decimal($data['forwarder_fee']))
-            ->setForwarderTotal(self::decimal($data['forwarder_total']))
-            ->setExchangeRate(self::decimal($data['exchange_rate']));
+            ->setForwarderTotal(self::decimal($data['forwarder_total']));
+
+        if (null !== $datum = $data['exchange_rate']) {
+            $order->setExchangeRate(self::decimal($datum));
+        }
 
         if (null !== $datum = $data['exchange_date']) {
             $order->setExchangeDate(self::date($datum));
@@ -1074,6 +1075,7 @@ class Fixture
      *     price:       string|int|float,
      *     weight:      string|int|float,
      *     quantity:    string|int|float,
+     *     packing:     string|int|float,
      * } $data
      */
     public static function supplierOrderItem(SupplierE\SupplierOrderItem|array|int|string $data = []
@@ -1096,6 +1098,7 @@ class Fixture
             'price'       => 0,
             'weight'      => 0,
             'quantity'    => 1,
+            'packing'     => 1,
         ], $data);
 
         if (null !== $datum = $data['order']) {
@@ -1140,7 +1143,8 @@ class Fixture
             ->setReference($data['reference'])
             ->setNetPrice(self::decimal($data['price']))
             ->setWeight(self::decimal($data['weight']))
-            ->setQuantity(self::decimal($data['quantity']));
+            ->setQuantity(self::decimal($data['quantity']))
+            ->setPacking(self::decimal($data['packing']));
 
         if ($subject) {
             self::assignSubject($item, $subject);

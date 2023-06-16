@@ -6,7 +6,6 @@ namespace Ekyna\Component\Commerce\Supplier\Calculator;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
-use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 
 /**
  * Interface SupplierOrderCalculatorInterface
@@ -39,14 +38,4 @@ interface SupplierOrderCalculatorInterface
      * Calculates the supplier order's weight total.
      */
     public function calculateWeightTotal(SupplierOrderInterface $order): Decimal;
-
-    /**
-     * Calculates the stock unit net price, converted in default currency.
-     */
-    public function calculateStockUnitNetPrice(SupplierOrderItemInterface $item): Decimal;
-
-    /**
-     * Calculates stock unit shipping price, converted in default currency.
-     */
-    public function calculateStockUnitShippingPrice(SupplierOrderItemInterface $item): Decimal;
 }

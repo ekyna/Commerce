@@ -9,10 +9,9 @@ use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
-use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
 use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+
+use function sprintf;
 
 /**
  * Class AmountCalculator
@@ -21,9 +20,15 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  */
 class AmountCalculator implements AmountCalculatorInterface
 {
-    private readonly CurrencyConverterInterface        $currencyConverter;
-    private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    private readonly AmountCalculatorFactory           $amountCalculatorFactory;
+    private const KEY_SALE_FINAL    = 'sale_%d_final';
+    private const KEY_SALE_GROSS    = 'sale_%d_gross';
+    private const KEY_SALE_ITEMS    = 'sale_%d_items';
+    private const KEY_SALE_ITEM     = 'sale_item_%d';
+    private const KEY_SALE_DISCOUNT = 'sale_discount_%d';
+    private const KEY_SALE_SHIPMENT = 'sale_shipment_%d';
+
+    private readonly CurrencyConverterInterface $currencyConverter;
+    private readonly AmountCalculatorFactory    $amountCalculatorFactory;
 
     /** @var Model\Amount[] */
     private array $cache = [];
@@ -33,7 +38,6 @@ class AmountCalculator implements AmountCalculatorInterface
      */
     public function __construct(
         private readonly string      $currency,
-        private readonly bool        $profit,
         private readonly ?StatFilter $filter
     ) {
     }
@@ -48,11 +52,6 @@ class AmountCalculator implements AmountCalculatorInterface
         $this->currencyConverter = $converter;
     }
 
-    public function setInvoiceCalculator(InvoiceSubjectCalculatorInterface $calculator): void
-    {
-        $this->invoiceCalculator = $calculator;
-    }
-
     public function setAmountCalculatorFactory(AmountCalculatorFactory $factory): void
     {
         $this->amountCalculatorFactory = $factory;
@@ -60,20 +59,22 @@ class AmountCalculator implements AmountCalculatorInterface
 
     public function calculateSale(Model\SaleInterface $sale, bool $asGross = false): Model\Amount
     {
-        $key = spl_object_hash($sale);
-        if ($result = $this->get($key . ($asGross ? '_gross' : '_final'))) {
+        $id = spl_object_id($sale);
+        $grossKey = sprintf(self::KEY_SALE_GROSS, $id);
+        $finalKey = sprintf(self::KEY_SALE_FINAL, $id);
+        if ($result = $this->get($asGross ? $grossKey : $finalKey)) {
             return $result;
         }
 
         // Items / Gross result
-        if (null === $gross = $this->get($key . '_gross')) {
+        if (null === $gross = $this->get($grossKey)) {
             $gross = clone $this->calculateSaleItems($sale);
-            $this->set($key . '_gross', $gross);
+            $this->set($grossKey, $gross);
         }
 
         // Final result
         $final = Model\Amount::createFinalFromGross($gross);
-        $this->set($key . '_final', $final);
+        $this->set($finalKey, $final);
 
         // Discounts
         if ($sale->hasAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)) {
@@ -94,7 +95,7 @@ class AmountCalculator implements AmountCalculatorInterface
 
     public function calculateSaleItems(Model\SaleInterface $sale): Model\Amount
     {
-        $key = spl_object_hash($sale) . '_items';
+        $key = sprintf(self::KEY_SALE_ITEMS, spl_object_id($sale));
         if ($result = $this->get($key)) {
             return $result;
         }
@@ -117,7 +118,7 @@ class AmountCalculator implements AmountCalculatorInterface
             $result->merge($this->calculateSaleItem($item));
             //}
 
-            $this->mergeItemsResults($item, $result);
+            $this->mergeChildrenResults($item, $result);
         }
 
         // Set unit = gross
@@ -133,20 +134,15 @@ class AmountCalculator implements AmountCalculatorInterface
         Model\SaleItemInterface $item,
         Decimal                 $quantity = null,
         bool                    $asPublic = false,
-        bool                    $withChildren = true
-    ): Model\Amount {
-        if ($quantity) {
-            if ($this->profit) {
-                throw new Exception\LogicException('You can\'t override quantity if profit mode is enabled.');
-            }
-
-            if ($quantity->isNegative()) {
-                throw new Exception\InvalidArgumentException('Specific quantity must be greater than or equal to zero.');
-            }
+        bool                    $withChildren = true // TODO $single = false
+    ): Model\Amount
+    {
+        if (null !== $quantity && $quantity->isNegative()) {
+            throw new Exception\InvalidArgumentException('Specific quantity must be greater than or equal to zero.');
         }
 
-        $key = spl_object_hash($item)
-            . ($quantity ? "_$quantity" : '')
+        $key = sprintf(self::KEY_SALE_ITEM, spl_object_id($item))
+            . ($quantity ? '_' . $quantity->toFixed(3) : '')
             . ($asPublic ? '_public' : '')
             . (!$withChildren ? '_standalone' : '');
         if ($result = $this->get($key)) {
@@ -185,21 +181,23 @@ class AmountCalculator implements AmountCalculatorInterface
                     throw new Exception\LogicException('Private items can\'t have discount adjustment.');
                 }
 
-                $unit += $ati
-                    ? $childResult->getUnit()->mul($child->getQuantity())
-                    : Money::round($childResult->getUnit(), $this->currency)->mul($child->getQuantity());
+                $childUnit = $childResult->getUnit();
+                if ($ati) {
+                    $childUnit = Money::round($childUnit, $this->currency);
+                }
+
+                $unit += $childUnit->mul($child->getQuantity());
             }
         }
 
-        $quantity = $quantity ?? $this->calculateSaleItemQuantity($item);
+        $quantity = $quantity ?? $item->getTotalQuantity();
 
         if ($item->getRootSale()->isSample()) {
             // Sample sale case : zero amounts
             $result = new Model\Amount($this->currency);
         } elseif ($item->isPrivate() && !$asPublic) {
             // Private case : we just need unit amount
-            $gross = $unit->mul($quantity);
-            $result = new Model\Amount($this->currency, $unit, $gross, null, $gross);
+            $result = new Model\Amount($this->currency, $unit);
         } else {
             // Regular case
             $discounts = $taxes = [];
@@ -215,7 +213,8 @@ class AmountCalculator implements AmountCalculatorInterface
             // Items without subject inherit discounts from their non-compound parent
             if (empty($discountAdjustments)) {
                 if (!$item->hasSubjectIdentity() && $parent && !$parent->isCompound()) {
-                    $discountAdjustments = $parent->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+                    $discountAdjustments = $parent
+                        ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
                 } elseif ($item->isPrivate() && $asPublic) {
                     $discountAdjustments = $item
                         ->getPublicParent()
@@ -279,15 +278,14 @@ class AmountCalculator implements AmountCalculatorInterface
     ): Model\Amount {
         $this->assertAdjustmentType($adjustment, Model\AdjustmentTypes::TYPE_DISCOUNT);
 
-        $key = spl_object_hash($adjustment);
+        $key = sprintf(self::KEY_SALE_DISCOUNT, spl_object_id($adjustment));
         if ($result = $this->get($key)) {
             return $result;
         }
 
         /** @var Model\SaleInterface $sale */
         $sale = $adjustment->getAdjustable();
-
-        if (!$gross && !$gross = $this->get(spl_object_hash($adjustment->getSale()) . '_items')) {
+        if (!$gross && !$gross = $this->get(sprintf(self::KEY_SALE_ITEMS, spl_object_id($sale)))) {
             throw new Exception\LogicException('Failed to retrieve sale gross result.');
         }
 
@@ -296,13 +294,6 @@ class AmountCalculator implements AmountCalculatorInterface
         // Sample sale case
         if ($sale->isSample()) {
             return $result;
-        }
-
-        // Profit mode
-        if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
-            if ($this->invoiceCalculator->calculateSoldQuantity($adjustment)->isZero()) {
-                return $result;
-            }
         }
 
         $base = $gross->getBase();
@@ -376,7 +367,7 @@ class AmountCalculator implements AmountCalculatorInterface
         Model\SaleInterface $sale,
         Model\Amount        $final = null
     ): Model\Amount {
-        $key = spl_object_hash($sale) . '_shipment';
+        $key = sprintf(self::KEY_SALE_SHIPMENT, spl_object_id($sale));
         if ($result = $this->get($key)) {
             return $result;
         }
@@ -386,13 +377,6 @@ class AmountCalculator implements AmountCalculatorInterface
         // Sample sale case
         if ($sale->isSample()) {
             return $result;
-        }
-
-        // Profit mode
-        if ($this->profit && $sale instanceof InvoiceSubjectInterface) {
-            if ($this->invoiceCalculator->calculateSoldQuantity($sale)->isZero()) {
-                return $result;
-            }
         }
 
         // Abort if shipment cost is lower than or equals zero
@@ -433,31 +417,6 @@ class AmountCalculator implements AmountCalculatorInterface
         }
 
         return $result;
-    }
-
-    /**
-     * Calculates the sale item quantity.
-     */
-    protected function calculateSaleItemQuantity(Model\SaleItemInterface $item): Decimal
-    {
-        if (!$this->profit) {
-            return $item->getTotalQuantity();
-        }
-
-        if ($item instanceof StockAssignmentsInterface && $item->hasStockAssignments()) {
-            $quantity = new Decimal(0);
-            foreach ($item->getStockAssignments() as $assignment) {
-                $quantity += $assignment->getSoldQuantity();
-            }
-
-            return $quantity;
-        }
-
-        if ($item->getRootSale() instanceof InvoiceSubjectInterface) {
-            return $this->invoiceCalculator->calculateSoldQuantity($item);
-        }
-
-        return $item->getTotalQuantity();
     }
 
     /**
@@ -510,7 +469,7 @@ class AmountCalculator implements AmountCalculatorInterface
     /**
      * Merges the public children results recursively into the given result.
      */
-    protected function mergeItemsResults(Model\SaleItemInterface $item, Model\Amount $result): void
+    protected function mergeChildrenResults(Model\SaleItemInterface $item, Model\Amount $result): void
     {
         // At this point, items result are calculated and set.
         foreach ($item->getChildren() as $child) {
@@ -519,12 +478,13 @@ class AmountCalculator implements AmountCalculatorInterface
             }
 
             // Skip compound with only public children
+            //
             if (!($child->isCompound() && !$child->hasPrivateChildren())) {
                 $result->merge($this->calculateSaleItem($child));
             }
 
             if ($child->hasChildren()) {
-                $this->mergeItemsResults($child, $result);
+                $this->mergeChildrenResults($child, $result);
             }
         }
     }

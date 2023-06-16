@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Linker;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
-use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
+use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderItemCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierDeliveryItemEvents;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -20,24 +19,12 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockUnitLinker implements StockUnitLinkerInterface
 {
-    protected PersistenceHelperInterface       $persistenceHelper;
-    protected SupplierOrderCalculatorInterface $calculator;
-    protected StockUnitUpdaterInterface        $stockUnitUpdater;
-    protected StockUnitResolverInterface       $unitResolver;
-    protected CurrencyConverterInterface       $currencyConverter;
-
     public function __construct(
-        PersistenceHelperInterface       $persistenceHelper,
-        SupplierOrderCalculatorInterface $calculator,
-        StockUnitUpdaterInterface        $stockUnitUpdater,
-        StockUnitResolverInterface       $unitResolver,
-        CurrencyConverterInterface       $currencyConverter
+        private readonly PersistenceHelperInterface           $persistenceHelper,
+        private readonly SupplierOrderItemCalculatorInterface $itemCalculator,
+        private readonly StockUnitUpdaterInterface            $stockUnitUpdater,
+        private readonly StockUnitResolverInterface           $unitResolver,
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->calculator = $calculator;
-        $this->stockUnitUpdater = $stockUnitUpdater;
-        $this->unitResolver = $unitResolver;
-        $this->currencyConverter = $currencyConverter;
     }
 
     public function linkItem(SupplierOrderItemInterface $item): void
@@ -120,8 +107,9 @@ class StockUnitLinker implements StockUnitLinkerInterface
             return;
         }
 
-        $price = $this->calculator->calculateStockUnitNetPrice($item);
-        $shipping = $this->calculator->calculateStockUnitShippingPrice($item);
+        $price = $this->itemCalculator->calculateItemProductPrice($item);
+        $shipping = $this->itemCalculator->calculateItemShippingPrice($item);
+
         $eda = $item->getOrder()->getEstimatedDateOfArrival();
 
         $this->stockUnitUpdater->updateNetPrice($unit, $price);

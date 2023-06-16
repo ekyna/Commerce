@@ -195,20 +195,20 @@
     {%- endif %}
     {% if view.vars.show_margin -%}
         <tr>
-            <th>{{ view.translations.commercial_margin|raw }}</th>
-            <td class="text-right sale-detail-total" id="commercial_margin">
-                {%- if view.commercialMargin is not null -%}
-                    {{ view.commercialMargin.amount }}<br>({{ view.commercialMargin.percent }})
+            <th>{{ view.translations.margin_gross|raw }}</th>
+            <td class="text-right sale-detail-total" id="margin_net">
+                {%- if view.grossMargin is not null -%}
+                    {{ view.grossMargin.amount }}<br>({{ view.grossMargin.percent }})
                 {%- else -%}
                     -
                 {%- endif -%}
             </td>
         </tr>
         <tr>
-            <th>{{ view.translations.profit_margin|raw }}</th>
-            <td class="text-right sale-detail-total" id="profit_margin">
-                {%- if view.profitMargin is not null -%}
-                    {{- view.profitMargin.amount }}<br>({{ view.profitMargin.percent }})
+            <th>{{ view.translations.margin_net|raw }}</th>
+            <td class="text-right sale-detail-total" id="margin_gross">
+                {%- if view.netMargin is not null -%}
+                    {{- view.netMargin.amount }}<br>({{ view.netMargin.percent }})
                 {%- else -%}
                     -
                 {%- endif -%}

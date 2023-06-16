@@ -13,9 +13,9 @@ use Ekyna\Component\Commerce\Exception\RuntimeException;
  * @package Ekyna\Component\Commerce\Common\Calculator
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class Amount
+final class Amount
 {
-    private string $currency;
+    private string  $currency;
     private Decimal $unit;
     private Decimal $gross;
     private Decimal $discount;
@@ -33,15 +33,15 @@ class Amount
      * @param array<Adjustment> $taxes
      */
     public function __construct(
-        string $currency,
+        string  $currency,
         Decimal $unit = null,
         Decimal $gross = null,
         Decimal $discount = null,
         Decimal $base = null,
         Decimal $tax = null,
         Decimal $total = null,
-        array $discounts = [],
-        array $taxes = []
+        array   $discounts = [],
+        array   $taxes = []
     ) {
         $this->currency = $currency;
         $this->unit = $unit ?: new Decimal(0);
@@ -279,5 +279,17 @@ class Amount
         }
 
         return $final;
+    }
+
+    public function equals(Amount $other): bool
+    {
+        // TODO Compare adjustments (taxes & discounts)
+
+        return $this->unit->equals($other->unit)
+            && $this->gross->equals($other->gross)
+            && $this->discount->equals($other->discount)
+            && $this->base->equals($other->base)
+            && $this->total->equals($other->total)
+            && $this->tax->equals($other->tax);
     }
 }

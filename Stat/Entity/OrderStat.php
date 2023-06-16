@@ -24,6 +24,7 @@ class OrderStat
     private ?string            $date      = null;
     private Decimal            $revenue;
     private Decimal            $shipping;
+    private Decimal            $cost;
     private Decimal            $margin;
     private int                $orders    = 0;
     private int                $items     = 0;
@@ -99,9 +100,21 @@ class OrderStat
         return $this;
     }
 
+    public function getCost(): Decimal
+    {
+        return $this->cost;
+    }
+
+    public function setCost(Decimal $cost): self
+    {
+        $this->cost = $cost;
+
+        return $this;
+    }
+
     public function getMargin(): Decimal
     {
-        return $this->margin;
+        return $this->revenue->add($this->shipping)->sub($this->cost);
     }
 
     public function setMargin(Decimal $margin): self
@@ -194,8 +207,11 @@ class OrderStat
      */
     public function getMarginPercent(): Decimal
     {
-        if (0 < $this->margin && 0 < $this->revenue) {
-            return $this->margin->mul(100)->div($this->revenue)->round(1);
+        if (0 < $revenue = $this->revenue->add($this->shipping)) {
+            // (1 - (cost / revenue) ) * 100
+            return (new Decimal(1))->sub(
+                $this->cost->div($revenue)
+            )->mul(100)->round(2);
         }
 
         return new Decimal(0);
@@ -215,7 +231,7 @@ class OrderStat
         $map = [
             'revenue'  => 'decimal',
             'shipping' => 'decimal',
-            'margin'   => 'decimal',
+            'cost'     => 'decimal',
             'orders'   => 'int',
             'items'    => 'int',
             'average'  => 'decimal',

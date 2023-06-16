@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Report\Section;
 
+use Ekyna\Component\Commerce\Common\Model\Margin;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
-use Ekyna\Component\Commerce\Report\Section\Model\OrderData;
-use Ekyna\Component\Commerce\Report\Util\OrderUtil;
 use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
 use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -28,15 +27,10 @@ class OrdersSection implements SectionInterface
     final public const NAME = 'orders';
 
     private string $locale;
-    /** @var array<string, array<int, OrderData>> */
+    /** @var array<string, array<int, Margin>> */
     private array $data;
     /** @var array<int, string> */
     private array $years;
-
-    public function __construct(
-        private readonly OrderUtil $util
-    ) {
-    }
 
     public function initialize(ReportConfig $config): void
     {
@@ -51,23 +45,13 @@ class OrdersSection implements SectionInterface
             throw new UnexpectedTypeException($resource, OrderInterface::class);
         }
 
-        $gross = $this->util->getGrossCalculator()->calculateSale($resource);
-        $commercial = $this->util->getCommercialCalculator()->calculateSale($resource);
-
-        if ($gross->getSellingPrice()->isZero() && $commercial->getSellingPrice()->isZero()) {
-            return;
-        }
-
         [$year, $month] = explode('-', $resource->getAcceptedAt()->format('Y-n'));
 
         if (!isset($this->data[$year][$month])) {
-            $this->data[$year][$month] = $this->util->create();
+            $this->data[$year][$month] = new Margin();
         }
 
-        $data = $this->data[$year][$month];
-
-        $data->grossMargin->merge($gross);
-        $data->commercialMargin->merge($commercial);
+        $this->data[$year][$month]->merge($resource->getMargin());
     }
 
     public function write(WriterInterface $writer): void
@@ -83,12 +67,12 @@ class OrdersSection implements SectionInterface
 
     private function writeXls(XlsWriter $writer): void
     {
-        $sheet = $writer->createSheet('Orders'); // TODO Trans
+        $sheet = $writer->createSheet('Orders'); // TODO trans
 
-        $writer->writeOrderStatHeaders('Month', 23, $this->years); // TODO Trans
+        $writer->writeMarginHeaders('Month', 23, $this->years); // TODO Trans
 
         // Values
-        $row = 2;
+        $row = 3;
         foreach (DateUtil::getMonths($this->locale) as $monthIndex => $month) {
             $row++;
 
@@ -97,11 +81,9 @@ class OrdersSection implements SectionInterface
 
             // Values
             foreach ($this->years as $yearIndex => $year) {
-                $col = 2 + $yearIndex * 3;
+                $data = $this->data[$year][$monthIndex] ?? new Margin();
 
-                $data = $this->data[$year][$monthIndex] ?? $this->util->create();
-
-                $writer->writeOrderStatCells($data, $col, $row);
+                $writer->writeMarginCells($data, $yearIndex, $row);
             }
         }
     }

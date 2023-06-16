@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Report\Section;
 
 use Doctrine\Common\Collections\Collection;
+use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
+use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Report\ReportConfig;
 use Ekyna\Component\Commerce\Report\Section\Model\SupplierData;
-use Ekyna\Component\Commerce\Report\Util\OrderUtil;
 use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
 use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
 use Ekyna\Component\Commerce\Stock\Helper\StockSubjectQuantityHelper;
@@ -35,14 +36,16 @@ class SupplierOrdersSection implements SectionInterface
     /** @var array<int, array<int, SupplierData>> */
     private array $data;
     /** @var array<int, string> */
-    private array  $names;
+    private array $names;
     /** @var array<int, string> */
     private array  $years;
     private string $year;
 
+    private ?MarginCalculatorInterface $calculator = null;
+
     public function __construct(
-        private readonly StockSubjectQuantityHelper $quantityHelper,
-        private readonly OrderUtil                  $util
+        private readonly StockSubjectQuantityHelper $helper,
+        private readonly MarginCalculatorFactory    $factory,
     ) {
     }
 
@@ -77,6 +80,8 @@ class SupplierOrdersSection implements SectionInterface
     {
         $this->year = $order->getAcceptedAt()->format('Y');
 
+        $this->calculator = $this->factory->create();
+
         $this->calculateOrderItems($order->getItems());
     }
 
@@ -95,12 +100,12 @@ class SupplierOrdersSection implements SectionInterface
             return;
         }
 
-        $soldTotal = $this->quantityHelper->calculateSoldQuantity($item);
+        $soldTotal = $this->helper->calculateSoldQuantity($item);
         if ($soldTotal->isZero()) {
             return;
         }
 
-        $grossMargin = $this->util->getGrossCalculator()->calculateSaleItem($item, true);
+        $grossMargin = $this->calculator->calculateSaleItem($item, true);
 
         foreach ($item->getStockAssignments() as $assignment) {
             $unit = $assignment->getStockUnit();
@@ -126,7 +131,7 @@ class SupplierOrdersSection implements SectionInterface
 
             $data->saleGoodCost += $goodCost;
             $data->saleSupplyCost += $supplyCost;          // TODO Should use total quantity (need Assignment::credited quantity)
-            $data->saleRevenue += $grossMargin->getSellingPrice()->mul($sold)->div($soldTotal)->round(2);
+            $data->saleRevenue += $grossMargin->getRevenueProduct()->mul($sold)->div($soldTotal)->round(2);
         }
     }
 
@@ -183,7 +188,7 @@ class SupplierOrdersSection implements SectionInterface
         $sheet->mergeCells([1, 1, 1, 3]);
         $sheet->getCell([1, 1])->getStyle()->applyFromArray($headerStyle);
         $sheet->getCell([1, 2])->getStyle()->applyFromArray($headerStyle);
-        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle  + XlsWriter::STYLE_BORDER_BOTTOM);
+        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
         $sheet->getCell([1, 1])->setValue('Fournisseur');
 
         foreach ($groups as $index => $header) {

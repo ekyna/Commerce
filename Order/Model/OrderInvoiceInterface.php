@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\Model;
 
+use Ekyna\Component\Commerce\Common\Model\MarginSubjectInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 
 /**
@@ -11,7 +12,7 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
  * @package Ekyna\Component\Commerce\Order\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface OrderInvoiceInterface extends InvoiceInterface
+interface OrderInvoiceInterface extends InvoiceInterface, MarginSubjectInterface
 {
     public function getOrder(): ?OrderInterface;
 

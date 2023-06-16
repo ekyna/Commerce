@@ -27,7 +27,7 @@
 
         <field name="revenue" column="revenue" type="php_decimal" precision="16" scale="3" nullable="false"/>
         <field name="shipping" column="shipping" type="php_decimal" precision="16" scale="3" nullable="false"/>
-        <field name="margin" column="margin" type="php_decimal" precision="16" scale="3" nullable="false"/>
+        <field name="cost" column="cost" type="php_decimal" precision="16" scale="3" nullable="false"/>
         <field name="orders" column="orders" type="integer" nullable="false"/>
         <field name="items" column="items" type="integer" nullable="false"/>
         <field name="average" column="average" type="php_decimal" precision="16" scale="3" nullable="false"/>

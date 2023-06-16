@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Subject\Guesser;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Model\Cost;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
@@ -14,6 +15,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderItemCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
@@ -21,57 +23,49 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterf
 use Ekyna\Component\Resource\Repository\RepositoryFactoryInterface;
 
 /**
- * Class PurchaseCostGuesser
+ * Class SubjectCostGuesserInterface
  * @package Ekyna\Component\Commerce\Subject\Guesser
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class PurchaseCostGuesser implements PurchaseCostGuesserInterface
+class SubjectCostGuesser implements SubjectCostGuesserInterface
 {
-    protected RepositoryFactoryInterface $repositoryFactory;
-    protected CurrencyConverterInterface $currencyConverter;
-
-
     public function __construct(
-        RepositoryFactoryInterface $repositoryFactory,
-        CurrencyConverterInterface $currencyConverter
+        private readonly RepositoryFactoryInterface           $repositoryFactory,
+        private readonly SupplierOrderItemCalculatorInterface $supplierOrderItemCalculator,
+        private readonly CurrencyConverterInterface           $currencyConverter,
     ) {
-        $this->repositoryFactory = $repositoryFactory;
-        $this->currencyConverter = $currencyConverter;
     }
 
-    public function guess(SubjectInterface $subject, string $quote = null, bool $shipping = false): ?Decimal
+    /**
+     * @inheritDoc
+     */
+    public function guess(SubjectInterface $subject): ?Cost
     {
-        if (is_null($quote)) {
-            $quote = $this->currencyConverter->getDefaultCurrency();
-        }
-
         // By assignable stock units (avg)
-        if ($cost = $this->getLatestOpenedStockUnitsCost($subject, $quote, $shipping)) {
+        if ($cost = $this->getLatestOpenedStockUnitsCost($subject)) {
             return $cost;
         }
 
         // By latest closed stock unit
-        if ($cost = $this->getLatestClosedStockUnitCost($subject, $quote, $shipping)) {
+        if ($cost = $this->getLatestClosedStockUnitCost($subject)) {
             return $cost;
         }
 
         // By latest supplier order item
-        if ($cost = $this->getLatestSupplierOrderItemPrice($subject, $quote)) {
+        if ($cost = $this->getLatestSupplierOrderItemPrice($subject)) {
             return $cost;
         }
 
         // By supplier products (avg)
-        return $this->getSupplierProductAverageCost($subject, $quote);
+        return $this->getSupplierProductAverageCost($subject);
     }
 
     /**
      * Returns the latest opened stock unit cost price.
      *
-     * @param SubjectInterface $subject  The subject
-     * @param string           $quote    The quote currency
-     * @param bool             $shipping Whether to include shipping cost
+     * @param SubjectInterface $subject The subject
      */
-    private function getLatestOpenedStockUnitsCost(SubjectInterface $subject, string $quote, bool $shipping): ?Decimal
+    private function getLatestOpenedStockUnitsCost(SubjectInterface $subject): ?Cost
     {
         if (!$subject instanceof StockSubjectInterface) {
             return null;
@@ -92,7 +86,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
                 continue;
             }
 
-            if ($cost = $this->calculateStockUnitCost($unit, $quote, $shipping)) {
+            if ($cost = $this->calculateStockUnitCost($unit)) {
                 return $cost;
             }
         }
@@ -105,7 +99,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
      *
      * @TODO Limit to past 6 months (configurable)
      */
-    private function getLatestClosedStockUnitCost(SubjectInterface $subject, string $quote, bool $shipping): ?Decimal
+    private function getLatestClosedStockUnitCost(SubjectInterface $subject): ?Cost
     {
         if (!$subject instanceof StockSubjectInterface) {
             return null;
@@ -122,7 +116,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
                 continue;
             }
 
-            return $this->calculateStockUnitCost($unit, $quote, $shipping);
+            return $this->calculateStockUnitCost($unit);
         }
 
         return null;
@@ -143,7 +137,7 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
 
         // Skip orders from foreign countries not having shipping cost.
         $country = $order->getSupplier()->getAddress()->getCountry()->getCode();
-        if ($country != $this->getCountryRepository()->getDefaultCode()) {
+        if ($country !== $this->getCountryRepository()->getDefaultCode()) {
             return true;
         }
 
@@ -153,48 +147,27 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
     /**
      * Calculates the stock unit cost price.
      */
-    private function calculateStockUnitCost(StockUnitInterface $unit, string $quote, bool $shipping = false): ?Decimal
+    private function calculateStockUnitCost(StockUnitInterface $unit): ?Cost
     {
-        $price = $unit->getNetPrice();
+        $price = clone $unit->getNetPrice();
+        $shipping = clone $unit->getShippingPrice();
 
-        if ($shipping) {
-            $price += $unit->getShippingPrice();
-        }
-
-        if ($price->isZero()) {
+        if ($price->isZero() && $shipping->isZero()) {
             return null;
         }
 
-        if ($quote === $this->currencyConverter->getDefaultCurrency()) {
-            return $price;
-        }
-
-        return $this->currencyConverter->convertWithSubject($price, $unit->getSupplierOrder(), $quote, false);
-    }
-
-    /**
-     * Returns the given subject's stock unit repository.
-     */
-    private function getStockUnitRepository(StockSubjectInterface $subject): ?StockUnitRepositoryInterface
-    {
-        $class = $subject::getStockUnitClass();
-
-        $repository = $this->repositoryFactory->getRepository($class);
-
-        if (!$repository instanceof StockUnitRepositoryInterface) {
-            throw new UnexpectedTypeException($repository, StockUnitRepositoryInterface::class);
-        }
-
-        return $repository;
+        return new Cost(
+            $price,
+            $shipping,
+        );
     }
 
     /**
      * Returns the latest supplier order item cost price.
      *
      * @param SubjectInterface $subject The subject
-     * @param string           $quote   The quote currency
      */
-    private function getLatestSupplierOrderItemPrice(SubjectInterface $subject, string $quote): ?Decimal
+    private function getLatestSupplierOrderItemPrice(SubjectInterface $subject): ?Cost
     {
         $item = $this->getSupplierOrderItemRepository()->findLatestOrderedBySubject($subject);
 
@@ -202,25 +175,26 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             return null;
         }
 
-        $cost = $item->getNetPrice();
+        $price = $this->supplierOrderItemCalculator->calculateItemProductPrice($item);
+        $shipping = $this->supplierOrderItemCalculator->calculateItemShippingPrice($item);
 
-        if ($cost->isZero()) {
+        if ($price->isZero() && $shipping->isZero()) {
             return null;
         }
 
-        $base = $item->getOrder()->getCurrency()->getCode();
-
-        // Convert with current exchange rate
-        return $this->currencyConverter->convert($cost, $base, $quote);
+        return new Cost(
+            $price,
+            $shipping,
+            average: true
+        );
     }
 
     /**
      * Returns the supplier product average cost price.
      *
      * @param SubjectInterface $subject The subject
-     * @param string           $quote   The quote currency
      */
-    private function getSupplierProductAverageCost(SubjectInterface $subject, string $quote): ?Decimal
+    private function getSupplierProductAverageCost(SubjectInterface $subject): ?Cost
     {
         $products = $this->getSupplierProductRepository()->findBySubject($subject);
 
@@ -242,40 +216,50 @@ class PurchaseCostGuesser implements PurchaseCostGuesserInterface
             $base = $product->getSupplier()->getCurrency()->getCode();
 
             // Convert with current exchange rate
-            $cost += $this->currencyConverter->convert($price, $base, $quote);
-        }
-
-        return $this->average($cost, $count, $quote);
-    }
-
-    /**
-     * Returns the average cost price average.
-     */
-    private function average(Decimal $total, int $count, string $currency): ?Decimal
-    {
-        if ($total->isZero()) {
-            return null;
+            // TODO Use historical exchange rate
+            $cost += $this->currencyConverter->convert($price, $base);
         }
 
         if (1 < $count) {
-            $total = $total->div($count);
+            $cost = $cost->div($count);
         }
 
-        return Money::round($total, $currency);
+        $cost = Money::round($cost, $this->currencyConverter->getDefaultCurrency());
+
+        return new Cost($cost, average: true);
+    }
+
+    /**
+     * Returns the given subject's stock unit repository.
+     */
+    private function getStockUnitRepository(StockSubjectInterface $subject): ?StockUnitRepositoryInterface
+    {
+        $class = $subject::getStockUnitClass();
+
+        $repository = $this->repositoryFactory->getRepository($class);
+
+        if (!$repository instanceof StockUnitRepositoryInterface) {
+            throw new UnexpectedTypeException($repository, StockUnitRepositoryInterface::class);
+        }
+
+        return $repository;
     }
 
     private function getSupplierOrderItemRepository(): SupplierOrderItemRepositoryInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->repositoryFactory->getRepository(SupplierOrderItemInterface::class);
     }
 
     private function getSupplierProductRepository(): SupplierProductRepositoryInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->repositoryFactory->getRepository(SupplierProductInterface::class);
     }
 
     private function getCountryRepository(): CountryRepositoryInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->repositoryFactory->getRepository(CountryInterface::class);
     }
 }

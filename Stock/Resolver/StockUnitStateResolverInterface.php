@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -16,7 +18,7 @@ interface StockUnitStateResolverInterface
      *
      * @param StockUnitInterface $stockUnit
      *
-     * @return bool Whether or not the states has been changed
+     * @return bool Whether the states has been changed
      */
-    public function resolve(StockUnitInterface $stockUnit);
+    public function resolve(StockUnitInterface $stockUnit): bool;
 }

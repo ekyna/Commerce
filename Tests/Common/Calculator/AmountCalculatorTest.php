@@ -1,19 +1,18 @@
-<?php declare(strict_types=1);
+<?php
+/** @noinspection PhpMethodNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests\Common\Calculator;
 
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculator;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
 use Ekyna\Component\Commerce\Tests\Common\Model\AbstractAmountTest;
 use Ekyna\Component\Commerce\Tests\Data;
 use Ekyna\Component\Commerce\Tests\Fixture;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class AmountCalculatorTest
@@ -23,46 +22,28 @@ use PHPUnit\Framework\MockObject\MockObject;
 class AmountCalculatorTest extends AbstractAmountTest
 {
     /**
-     * @var InvoiceSubjectCalculatorInterface|MockObject
-     */
-    private $invoiceCalculator;
-
-
-    /**
-     * @inheritDoc
-     */
-    protected function setUp(): void
-    {
-        $this->invoiceCalculator = $this->createMock(InvoiceSubjectCalculatorInterface::class);
-    }
-
-    /**
      * Returns a new instance of amount calculator.
      *
      * @param string          $currency
-     * @param bool            $revenue
      * @param StatFilter|null $filter
      *
      * @return AmountCalculator
      */
     private function createCalculator(
-        string $currency,
-        bool $revenue = false,
+        string     $currency,
         StatFilter $filter = null
     ): AmountCalculator {
-        $calculator = new AmountCalculator($currency, $revenue, $filter);
+        $calculator = new AmountCalculator($currency, $filter);
 
         $calculator->setCurrencyConverter($this->getCurrencyConverter());
-        $calculator->setInvoiceCalculator($this->invoiceCalculator);
 
         $factory = $this->createMock(AmountCalculatorFactory::class);
         $factory
             ->method('create')
-            ->willReturnCallback(function ($currency, $revenue) use ($factory) {
-                $c = new AmountCalculator($currency ?? Fixture::CURRENCY_EUR, $revenue);
+            ->willReturnCallback(function ($currency) use ($factory) {
+                $c = new AmountCalculator($currency ?? Fixture::CURRENCY_EUR, null);
 
                 $c->setCurrencyConverter($this->getCurrencyConverter());
-                $c->setInvoiceCalculator($this->invoiceCalculator);
                 $c->setAmountCalculatorFactory($factory);
 
                 return $c;
@@ -71,16 +52,6 @@ class AmountCalculatorTest extends AbstractAmountTest
         $calculator->setAmountCalculatorFactory($factory);
 
         return $calculator;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->invoiceCalculator = null;
     }
 
     public function test_calculateSale(): void
@@ -111,13 +82,13 @@ class AmountCalculatorTest extends AbstractAmountTest
         $grossResult = $calculator->calculateSale($sale, true);
 
         $taxes = $grossResult->getTaxAdjustments();
-        $this->assertCount(3, $taxes);
+        self::assertCount(3, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 20%', 18.19, 20);
         $this->assertAdjustment($taxes[1], 'VAT 5.5%', 40.99, 5.5);
         $this->assertAdjustment($taxes[2], 'VAT 7%', 7.01, 7);
 
         $discounts = $grossResult->getDiscountAdjustments();
-        $this->assertCount(4, $discounts);
+        self::assertCount(4, $discounts);
         $this->assertAdjustment($discounts[0], 'Discount 7%', 6.84, 7);
         $this->assertAdjustment($discounts[1], 'Discount 5%', 12.34, 5);
         $this->assertAdjustment($discounts[2], 'Discount 10%', 56.75, 10);
@@ -136,18 +107,17 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($finalResult, 936.32, 936.32, 112.36, 839.22, 61.30, 900.52);
 
         $taxes = $finalResult->getTaxAdjustments();
-        $this->assertCount(3, $taxes);
+        self::assertCount(3, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 5.5%', 36.07, 5.5);
         $this->assertAdjustment($taxes[1], 'VAT 7%', 6.17, 7);
         $this->assertAdjustment($taxes[2], 'VAT 20%', 19.06, 20);
     }
 
-    /** @noinspection PhpParamsInspection */
     public function test_calculateSale_cached(): void
     {
         $sale = Fixture::order(Data::order1());
 
-        $calculator = $this->createCalculator(Fixture::CURRENCY_EUR, false);
+        $calculator = $this->createCalculator(Fixture::CURRENCY_EUR);
 
         $calculator->calculateSale($sale);
 
@@ -171,108 +141,9 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($result, 936.32, 936.32, 112.36, 839.22, 61.30, 900.52);
 
         $taxes = $result->getTaxAdjustments();
-        $this->assertCount(3, $taxes);
+        self::assertCount(3, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 5.5%', 36.07, 5.5);
         $this->assertAdjustment($taxes[1], 'VAT 7%', 6.17, 7);
-        $this->assertAdjustment($taxes[2], 'VAT 20%', 19.06, 20);
-    }
-
-    public function test_calculateSale_revenue(): void
-    {
-        $sale = Fixture::order(Data::order1());
-
-        $this
-            ->invoiceCalculator
-            ->method('calculateInvoicedQuantity')
-            ->willReturnCallback(function ($subject) {
-                if ($subject instanceof SaleItemInterface) {
-                    return $subject->getTotalQuantity();
-                }
-
-                return 1;
-            });
-
-        $creditMap = [
-            Fixture::get('order1_item1')->getId()     => new Decimal(0),
-            Fixture::get('order1_item2')->getId()     => new Decimal(1),
-            Fixture::get('order1_item2_1')->getId()   => new Decimal(5),
-            Fixture::get('order1_item2_2')->getId()   => new Decimal(2),
-            Fixture::get('order1_item2_2_1')->getId() => new Decimal(4),
-            Fixture::get('order1_item2_2_2')->getId() => new Decimal(6),
-            Fixture::get('order1_item3')->getId()     => new Decimal(4),
-            Fixture::get('order1_item3_1')->getId()   => new Decimal(8),
-        ];
-
-        $this
-            ->invoiceCalculator
-            ->method('calculateCreditedQuantity')
-            ->willReturnCallback(function ($subject) use ($creditMap) {
-                if ($subject instanceof SaleItemInterface) {
-                    return $creditMap[$subject->getId()];
-                }
-
-                return new Decimal(0);
-            });
-
-        $this
-            ->invoiceCalculator
-            ->method('calculateSoldQuantity')
-            ->willReturnCallback(function ($subject) use ($creditMap) {
-                if ($subject instanceof SaleItemInterface) {
-                    return $subject->getTotalQuantity() - $creditMap[$subject->getId()];
-                }
-
-                return new Decimal(1);
-            });
-
-        $calculator = $this->createCalculator(Fixture::CURRENCY_EUR, true);
-
-        $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item1'));
-        $this->assertResult($result, 32.59, 97.77, 6.84, 90.93, 18.19, 109.12);
-
-        $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item2'));
-        $this->assertResult($result, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
-
-        $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item2_1'));
-        $this->assertResult($result, 12.34, 185.10, 9.25, 175.85, 9.67, 185.52);
-
-        $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item2_2'));
-        $this->assertResult($result, 70.94, 425.64, 42.56, 383.08, 21.07, 404.15);
-
-        $result = $calculator->calculateSaleItem(Fixture::orderItem('order1_item3'));
-        $this->assertResult($result, 19.64, 39.28, 5.89, 33.39, 2.34, 35.73);
-
-        $grossResult = $calculator->calculateSale($sale, true);
-
-        $taxes = $grossResult->getTaxAdjustments();
-        $this->assertCount(3, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 20%', 18.19, 20);
-        $this->assertAdjustment($taxes[1], 'VAT 5.5%', 30.74, 5.5);
-        $this->assertAdjustment($taxes[2], 'VAT 7%', 2.34, 7);
-
-        $discounts = $grossResult->getDiscountAdjustments();
-        $this->assertCount(4, $discounts);
-        $this->assertAdjustment($discounts[0], 'Discount 7%', 6.84, 7);
-        $this->assertAdjustment($discounts[1], 'Discount 5%', 9.25, 5);
-        $this->assertAdjustment($discounts[2], 'Discount 10%', 42.56, 10);
-        $this->assertAdjustment($discounts[3], 'Discount 15%', 5.89, 15);
-
-        $discountResult = $calculator->calculateSaleDiscount($sale->getAdjustments(AdjustmentTypes::TYPE_DISCOUNT)[0]);
-        $shipmentResult = $calculator->calculateSaleShipment($sale);
-        $finalResult = $calculator->calculateSale($sale);
-
-        $this->assertResult($grossResult, 747.79, 747.79, 64.54, 683.25, 51.27, 734.52);
-
-        $this->assertResult($discountResult, 81.99, 81.99, 0.00, 81.99, 6.15, 88.14);
-
-        $this->assertResult($shipmentResult, 15.26, 15.26, 0.00, 15.26, 3.05, 18.31);
-
-        $this->assertResult($finalResult, 683.25, 683.25, 81.99, 616.52, 48.17, 664.69);
-
-        $taxes = $finalResult->getTaxAdjustments();
-        $this->assertCount(3, $taxes);
-        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 27.05, 5.5);
-        $this->assertAdjustment($taxes[1], 'VAT 7%', 2.06, 7);
         $this->assertAdjustment($taxes[2], 'VAT 20%', 19.06, 20);
     }
 
@@ -300,10 +171,10 @@ class AmountCalculatorTest extends AbstractAmountTest
         $grossResult = $calculator->calculateSale($sale, true);
 
         $taxes = $grossResult->getTaxAdjustments();
-        $this->assertCount(1, $taxes);
+        static::assertCount(1, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 20%', 227.98, 20);
 
-        $this->assertCount(0, $grossResult->getDiscountAdjustments());
+        static::assertCount(0, $grossResult->getDiscountAdjustments());
 
         $finalResult = $calculator->calculateSale($sale);
 
@@ -311,7 +182,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($finalResult, 1139.94, 1139.94, 0, 1139.94, 227.98, 1367.92);
 
         $taxes = $finalResult->getTaxAdjustments();
-        $this->assertCount(1, $taxes);
+        static::assertCount(1, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 20%', 227.98, 20);
     }
 
@@ -333,6 +204,12 @@ class AmountCalculatorTest extends AbstractAmountTest
         $result = $calculator->calculateSaleItem(Fixture::orderItem('order3_item3_2'));
         $this->assertResult($result, 165.00, 660.00, 79.20, 580.80, 116.16, 696.96);
 
+        $result = $calculator->calculateSaleItem(Fixture::orderItem('order3_item3_2_1'));
+        $this->assertResult($result, 24.9, 0.00, 0.00, 0.00, 0.00, 0.00);
+
+        $result = $calculator->calculateSaleItem(Fixture::orderItem('order3_item3_2_1'), null, true, false);
+        $this->assertResult($result, 24.90, 398.4, 47.81, 350.59, 70.12, 420.71);
+
         $result = $calculator->calculateSaleItem(Fixture::orderItem('order3_item3'));
         $this->assertResult($result, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00);
 
@@ -340,12 +217,12 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($grossResult, 2493.80, 2493.80, 203.90, 2289.90, 365.54, 2655.44);
 
         $taxes = $grossResult->getTaxAdjustments();
-        $this->assertCount(2, $taxes);
+        static::assertCount(2, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 10%', 92.44, 10);
         $this->assertAdjustment($taxes[1], 'VAT 20%', 273.10, 20);
 
         $discounts = $grossResult->getDiscountAdjustments();
-        $this->assertCount(2, $discounts);
+        static::assertCount(2, $discounts);
         $this->assertAdjustment($discounts[0], 'Discount 12%', 162.6, 12);
         $this->assertAdjustment($discounts[1], 'Discount 5%', 41.3, 5);
 
@@ -356,7 +233,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($finalResult, 2289.90, 2289.90, 0, 2302.24, 368.01, 2670.25);
 
         $taxes = $finalResult->getTaxAdjustments();
-        $this->assertCount(2, $taxes);
+        static::assertCount(2, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 10%', 92.44, 10);
         $this->assertAdjustment($taxes[1], 'VAT 20%', 275.57, 20);
     }
@@ -385,10 +262,10 @@ class AmountCalculatorTest extends AbstractAmountTest
         $grossResult = $calculator->calculateSale($sale, true);
 
         $taxes = $grossResult->getTaxAdjustments();
-        $this->assertCount(1, $taxes);
+        static::assertCount(1, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 20%', 284.99, 20);
 
-        $this->assertCount(0, $grossResult->getDiscountAdjustments());
+        static::assertCount(0, $grossResult->getDiscountAdjustments());
 
         $finalResult = $calculator->calculateSale($sale);
 
@@ -396,7 +273,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($finalResult, 1424.94, 1424.94, 0, 1424.94, 284.99, 1709.93);
 
         $taxes = $finalResult->getTaxAdjustments();
-        $this->assertCount(1, $taxes);
+        static::assertCount(1, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 20%', 284.99, 20);
     }
 
@@ -448,7 +325,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 3.39, 65.09);
 
         $taxes = $result->getTaxAdjustments();
-        $this->assertCount(1, $taxes);
+        static::assertCount(1, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.39, 5.5);
     }
 
@@ -465,7 +342,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($result, 12.34, 61.70, 0.00, 61.70, 7.71, 69.41);
 
         $taxes = $result->getTaxAdjustments();
-        $this->assertCount(2, $taxes);
+        static::assertCount(2, $taxes);
         $this->assertAdjustment($taxes[0], 'VAT 5.5%', 3.39, 5.5);
         $this->assertAdjustment($taxes[1], 'VAT 7%', 4.32, 7);
     }
@@ -483,7 +360,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($result, 12.34, 61.70, 3.08, 58.62, 0.00, 58.62);
 
         $discounts = $result->getDiscountAdjustments();
-        $this->assertCount(1, $discounts);
+        self::assertCount(1, $discounts);
         $this->assertAdjustment($discounts[0], 'Discount 5%', 3.08, 5);
     }
 
@@ -500,7 +377,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertResult($result, 12.34, 61.70, 11.87, 49.83, 0.00, 49.83);
 
         $discounts = $result->getDiscountAdjustments();
-        $this->assertCount(2, $discounts);
+        self::assertCount(2, $discounts);
         $this->assertAdjustment($discounts[0], 'Discount 5%', 3.08, 5);
         $this->assertAdjustment($discounts[1], 'Discount 15%', 8.79, 15);
     }
@@ -661,12 +538,11 @@ class AmountCalculatorTest extends AbstractAmountTest
 
     public function test_calculateCompoundSaleItem_withPublicChildren(): void
     {
-        // TODO Use ->setCompound(true)
-
         $item = Fixture::orderItem([
             'order'    => [],
             'quantity' => 3,
             'price'    => 0,
+            'compound' => true,
         ]);
 
         $public1 = Fixture::orderItem([
@@ -701,14 +577,13 @@ class AmountCalculatorTest extends AbstractAmountTest
 
     public function test_calculateCompoundSaleItem_withPublicAndPrivateChildren(): void
     {
-        // TODO Use ->setCompound(true)
-
         $item = Fixture::orderItem([
             'order'     => [],
             'quantity'  => 3,
             'price'     => 0,
             'discounts' => [10],
             'taxes'     => [5.5],
+            'compound'  => true,
             'children'  => [
                 [
                     'quantity' => 8,
@@ -742,13 +617,12 @@ class AmountCalculatorTest extends AbstractAmountTest
 
     public function test_calculateCompoundSaleItem_withPrivateChildren(): void
     {
-        // TODO use ->setCompound(true)
-
         $item = Fixture::orderItem([
             'order'     => [],
             'quantity'  => 3,
             'discounts' => [15],
             'taxes'     => [20],
+            'compound'  => true,
             'children'  => [
                 [
                     'quantity' => 5,
@@ -771,14 +645,13 @@ class AmountCalculatorTest extends AbstractAmountTest
 
     public function test_calculateCompoundSaleItem_withPublicAndPrivateChildren_withoutCache(): void
     {
-        // TODO use ->setCompound(true)
-
         $item = Fixture::orderItem([
             'order'     => [],
             'quantity'  => 3,
             'price'     => 0,
             'discounts' => [10],
             'taxes'     => [5.5],
+            'compound'  => true,
             'children'  => [
                 [
                     'quantity' => 8,
@@ -806,7 +679,7 @@ class AmountCalculatorTest extends AbstractAmountTest
         $result = $calculator->calculateSaleItem($item);
         $this->assertResult($result, 440.89, 1322.67, 132.27, 1190.40, 65.47, 1255.87);
 
-        $result = $calculator->calculateSaleItem($public1, null);
+        $result = $calculator->calculateSaleItem($public1);
         $this->assertResult($result, 12.34, 185.1, 9.25, 175.85, 9.67, 185.52);
     }
 

@@ -24,27 +24,17 @@ class OrderUpdater implements OrderUpdaterInterface
         $this->marginCalculatorFactory = $marginCalculatorFactory;
     }
 
-    public function updateMarginTotals(OrderInterface $order): bool
+    public function updateMargin(OrderInterface $order): bool
     {
-        $changed = false;
+        $result = $this->marginCalculatorFactory->create()->calculateSale($order);
 
-        $result = $this->marginCalculatorFactory->create(null, true)->calculateSale($order);
-
-        // Margin
-        $total = $result ? $result->getAmount() : new Decimal(0);
-        if (!$total->equals($order->getMarginTotal())) {
-            $order->setMarginTotal($total);
-            $changed = true;
+        if ($order->getMargin()->equals($result)) {
+            return false;
         }
 
-        // Revenue
-        $total = $result ? $result->getSellingPrice() : new Decimal(0);
-        if (!$total->equals($order->getRevenueTotal())) {
-            $order->setRevenueTotal($total);
-            $changed = true;
-        }
+        $order->setMargin($result);
 
-        return $changed;
+        return true;
     }
 
     public function updateItemsCount(OrderInterface $order): bool

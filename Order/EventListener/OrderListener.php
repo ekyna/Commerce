@@ -308,7 +308,7 @@ class OrderListener extends AbstractSaleListener
 
         parent::handleContentChange($sale);
 
-        $this->orderUpdater->updateMarginTotals($sale);
+        $this->orderUpdater->updateMargin($sale);
 
         $this->orderUpdater->updateItemsCount($sale);
     }

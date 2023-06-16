@@ -20,7 +20,8 @@ interface OrderInterface
     extends Common\SaleInterface,
             ShipmentSubjectInterface,
             InvoiceSubjectInterface,
-            Common\InitiatorSubjectInterface
+            Common\InitiatorSubjectInterface,
+            Common\MarginSubjectInterface
 {
     /**
      * Sets whether the order contains sample items.
@@ -50,13 +51,15 @@ interface OrderInterface
 
     public function setCompletedAt(?DateTimeInterface $completedAt): OrderInterface;
 
+    /**
+     * @deprecated
+     */
     public function getRevenueTotal(): ?Decimal;
 
-    public function setRevenueTotal(?Decimal $amount): OrderInterface;
-
+    /**
+     * @deprecated
+     */
     public function getMarginTotal(): ?Decimal;
-
-    public function setMarginTotal(?Decimal $amount): OrderInterface;
 
     public function getItemsCount(): int;
 

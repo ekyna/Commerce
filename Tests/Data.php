@@ -1,6 +1,13 @@
 <?php
+/** @noinspection PhpUnused */
+
+/** @noinspection PhpMethodNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests;
+
+use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 
 /**
  * Class Data
@@ -105,6 +112,46 @@ class Data
         return [
             '_reference'      => 'order1',
             '_type'           => 'order',
+            '_amount'         => [
+                'shipment' => [
+                    'unit'     => 15.26,
+                    'gross'    => 15.26,
+                    'discount' => 0.0,
+                    'base'     => 15.26,
+                    'tax'      => 3.05,
+                    'total'    => 18.31,
+                ],
+                'gross'    => [
+                    'unit'     => 1029.93,
+                    'gross'    => 1029.93,
+                    'discount' => 93.61,
+                    'base'     => 936.32,
+                    'tax'      => 66.19,
+                    'total'    => 1002.51,
+                ],
+                'final'    => [
+                    'unit'     => 936.32,
+                    'gross'    => 936.32,
+                    'discount' => 112.36,
+                    'base'     => 839.22,
+                    'tax'      => 61.30,
+                    'total'    => 900.52,
+                ],
+            ],
+            '_margin'         => [
+                'revenue' => [
+                    'product'  => 823.96,
+                    'shipment' => 15.26,
+                ],
+                'cost'    => [
+                    'product'  => 500.93,
+                    'supply'   => 72.59,
+                    'shipment' => 8.13,
+                ],
+            ],
+            '_cost'           => [
+                'shipment' => 8.13,
+            ],
             'items'           => [
                 [
                     '_reference' => 'order1_item1', // id: 1
@@ -112,6 +159,29 @@ class Data
                     'price'      => 32.59,
                     'discounts'  => [7],
                     'taxes'      => [20],
+                    // Calculation results
+                    '_amount'    => [
+                        'unit'     => 32.59,
+                        'gross'    => 97.77,
+                        'discount' => 6.84,
+                        'base'     => 90.93,
+                        'tax'      => 18.19,
+                        'total'    => 109.12,
+                    ],
+                    '_margin'    => [
+                        'revenue' => [
+                            'product' => 90.93,
+                        ],
+                        'cost'    => [
+                            'product' => 61.23,
+                            'supply'  => 3.45,
+                        ],
+                    ],
+                    '_cost'      => [
+                        'product' => 61.23,
+                        'supply'  => 3.45,
+                    ],
+                    '_weight'    => 0,
                     // Default                   // Revenue (invoiced: 3)
                     // Gross:     97.77          // Gross:     97.77
                     // Discount:   6.84          // Discount:   6.84
@@ -127,10 +197,32 @@ class Data
                     'children'   => [
                         [
                             '_reference' => 'order1_item2_1', // id: 3
-                            'quantity'   => 5,
+                            'quantity'   => 5, // 20
                             'price'      => 12.34,
                             'discounts'  => [5],
                             'taxes'      => [5.5],
+                            // Calculation results
+                            '_amount'    => [
+                                'unit'     => 12.34,
+                                'gross'    => 246.80,
+                                'discount' => 12.34,
+                                'base'     => 234.46,
+                                'tax'      => 12.90,
+                                'total'    => 247.36,
+                            ],
+                            '_margin'    => [
+                                'revenue' => [
+                                    'product' => 234.46,
+                                ],
+                                'cost'    => [
+                                    'product' => 165.12,
+                                    'supply'  => 23.61,
+                                ],
+                            ],
+                            '_cost'      => [
+                                'product' => 165.12,
+                                'supply'  => 23.61,
+                            ],
                             // Default                   // Revenue (invoiced: 20, credit: 5)
                             // Gross:    246.80          // Gross:    185.10
                             // Discount:  12.34          // Discount:   9.25
@@ -140,22 +232,128 @@ class Data
                         ],
                         [
                             '_reference' => 'order1_item2_2', // id: 4
-                            'quantity'   => 2,
+                            'quantity'   => 2, // 8
                             'price'      => 47.99,
                             'discounts'  => [10],
                             'taxes'      => [5.5],
+                            'compound'   => true,
                             'children'   => [
                                 [
                                     '_reference' => 'order1_item2_2_1', // id: 5
-                                    'quantity'   => 2,
+                                    'quantity'   => 2, // 16
                                     'price'      => 3.99,
                                     'private'    => true,
+                                    // Calculation results
+                                    '_amount'    => [
+                                        'unit'    => 3.99,
+                                        '_single' => [
+                                            'unit'     => 3.99,
+                                            'gross'    => 63.84,
+                                            'discount' => 6.38, // 10%
+                                            'base'     => 57.46,
+                                            'tax'      => 3.16, // 5.5%
+                                            'total'    => 60.62,
+                                        ],
+                                    ],
+                                    '_margin'    => [
+                                        'revenue' => [],
+                                        'cost'    => [],
+                                        '_single' => [
+                                            'revenue' => [
+                                                'product' => 57.46,
+                                            ],
+                                            'cost'    => [
+                                                'product' => 34.56,
+                                                'supply'  => 1.23,
+                                            ],
+                                        ],
+                                    ],
+                                    '_cost'      => [
+                                        '_single' => [
+                                            'product' => 34.56,
+                                            'supply'  => 1.23,
+                                        ],
+                                    ],
                                 ],
                                 [
                                     '_reference' => 'order1_item2_2_2', // id: 6
-                                    'quantity'   => 3,
+                                    'quantity'   => 3, // 24
                                     'price'      => 4.99,
                                     'private'    => true,
+                                    // Calculation results
+                                    '_amount'    => [
+                                        'unit'    => 4.99,
+                                        '_single' => [
+                                            'unit'     => 4.99,
+                                            'gross'    => 119.76,
+                                            'discount' => 11.98, // 10%
+                                            'base'     => 107.78,
+                                            'tax'      => 5.93,  // 5.5%
+                                            'total'    => 113.71,
+                                        ],
+                                    ],
+                                    '_margin'    => [
+                                        'revenue' => [],
+                                        'cost'    => [],
+                                        '_single' => [
+                                            'revenue' => [
+                                                'product' => 107.78,
+                                            ],
+                                            'cost'    => [
+                                                'product' => 65.43,
+                                                'supply'  => 13.24,
+                                            ],
+                                        ],
+                                    ],
+                                    '_cost'      => [
+                                        '_single' => [
+                                            'product' => 65.43,
+                                            'supply'  => 13.24,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            // Calculation results
+                            '_amount'    => [
+                                'unit'     => 70.94,
+                                'gross'    => 567.52,
+                                'discount' => 56.75, // 10%
+                                'base'     => 510.77,
+                                'tax'      => 28.09, // 5.5%
+                                'total'    => 538.86,
+                                '_single'  => [
+                                    'unit'     => 47.99,
+                                    'gross'    => 383.92,
+                                    'discount' => 38.39, // 10%
+                                    'base'     => 345.53,
+                                    'tax'      => 19.00, // 5.5%
+                                    'total'    => 364.53,
+                                ],
+                            ],
+                            '_margin'    => [
+                                'revenue' => [
+                                    'product' => 510.77,
+                                ],
+                                'cost'    => [
+                                    'product' => 228.24,
+                                    'supply'  => 41.01,
+                                ],
+                                '_single' => [
+                                    'revenue' => [
+                                        'product' => 345.53,
+                                    ],
+                                    'cost'    => [
+                                        'product' => 128.25,
+                                        'supply'  => 26.54,
+                                    ],
+                                ],
+                            ],
+                            '_cost'      => [
+                                'product' => 228.24,
+                                'supply'  => 41.01,
+                                '_single' => [
+                                    'product' => 128.25,
+                                    'supply'  => 26.54,
                                 ],
                             ],
                             // Default                   // Revenue (invoiced: 8, credited: 2)
@@ -167,6 +365,10 @@ class Data
                             // Total:    538.86          // Total:    404.15
                         ],
                     ],
+                    // Calculation results
+                    '_amount'    => [],
+                    '_margin'    => [],
+                    '_cost'      => [],
                 ],
                 [
                     '_reference' => 'order1_item3', // id: 7
@@ -177,9 +379,80 @@ class Data
                     'children'   => [
                         [
                             '_reference' => 'order1_item3_1', // id: 8
-                            'quantity' => 2,
-                            'price'    => 4.14,
-                            'private'  => true,
+                            'quantity'   => 2, // 12
+                            'price'      => 4.14,
+                            'private'    => true,
+                            '_amount'    => [
+                                'unit'    => 4.14,
+                                '_single' => [
+                                    'unit'     => 4.14,
+                                    'gross'    => 49.68,
+                                    'discount' => 7.45, // 15%
+                                    'base'     => 42.23,
+                                    'tax'      => 2.96, // 7%
+                                    'total'    => 45.19,
+                                ],
+                            ],
+                            '_margin'    => [
+                                '_single' => [
+                                    'revenue' => [
+                                        'product' => 42.23,
+                                    ],
+                                    'cost'    => [
+                                        'product' => 25.24,
+                                        'supply'  => 4.52,
+                                    ],
+                                ],
+                            ],
+                            '_cost'      => [
+                                '_single' => [
+                                    'product' => 25.24,
+                                    'supply'  => 4.52,
+                                ],
+                            ],
+                        ],
+                    ],
+                    // Calculation results
+                    '_amount'    => [
+                        'unit'     => 19.64,
+                        'gross'    => 117.84,
+                        'discount' => 17.68, // 15%
+                        'base'     => 100.16,
+                        'tax'      => 7.01, // 7%
+                        'total'    => 107.17,
+                        '_single'  => [
+                            'unit'     => 11.36,
+                            'gross'    => 22.72,
+                            'discount' => 3.4, // 15%
+                            'base'     => 19.32,
+                            'tax'      => 1.35, // 7%
+                            'total'    => 20.67,
+                        ],
+                    ],
+                    '_margin'    => [
+                        'revenue' => [
+                            'product' => 100.16,
+                        ],
+                        'cost'    => [
+                            'product' => 46.34,
+                            'supply'  => 4.52,
+                        ],
+                        '_single' => [
+                            'revenue' => [
+                                'product' => 19.32,
+                            ],
+                            'cost'    => [
+                                'product' => 21.1,
+                                'supply'  => 0,
+                            ],
+                        ],
+                    ],
+                    '_cost'      => [
+                        'product' => 46.34,
+                        'supply'  => 4.52,
+                        '_single' => [
+                            'product' => 21.1,
+                            'supply'  => 0,
                         ],
                     ],
                     // Default                   // Revenue (invoiced: 6, refunded: 4)
@@ -197,24 +470,82 @@ class Data
                 // Tax:       66.19          // Tax:        2.34
                 // Total:   1002.51          // Total:     35.73
             ],
-            'discounts'       => [12],
+            'discounts'       => [
+                [
+                    '_reference' => 'order1_discount1',
+                    'type'       => AdjustmentTypes::TYPE_DISCOUNT,
+                    'amount'     => 12,
+                    '_amount'    => [
+                        'unit'     => 112.36,
+                        'gross'    => 112.36,
+                        'discount' => 0.00,
+                        'base'     => 112.36,
+                        'tax'      => 7.94,
+                        'total'    => 120.30,
+                    ],
+                ],
+            ],
             'taxes'           => [20],
             'shipment_amount' => 15.26,
             'grand_total'     => 900.52,
-            'invoice_total'   => 900.52, // So that $order->isFullyInvoiced() return true
-            /*'invoices' => [
+            //'invoice_total'   => 900.52, // So that $order->isFullyInvoiced() return true
+            'invoices'        => [
                 [
-                    'lines' => [
-                        ['item' => ['_reference' => 'order1_item1'], 'quantity' => 3],
-                        ['item' => ['_reference' => 'order1_item2_1'], 'quantity' => 20],
-                        ['item' => ['_reference' => 'order1_item2_2'], 'quantity' => 8],
-                        ['item' => ['_reference' => 'order1_item2_2_1'], 'quantity' => 16],
-                        ['item' => ['_reference' => 'order1_item2_2_2'], 'quantity' => 24],
-                        ['item' => ['_reference' => 'order1_item3'], 'quantity' => 6],
-                        ['item' => ['_reference' => 'order1_item3_1'], 'quantity' => 12],
-                    ]
-                ]
-            ]*/
+                    '_reference' => 'order1_invoice1',
+                    'lines'      => [
+                        [
+                            'item'     => ['_reference' => 'order1_item2_1'],
+                            'quantity' => 20,
+                            'base'     => 234.46,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item2_2'],
+                            'quantity' => 8,
+                            'base'     => 510.77,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item2_2_1'],
+                            'quantity' => 16,
+                            'base'     => 0.0,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item2_2_2'],
+                            'quantity' => 24,
+                            'base'     => 0.0,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item3'],
+                            'quantity' => 3,
+                            'base'     => 50.08,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item3_1'],
+                            'quantity' => 6,
+                            'base'     => 0.0,
+                        ],
+                    ],
+                ],
+                [
+                    '_reference' => 'order1_invoice2',
+                    'lines'      => [
+                        [
+                            'item'     => ['_reference' => 'order1_item1'],
+                            'quantity' => 3,
+                            'base'     => 90.93,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item3'],
+                            'quantity' => 3,
+                            'base'     => 50.08,
+                        ],
+                        [
+                            'item'     => ['_reference' => 'order1_item3_1'],
+                            'quantity' => 6,
+                            'base'     => 0.0,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -269,6 +600,47 @@ class Data
                 'supplier_order3',
                 'supplier_order4',
             ],
+            '_amount'         => [
+                'shipment' => [
+                    'unit'     => 12.34,
+                    'gross'    => 12.34,
+                    'discount' => 0.0,
+                    'base'     => 12.34,
+                    'tax'      => 2.47,
+                    'total'    => 14.81,
+                ],
+                'gross'    => [
+                    'unit'     => 2493.80,
+                    'gross'    => 2493.80,
+                    'discount' => 203.90,
+                    'base'     => 2289.90,
+                    'tax'      => 365.54,
+                    'total'    => 2655.44,
+                ],
+                'final'    => [
+                    'unit'     => 2289.90,
+                    'gross'    => 2289.90,
+                    'discount' => 0,
+                    'base'     => 2302.24,
+                    'tax'      => 368.01,
+                    'total'    => 2670.25,
+                ],
+            ],
+            '_margin'         => [
+                'revenue' => [
+                    'product'  => 2289.90,
+                    'shipment' => 12.34,
+                ],
+                'cost'    => [
+                    'product'  => 1589.6,
+                    'supply'   => 307.13,
+                    'shipment' => 47.00,
+                    'average'  => true,
+                ],
+            ],
+            '_cost'           => [
+                'shipment' => 47.0,
+            ],
             'invoice_address' => [
                 '_reference' => 'order3_invoiceAddress',
                 'country'    => Fixture::COUNTRY_FR,
@@ -290,13 +662,32 @@ class Data
                             'sold' => 2.,
                         ],
                     ],
-                    // Weight:     5.6
-                    // Gross:    312.80
-                    // Discount:   0.00
-                    // Base:     312.80
-                    // Tax:       31.28
-                    // Total:    344.08
-                    // Margin:    92.82 (29.67%) | 26.58 (8,50%)
+                    // Calculation results
+                    '_amount'     => [
+                        'unit'     => 78.20,
+                        'gross'    => 312.80,
+                        'discount' => 0,
+                        'base'     => 312.80,
+                        'tax'      => 31.28,
+                        'total'    => 344.08,
+                    ],
+                    '_margin'     => [
+                        // 92.82 (29.67%) | 26.58 (8,50%)
+                        'revenue' => [
+                            'product' => 312.80,
+                        ],
+                        'cost'    => [
+                            'product' => 219.98,
+                            'supply'  => 66.24,
+                        ],
+                    ],
+                    '_cost'       => [
+                        //'product' => 54.995,
+                        //'supply'  => 16.56,
+                        'product' => 219.98,
+                        'supply'  => 66.24,
+                    ],
+                    '_weight'     => 5.6,
                 ],
                 [
                     //'_id'         => 2,
@@ -312,19 +703,40 @@ class Data
                         ],
                         [
                             'unit' => [
-                                '_reference' => 'stock_unit9',
+                                '_reference' => 'stock_unit9', // (price: 52.31)
                             ],
                             'sold' => 3.,
                         ],
                     ],
-                    // Weight:    13.0
-                    // Gross:    695.00
-                    // Discount:  83.40
-                    // Base:     611.60
-                    // Tax:       61.16
-                    // Total:    672.76
-                    // Margin:   107.40 (17.56%) | 45.96 (7.51%)
-                    // -> if subject2 cost price price is guessed as 52.31 EUR (+shipping: 56.69)
+                    // Calculation results
+                    '_amount'     => [
+                        'unit'     => 69.50,
+                        'gross'    => 695.00,
+                        'discount' => 83.40,
+                        'base'     => 611.60,
+                        'tax'      => 61.16,
+                        'total'    => 672.76,
+                    ],
+                    '_margin'     => [
+                        // 107.40 (17.56%) | 45.96 (7.51%)
+                        'revenue' => [
+                            'product' => 611.60,
+                        ],
+                        'cost'    => [
+                            'product' => 504.20,
+                            'supply'  => 48.3,
+                            'average' => true,
+                        ],
+                    ],
+                    '_cost'       => [
+                        //'product' => 50.42,
+                        //'supply'  => 4.83,
+                        //'average' => true,
+                        'product' => 504.20,
+                        'supply'  => 48.3,
+                        'average' => true,
+                    ],
+                    '_weight'     => 13.0,
                 ],
                 [
                     //'_id'         => 3,
@@ -333,7 +745,12 @@ class Data
                     'quantity'   => 2,
                     'price'      => 0,
                     'weight'     => 0,
-                    'compound'   => true, // TODO
+                    'compound'   => true,
+                    // Calculation results
+                    '_amount'    => [],
+                    '_margin'    => [],
+                    '_cost'      => [],
+                    '_weight'    => 0,
                     'children'   => [
                         [
                             //'_id'         => 4,
@@ -352,13 +769,32 @@ class Data
                                     'sold' => 3.,
                                 ],
                             ],
-                            // Weight:     8.0
-                            // Gross:    826.00
-                            // Discount:  41.30
-                            // Base:     784.70
-                            // Tax:      156.94
-                            // Total:    941.64
-                            // Margin:   254.88 (32.48%) | 137.05 (17.47%)
+                            // Calculation results
+                            '_amount'     => [
+                                'unit'     => 82.60,
+                                'gross'    => 826.00,
+                                'discount' => 41.30,
+                                'base'     => 784.70,
+                                'tax'      => 156.94,
+                                'total'    => 941.64,
+                            ],
+                            '_margin'     => [
+                                // 254.88 (32.48%) | 137.05 (17.47%)
+                                'revenue' => [
+                                    'product' => 784.70,
+                                ],
+                                'cost'    => [
+                                    'product' => 529.82,
+                                    'supply'  => 117.83,
+                                ],
+                            ],
+                            '_cost'       => [
+                                //'product' => 52.982,
+                                //'supply'  => 11.783,
+                                'product' => 529.82,
+                                'supply'  => 117.83,
+                            ],
+                            '_weight'     => 8.0,
                         ],
                         [
                             //'_id'         => 5,
@@ -369,9 +805,8 @@ class Data
                             'taxes'       => [20],
                             'assignments' => [
                                 [
-                                    'unit'    => 'stock_unit3', // (price: 40.78, shipping: 1.69)
-                                    'sold'    => 4.,
-                                    'shipped' => 0.,
+                                    'unit' => 'stock_unit3', // (price: 40.78, shipping: 1.69)
+                                    'sold' => 4.,
                                 ],
                             ],
                             'children'    => [
@@ -383,22 +818,93 @@ class Data
                                     'private'     => true,
                                     'assignments' => [
                                         [
-                                            'unit'    => 'stock_unit1', // (price: 10.78, shipping: 4.25)
-                                            'sold'    => 16.,
-                                            'shipped' => 0.,
+                                            'unit' => 'stock_unit1', // (price: 10.78, shipping: 4.25)
+                                            'sold' => 16.,
                                         ],
                                     ],
-                                    // Weight:    12.8
-                                    // Gross:    398.4
+                                    // Calculation results
+                                    '_amount'     => [
+                                        'unit'    => 24.90,
+                                        '_single' => [
+                                            'unit'     => 24.90,
+                                            'gross'    => 398.4,
+                                            'discount' => 47.81, // 12%
+                                            'base'     => 350.59,
+                                            'tax'      => 70.12, // 20%
+                                            'total'    => 420.71,
+                                        ],
+                                    ],
+                                    '_margin'     => [
+                                        'revenue' => [],
+                                        'cost'    => [],
+                                        '_single' => [
+                                            'revenue' => [
+                                                'product' => 350.59,
+                                            ],
+                                            'cost'    => [
+                                                'product' => 172.48,
+                                                'supply'  => 68.0,
+                                            ],
+                                        ],
+                                    ],
+                                    '_cost'       => [
+                                        //'product' => 10.78,
+                                        //'supply'  => 4.25,
+                                        '_single' => [
+                                            'product' => 172.48,
+                                            'supply'  => 68.0,
+                                        ],
+                                    ],
+                                    '_weight'     => 12.8,
                                 ],
                             ],
-                            // Weight:    14.8
-                            // Gross:    660.00
-                            // Discount:  79.20
-                            // Base:     580.80
-                            // Tax:      116.16
-                            // Total:    696.96
-                            // Margin:   245.20 (42.22%) | 170.44 (29.35%)
+                            // Calculation results
+                            '_amount'     => [
+                                'unit'     => 165.00,
+                                'gross'    => 660.00,
+                                'discount' => 79.20, // 12%
+                                'base'     => 580.80,
+                                'tax'      => 116.16, // 20%
+                                'total'    => 696.96,
+                                '_single'  => [
+                                    'unit'     => 65.40,
+                                    'gross'    => 261.6,
+                                    'discount' => 31.39,
+                                    'base'     => 230.21,
+                                    'tax'      => 46.04,
+                                    'total'    => 276.25,
+                                ],
+                            ],
+                            '_margin'     => [
+                                // 245.20 (42.22%) | 170.44 (29.35%)
+                                'revenue' => [
+                                    'product' => 580.8,
+                                ],
+                                'cost'    => [
+                                    'product' => 335.6,
+                                    'supply'  => 74.76,
+                                ],
+                                '_single' => [
+                                    'revenue' => [
+                                        'product' => 230.21,
+                                    ],
+                                    'cost'    => [
+                                        'product' => 163.12,
+                                        'supply'  => 6.76,
+                                    ],
+                                ],
+                            ],
+                            '_cost'       => [
+                                //'product' => 40.78,
+                                //'supply'  => 1.69,
+                                'product' => 335.6,
+                                'supply'  => 74.76,
+                                '_single' => [
+                                    'product' => 163.12,
+                                    'supply'  => 6.76,
+                                ],
+                            ],
+                            '_weight'     => 2.0,
                         ],
                     ],
                     // Weight:    41.4
@@ -417,16 +923,8 @@ class Data
                 // Total:    2655.44
             ],
             'taxes'           => [20],
-            'shipment_amount' => 12.34, // Margin: null | -34.66 (-280.87%)
+            'shipment_amount' => 12.34,
             'weight_total'    => 60.,
-            // Gross:    2289.90
-            // Discount:    0.00
-            // Base:     2302.24
-            // Tax:       368.01
-            // Total:    2670.25
-            // Margin:
-            //   [default] sell: 2289.90, purchase: 1589.60 => 700.30 (30.58%)
-            //   [profit]  sell: 2302.24, purchase: 1956.87 => 345.37 (15.00%)
             'shipments'       => [
                 [
                     '_reference' => 'order3_shipment1',
@@ -442,11 +940,58 @@ class Data
         ];
     }
 
+    public static function order4(): array
+    {
+        return [
+            '_reference' => 'order4',
+            '_type'      => 'order',
+            'items'      => [
+                [
+                    '_reference' => 'order4_item1',
+                    'compound'   => true,
+                    'children'   => [
+                        [
+                            '_reference' => 'order4_item1_1',
+                            'private'    => true,
+                            'compound'   => true,
+                            'children'   => [
+                                [
+                                    '_reference' => 'order4_item1_1_1',
+                                    'private'    => true,
+                                ],
+                                [
+                                    '_reference' => 'order4_item1_1_2',
+                                    'private'    => true,
+                                ],
+                            ],
+                        ],
+                        [
+                            '_reference' => 'order4_item1_2',
+                            'private'    => true,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public static function supplier_order1(): array
     {
         return [
             '_reference'     => 'supplier_order1',
             '_type'          => 'supplierOrder',
+            '_tax_resolver'  => [
+                [
+                    'taxable' => 'supplier_order1_item1',
+                    'context' => 'supplier_order1',
+                    'taxes'   => [Fixture::TAX_FR_NORMAL],
+                ],
+                [
+                    'taxable' => 'supplier_order1_item2',
+                    'context' => 'supplier_order1',
+                    'taxes'   => [Fixture::TAX_FR_INTERMEDIATE],
+                ],
+            ],
             'supplier'       => [
                 'tax' => Fixture::TAX_FR_NORMAL,
             ],
@@ -456,6 +1001,12 @@ class Data
             'items'          => [
                 [
                     '_reference' => 'supplier_order1_item1',
+                    '_weighting' => [
+                        'default'  => 0.013266998341625,
+                        'weight'   => 0.013266998341625,
+                        'price'    => 0.010394029750173,
+                        'quantity' => 0.014084507042254,
+                    ],
                     'weight'     => 0.8,
                     'price'      => 12.34,
                     'quantity'   => 64.,
@@ -467,7 +1018,7 @@ class Data
                         'sold'           => 16.,
                         'subject'        => 'subject1',
                     ],
-                    // Total weight:  51.2 | Weighting: 0,0132669983416252 (0,8490878938640133)
+                    // Total weight:  51.2 | Weighting: 0,013266998341625 (0,849087893864013)
                     // Total price: 789.76 | Weighting: 0,010394029750173 (0,665217904011051)
                     // Discount:    99,78268560165765
                     // Base:        689,9773143983424
@@ -475,6 +1026,12 @@ class Data
                 ],
                 [
                     '_reference' => 'supplier_order1_item2',
+                    '_weighting' => [
+                        'default'  => 0.021558872305141,
+                        'weight'   => 0.021558872305141,
+                        'price'    => 0.047826013712707,
+                        'quantity' => 0.014084507042254,
+                    ],
                     'weight'     => 1.3,
                     'price'      => 56.78,
                     'quantity'   => 7.,
@@ -504,6 +1061,18 @@ class Data
         return [
             '_reference'    => 'supplier_order2',
             '_type'         => 'supplierOrder',
+            '_tax_resolver' => [
+                [
+                    'taxable' => 'supplier_order2_item1',
+                    'context' => 'supplier_order2',
+                    'taxes'   => [],
+                ],
+                [
+                    'taxable' => 'supplier_order2_item2',
+                    'context' => 'supplier_order2',
+                    'taxes'   => [],
+                ],
+            ],
             'supplier'      => [],
             'currency'      => Fixture::CURRENCY_USD,
             'exchange_rate' => 1.12,
@@ -512,6 +1081,12 @@ class Data
             'items'         => [
                 [
                     '_reference' => 'supplier_order2_item1',
+                    '_weighting' => [
+                        'default'  => 0.006313131313131,
+                        'weight'   => 0.006313131313131,
+                        'price'    => 0.016059723746026,
+                        'quantity' => 0.011111111111111,
+                    ],
                     'weight'     => 0.5,
                     'price'      => 45.67,
                     'quantity'   => 33.,
@@ -528,6 +1103,12 @@ class Data
                 ],
                 [
                     '_reference' => 'supplier_order2_item2',
+                    '_weighting' => [
+                        'default'  => 0.013888888888889,
+                        'weight'   => 0.013888888888889,
+                        'price'    => 0.008246124848792,
+                        'quantity' => 0.011111111111111,
+                    ],
                     'weight'     => 1.1,
                     'price'      => 23.45,
                     'quantity'   => 57.,
@@ -554,6 +1135,18 @@ class Data
         return [
             '_reference'    => 'supplier_order3',
             '_type'         => 'supplierOrder',
+            '_tax_resolver' => [
+                [
+                    'taxable' => 'supplier_order3_item1',
+                    'context' => 'supplier_order3',
+                    'taxes'   => [],
+                ],
+                [
+                    'taxable' => 'supplier_order3_item2',
+                    'context' => 'supplier_order3',
+                    'taxes'   => [],
+                ],
+            ],
             'supplier'      => [],
             'carrier'       => ['tax' => Fixture::TAX_FR_NORMAL],
             'currency'      => Fixture::CURRENCY_USD,
@@ -564,6 +1157,12 @@ class Data
             'items'         => [
                 [
                     '_reference' => 'supplier_order3_item1',
+                    '_weighting' => [
+                        'default'  => 0.007448789571695,
+                        'weight'   => 0.007448789571695,
+                        'price'    => 0.009184155247140,
+                        'quantity' => 0.009803921568627,
+                    ],
                     'weight'     => 0.8,
                     'price'      => 64.97,
                     'quantity'   => 59.,
@@ -580,6 +1179,12 @@ class Data
                 ],
                 [
                     '_reference' => 'supplier_order3_item2',
+                    '_weighting' => [
+                        'default'  => 0.013035381750466,
+                        'weight'   => 0.013035381750466,
+                        'price'    => 0.010654298614390,
+                        'quantity' => 0.009803921568627,
+                    ],
                     'weight'     => 1.4,
                     'price'      => 75.37,
                     'quantity'   => 43.,
@@ -606,12 +1211,30 @@ class Data
         return [
             '_reference'    => 'supplier_order4',
             '_type'         => 'supplierOrder',
+            '_tax_resolver' => [
+                [
+                    'taxable' => 'supplier_order4_item1',
+                    'context' => 'supplier_order4',
+                    'taxes'   => [Fixture::TAX_FR_NORMAL],
+                ],
+                [
+                    'taxable' => 'supplier_order4_item2',
+                    'context' => 'supplier_order4',
+                    'taxes'   => [Fixture::TAX_FR_INTERMEDIATE],
+                ],
+            ],
             'supplier'      => ['tax' => Fixture::TAX_FR_NORMAL],
             'currency'      => Fixture::CURRENCY_EUR,
             'shipping_cost' => 240.,
             'items'         => [
                 [
                     '_reference' => 'supplier_order4_item1',
+                    '_weighting' => [
+                        'default'  => 0.0173535791757050,
+                        'weight'   => 0.0173535791757050,
+                        'price'    => 0.0253448726113191,
+                        'quantity' => 0.0238095238095238,
+                    ],
                     'weight'     => 0.8,
                     'price'      => 55.32,
                     'quantity'   => 17.,
@@ -629,6 +1252,12 @@ class Data
                 ],
                 [
                     '_reference' => 'supplier_order4_item2',
+                    '_weighting' => [
+                        'default'  => 0.0281995661605206,
+                        'weight'   => 0.0281995661605206,
+                        'price'    => 0.0227654866243030,
+                        'quantity' => 0.0238095238095238,
+                    ],
                     'weight'     => 1.3,
                     'price'      => 49.69,
                     'quantity'   => 25.,

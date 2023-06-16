@@ -45,7 +45,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
 
         $this->currency = $currency ?? $document->getCurrency();
-        $this->calculator = $this->calculatorFactory->create($this->currency, false);
+        $this->calculator = $this->calculatorFactory->create($this->currency);
 
         $this->calculateDocument($document);
 
@@ -154,6 +154,7 @@ class DocumentCalculator implements DocumentCalculatorInterface
         $this->syncLine($line, $result);
 
         // Abort if document contains one of the public parents
+        // TODO What if document shows private child(ren) ?
         if ($item->isPrivate() && $hasPublicParent) {
             return null;
         }

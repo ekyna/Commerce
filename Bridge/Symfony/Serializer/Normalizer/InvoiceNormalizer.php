@@ -58,6 +58,16 @@ class InvoiceNormalizer extends ResourceNormalizer
                 'comment'          => $object->getComment(),
                 'invoice_address'  => $invoiceAddress,
                 'delivery_address' => $deliveryAddress,
+                'margin'           => [
+                    'net' => [
+                        'total'   => $object->getMargin()->getTotal(false)->toFixed(2),
+                        'percent' => $object->getMargin()->getPercent(false)->toFixed(2),
+                    ],
+                    'gross' => [
+                        'total'   => $object->getMargin()->getTotal(true)->toFixed(2),
+                        'percent' => $object->getMargin()->getPercent(true)->toFixed(2),
+                    ],
+                ],
             ]);
         }
 

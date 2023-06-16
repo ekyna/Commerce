@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\Repository;
 
+use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\CouponInterface;
 use Ekyna\Component\Commerce\Common\Repository\SaleRepositoryInterface;
@@ -66,11 +67,11 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     public function findByAcceptedAt(DateRange $range, int $page, int $size): array;
 
     /**
-     * Finds orders having revenue total or margin total set to null.
+     * Finds orders by month.
      *
-     * @return array<int> The orders identifiers.
+     * @return array<int, OrderInterface>
      */
-    public function findWithNullRevenueOrMargin(): array;
+    public function findByMonth(DateTimeInterface $date): array;
 
     /**
      * Returns the regular (payment term less) due.

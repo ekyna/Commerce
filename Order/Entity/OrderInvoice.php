@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
+use Ekyna\Component\Commerce\Common\Model\MarginSubjectTrait;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -19,9 +20,17 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
  */
 class OrderInvoice extends AbstractInvoice implements Model\OrderInvoiceInterface
 {
+    use MarginSubjectTrait;
+
     protected ?Model\OrderInterface         $order    = null;
     protected ?Model\OrderShipmentInterface $shipment = null;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->initializeMargin();
+    }
 
     public function getSale(): ?SaleInterface
     {

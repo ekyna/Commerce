@@ -17,11 +17,11 @@ use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Customer\Model\CustomerGroupInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
-use Ekyna\Component\Commerce\Document\Calculator\DocumentCalculatorInterface;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
@@ -45,7 +45,7 @@ class AccountingExporter implements AccountingExporterInterface
     protected AccountingRepositoryInterface   $accountingRepository;
     protected CurrencyConverterInterface      $currencyConverter;
     protected AmountCalculatorFactory         $calculatorFactory;
-    protected DocumentCalculatorInterface     $invoiceCalculator;
+    protected InvoiceCalculatorInterface      $invoiceCalculator;
     protected InvoicePaymentResolverInterface $invoicePaymentResolver;
     protected TaxResolverInterface            $taxResolver;
     /** @var array<AccountingFilterInterface> */
@@ -65,7 +65,7 @@ class AccountingExporter implements AccountingExporterInterface
         AccountingRepositoryInterface   $accountingRepository,
         CurrencyConverterInterface      $currencyConverter,
         AmountCalculatorFactory         $calculatorFactory,
-        DocumentCalculatorInterface     $invoiceCalculator,
+        InvoiceCalculatorInterface      $invoiceCalculator,
         InvoicePaymentResolverInterface $invoicePaymentResolver,
         TaxResolverInterface            $taxResolver,
         array                           $config
@@ -342,7 +342,7 @@ class AccountingExporter implements AccountingExporterInterface
                     if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
                         $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
-                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
+                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale);
                         $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
                     }
                 }
@@ -406,7 +406,7 @@ class AccountingExporter implements AccountingExporterInterface
                     if ($adjustment->getMode() === AdjustmentModes::MODE_PERCENT) {
                         $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
-                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale, true);
+                        $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale);
                         $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
                     }
                 }

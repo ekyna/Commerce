@@ -110,6 +110,6 @@ class Product extends AbstractResource implements Stock\StockSubjectInterface
      */
     static public function getProviderName(): string
     {
-        return ProductProvider::NAME;
+        return ProductProvider::getName();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use DateTime;
+use DateTimeInterface;
 use Decimal\Decimal;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\AbstractQuery;
@@ -19,7 +20,6 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Payment\Model\PaymentTermTriggers as Trigger;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Resource\Doctrine\ORM\Hydrator\IdHydrator;
 use Ekyna\Component\Resource\Model\DateRange;
 use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
@@ -207,16 +207,30 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->getResult();
     }
 
-    public function findWithNullRevenueOrMargin(): array
+    /**
+     * @inheritDoc
+     */
+    public function findByMonth(DateTimeInterface $date): array
     {
         $qb = $this->createQueryBuilder('o');
 
+        $start = clone $date;
+        $start->modify('first day of this month');
+        $start->setTime(0, 0);
+
+        $end = clone $date;
+        $end->modify('last day of this month');
+        $end->setTime(23, 59, 59, 999999);
+
         return $qb
-            ->select('o.id')
-            ->orWhere($qb->expr()->isNull('o.revenueTotal'))
-            ->orWhere($qb->expr()->isNull('o.marginTotal'))
+            ->andWhere($qb->expr()->between('o.acceptedAt', ':start', ':end'))
+            ->andWhere($qb->expr()->eq('o.sample', ':sample'))
+            ->addOrderBy('o.acceptedAt', 'ASC')
             ->getQuery()
-            ->getResult(IdHydrator::NAME);
+            ->setParameter('start', $start, Types::DATETIME_MUTABLE)
+            ->setParameter('end', $end, Types::DATETIME_MUTABLE)
+            ->setParameter('sample', false)
+            ->getResult();
     }
 
     public function getRegularDue(): Decimal

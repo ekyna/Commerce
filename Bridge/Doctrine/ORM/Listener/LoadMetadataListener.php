@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Ekyna\Component\Commerce\Common\Model\Margin;
+use Ekyna\Component\Commerce\Common\Model\MarginSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Pricing as Pricing;
@@ -38,6 +40,11 @@ class LoadMetadataListener
     private $subjectIdentityMapper;
 
     /**
+     * @var EmbeddableMapper
+     */
+    private $marginIdentityMapper;
+
+    /**
      * @var array
      */
     private $paymentTermSubjectClassCache = [];
@@ -61,6 +68,11 @@ class LoadMetadataListener
      * @var array
      */
     private $subjectIdentityClassCache = [];
+
+    /**
+     * @var array
+     */
+    private $marginSubjectClassCache = [];
 
     /**
      * @var array
@@ -120,6 +132,10 @@ class LoadMetadataListener
             if ($rc->implementsInterface(SubjectRelativeInterface::class)) {
                 $this->configureSubjectRelativeMapping($eventArgs);
             }
+        }
+
+        if ($rc->implementsInterface(MarginSubjectInterface::class)) {
+            $this->configureMarginMapping($eventArgs);
         }
 
         if ($rc->implementsInterface(Stock\StockSubjectInterface::class)) {
@@ -289,6 +305,35 @@ class LoadMetadataListener
     }
 
     /**
+     * Configures the margin mapping.
+     *
+     * @param LoadClassMetadataEventArgs $eventArgs
+     */
+    private function configureMarginMapping(LoadClassMetadataEventArgs $eventArgs)
+    {
+        $metadata = $eventArgs->getClassMetadata();
+        $rc = $metadata->getReflectionClass();
+
+        // Check class
+        if (!$rc->implementsInterface(MarginSubjectInterface::class)) {
+            return;
+        }
+
+        // Don't add twice
+        if (in_array($metadata->getName(), $this->marginSubjectClassCache)) {
+            return;
+        }
+
+        // Map embedded
+        $this
+            ->getMarginMapper($eventArgs->getEntityManager())
+            ->processClassMetadata($metadata, 'margin'); // Embed without prefix
+
+        // Cache class
+        $this->marginSubjectClassCache[] = $metadata->getName();
+    }
+
+    /**
      * Configures the subject relative mapping.
      *
      * @param LoadClassMetadataEventArgs $eventArgs
@@ -415,6 +460,22 @@ class LoadMetadataListener
         }
 
         return $this->subjectIdentityMapper;
+    }
+
+    /**
+     * Returns the subjectIdentityMapper.
+     *
+     * @param EntityManagerInterface $em
+     *
+     * @return EmbeddableMapper
+     */
+    private function getMarginMapper(EntityManagerInterface $em): EmbeddableMapper
+    {
+        if (null === $this->marginIdentityMapper) {
+            $this->marginIdentityMapper = new EmbeddableMapper($em, Margin::class);
+        }
+
+        return $this->marginIdentityMapper;
     }
 
     /**
