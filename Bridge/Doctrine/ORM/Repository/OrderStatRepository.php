@@ -58,7 +58,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ->select([
                 'SUM(o.revenue - o.shipping) as revenue',
                 'SUM(o.shipping) as shipping',
-                'SUM(o.margin) as margin',
+                'SUM(o.cost) as cost',
                 'SUM(o.orders) as orders',
                 'SUM(o.items) as items',
                 'AVG(o.average) as average',
