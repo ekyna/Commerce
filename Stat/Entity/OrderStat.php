@@ -25,7 +25,6 @@ class OrderStat
     private Decimal            $revenue;
     private Decimal            $shipping;
     private Decimal            $cost;
-    private Decimal            $margin;
     private int                $orders    = 0;
     private int                $items     = 0;
     private Decimal            $average;
@@ -36,7 +35,7 @@ class OrderStat
     {
         $this->revenue = new Decimal(0);
         $this->shipping = new Decimal(0);
-        $this->margin = new Decimal(0);
+        $this->cost = new Decimal(0);
         $this->average = new Decimal(0);
     }
 
@@ -115,13 +114,6 @@ class OrderStat
     public function getMargin(): Decimal
     {
         return $this->revenue->add($this->shipping)->sub($this->cost);
-    }
-
-    public function setMargin(Decimal $margin): self
-    {
-        $this->margin = $margin;
-
-        return $this;
     }
 
     /**
