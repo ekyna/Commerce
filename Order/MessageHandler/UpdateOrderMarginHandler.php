@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\MessageHandler;
 
+use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceMarginCalculatorFactory;
 use Ekyna\Component\Commerce\Order\Message\UpdateOrderMargin;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
@@ -17,9 +18,10 @@ use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
 class UpdateOrderMarginHandler
 {
     public function __construct(
-        private readonly OrderRepositoryInterface $repository,
-        private readonly OrderUpdaterInterface    $updater,
-        private readonly ResourceManagerInterface $manager,
+        private readonly OrderRepositoryInterface       $repository,
+        private readonly OrderUpdaterInterface          $updater,
+        private readonly InvoiceMarginCalculatorFactory $invoiceMarginCalculatorFactory, // TODO InvoiceUpdaterInterface
+        private readonly ResourceManagerInterface       $manager,
     ) {
     }
 
@@ -29,11 +31,32 @@ class UpdateOrderMarginHandler
             return;
         }
 
-        if (!$this->updater->updateMargin($order)) {
+        $changed = false;
+
+        if ($this->updater->updateMargin($order)) {
+            $this->manager->persist($order);
+            $changed = true;
+        }
+
+        $calculator = $this->invoiceMarginCalculatorFactory->create();
+
+        foreach ($order->getInvoices() as $invoice) {
+            $margin = $calculator->calculateInvoice($invoice);
+
+            if ($invoice->getMargin()->equals($margin)) {
+                continue;
+            }
+
+            $invoice->setMargin($margin);
+
+            $this->manager->persist($invoice);
+            $changed = true;
+        }
+
+        if (!$changed) {
             return;
         }
 
-        $this->manager->persist($order);
         $this->manager->flush();
     }
 }

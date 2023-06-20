@@ -58,7 +58,7 @@ class SupplierOrderItemCalculator implements SupplierOrderItemCalculatorInterfac
             return $total;
         }
 
-        $weighting = $this->weightingCalculator->getWeighting($item)->weight;
+        $weighting = $this->weightingCalculator->getWeighting($item)->resolve();
 
         return $total->mul($weighting)->div($item->getPacking())->round(5);
     }

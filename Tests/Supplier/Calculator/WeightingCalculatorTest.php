@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Class WeightingCalculatorTest
  * @package Ekyna\Component\Commerce\Tests\Supplier\Calculator
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class WeightingCalculatorTest extends TestCase
 {
@@ -63,5 +63,30 @@ class WeightingCalculatorTest extends TestCase
         yield 'supplier_order_3' => [Data::supplier_order3()];
 
         yield 'supplier_order_4' => [Data::supplier_order4()];
+
+        yield 'supplier_order_5' => [
+            [
+                'shipping_cost' => 320.0,
+                'items'         => [
+                    [
+                        '_reference' => 'supplier_order_5_item1',
+                        '_weighting' => [
+                            'default'  => 0.2,
+                            'weight'   => 0,
+                            'price'    => 0.2,
+                            'quantity' => 0.2,
+                        ],
+                        'weight'     => 0,
+                        'price'      => 12.34,
+                        'quantity'   => 5.0,
+                        // Total weight:  0 | Weighting: 0,2 (0,2)
+                        // Total price: 61.7 | Weighting: 0,2 (0,2)
+                        // Discount:    99,78268560165765
+                        // Base:        689,9773143983424
+                        // Tax:         138.00
+                    ],
+                ],
+            ],
+        ];
     }
 }
