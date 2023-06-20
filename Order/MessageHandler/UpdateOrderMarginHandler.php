@@ -8,7 +8,9 @@ use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceMarginCalculatorFactory;
 use Ekyna\Component\Commerce\Order\Message\UpdateOrderMargin;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
-use Ekyna\Component\Resource\Manager\ResourceManagerInterface;
+use Ekyna\Component\Resource\Manager\ManagerFactoryInterface;
+
+use function get_class;
 
 /**
  * Class UpdateOrderMarginHandler
@@ -21,7 +23,7 @@ class UpdateOrderMarginHandler
         private readonly OrderRepositoryInterface       $repository,
         private readonly OrderUpdaterInterface          $updater,
         private readonly InvoiceMarginCalculatorFactory $invoiceMarginCalculatorFactory, // TODO InvoiceUpdaterInterface
-        private readonly ResourceManagerInterface       $manager,
+        private readonly ManagerFactoryInterface        $managerFactory,
     ) {
     }
 
@@ -32,9 +34,9 @@ class UpdateOrderMarginHandler
         }
 
         $changed = false;
-
+        $manager = $this->managerFactory->getManager(get_class($order));
         if ($this->updater->updateMargin($order)) {
-            $this->manager->persist($order);
+            $manager->persist($order);
             $changed = true;
         }
 
@@ -49,7 +51,7 @@ class UpdateOrderMarginHandler
 
             $invoice->setMargin($margin);
 
-            $this->manager->persist($invoice);
+            $this->managerFactory->getManager(get_class($invoice))->persist($invoice);
             $changed = true;
         }
 
@@ -57,6 +59,6 @@ class UpdateOrderMarginHandler
             return;
         }
 
-        $this->manager->flush();
+        $manager->flush();
     }
 }
