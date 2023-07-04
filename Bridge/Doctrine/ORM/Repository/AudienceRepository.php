@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
-use Doctrine\ORM\Event\OnClearEventArgs;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
@@ -55,7 +55,13 @@ class AudienceRepository extends TranslatableRepository implements AudienceRepos
     {
         $this->defaultAudience = null;
 
-        $this->getResultCache()->delete(self::DEFAULT_CACHE_KEY);
+        if (null === $cache = $this->getResultCache()) {
+            return;
+        }
+
+        $cache = DoctrineProvider::wrap($cache);
+
+        $cache->delete(self::DEFAULT_CACHE_KEY);
     }
 
     /**
@@ -134,11 +140,9 @@ class AudienceRepository extends TranslatableRepository implements AudienceRepos
     /**
      * On clear event handler.
      */
-    public function onClear(OnClearEventArgs $event)
+    public function onClear()
     {
-        if ((null === $event->getEntityClass()) || ($this->getClassName() === $event->getEntityClass())) {
-            $this->defaultAudience = null;
-        }
+        $this->defaultAudience = null;
     }
 
     private function getFindOneByKeyQuery(): Query
