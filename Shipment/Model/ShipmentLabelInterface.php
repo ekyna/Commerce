@@ -23,6 +23,8 @@ interface ShipmentLabelInterface
     public const FORMAT_GIF  = 'image/gif';
     public const FORMAT_JPEG = 'image/jpeg';
     public const FORMAT_PDF  = 'application/pdf';
+    public const FORMAT_ZPL  = 'application/zpl';
+    public const FORMAT_EPL  = 'application/epl';
 
     public const SIZE_A6 = 'a6';
     public const SIZE_A5 = 'a5';

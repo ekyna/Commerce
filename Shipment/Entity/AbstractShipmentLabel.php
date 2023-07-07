@@ -176,6 +176,8 @@ abstract class AbstractShipmentLabel implements Model\ShipmentLabelInterface
             static::FORMAT_GIF,
             static::FORMAT_JPEG,
             static::FORMAT_PNG,
+            static::FORMAT_ZPL,
+            static::FORMAT_EPL,
         ];
     }
 
