@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Helper;
 
+use Ekyna\Bundle\CommerceBundle\Service\Checker\SaleItemsChecker;
 use Ekyna\Component\Commerce\Common\Event\SaleItemEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleItemEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -54,7 +55,9 @@ class SaleItemHelper
             throw new LogicException('Items do not match');
         }
 
-        $item->setData([]);
+        if ($item->hasDatum(SaleItemsChecker::INVALID_ITEM)) {
+            $item->unsetDatum(SaleItemsChecker::INVALID_ITEM);
+        }
 
         $this->eventDispatcher->dispatch($event, SaleItemEvents::INITIALIZE);
 
