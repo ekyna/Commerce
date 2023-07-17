@@ -9,14 +9,14 @@ use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
- * Class SaleTransformerInterface
+ * Interface SaleDuplicatorInterface
  * @package Ekyna\Component\Commerce\Common\Transformer
- * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-interface SaleTransformerInterface
+interface SaleDuplicatorInterface
 {
     /**
-     * Initializes the sale transformation.
+     * Initializes the sale duplication.
      *
      * @param SaleInterface $source The source sale.
      * @param SaleInterface $target The target sale.
@@ -26,11 +26,11 @@ interface SaleTransformerInterface
     public function initialize(SaleInterface $source, SaleInterface $target): ResourceEventInterface;
 
     /**
-     * Transforms the source sale into the target sale.
+     * Duplicates the source sale into the target sale.
      *
      * @return ResourceEventInterface|null The event that stopped transformation if any.
      *
      * @throws LogicException If initialize has not been called first.
      */
-    public function transform(): ?ResourceEventInterface;
+    public function duplicate(): ?ResourceEventInterface;
 }

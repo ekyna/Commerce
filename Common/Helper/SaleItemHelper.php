@@ -54,6 +54,8 @@ class SaleItemHelper
             throw new LogicException('Items do not match');
         }
 
+        $item->setData([]);
+
         $this->eventDispatcher->dispatch($event, SaleItemEvents::INITIALIZE);
 
         return $event;

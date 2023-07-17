@@ -115,17 +115,20 @@
             {%- endfor %}
         {%- endif %}
         <span>
-            {%- if line.vars.link is defined -%}
-                <a{% with {attr: {'href': 'javascript:void(0)'}|merge(line.vars.link)} %} {{ block('attributes') }}{% endwith %}>
-                    {{ line.designation|raw }}
-                </a>
-            {%- else -%}
+        {%- if line.vars.invalid is defined -%}
+            <span>🔶</span>
+        {%- endif -%}
+        {%- if line.vars.link is defined -%}
+            <a{% with {attr: {'href': 'javascript:void(0)'}|merge(line.vars.link)} %} {{ block('attributes') }}{% endwith %}>
                 {{ line.designation|raw }}
-            {%- endif -%}
-            {%- if line.description is not empty -%}
-                <br><em>{{ line.description|raw }}</em>
-            {%- endif -%}
-            </span>
+            </a>
+        {%- else -%}
+            {{ line.designation|raw }}
+        {%- endif -%}
+        {%- if line.description is not empty -%}
+            <br><em>{{ line.description|raw }}</em>
+        {%- endif -%}
+        </span>
     </td>
     <td id="{{ line.id }}_reference" data-clipboard-copy="{{ line.reference }}">{{ line.reference }}</td>
     {% if view.vars.show_availability -%}

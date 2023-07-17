@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
-use Ekyna\Bundle\ResourceBundle\Service\Uploader\UploadToggler;
+use Decimal\Decimal;
+use Ekyna\Bundle\CommerceBundle\Model\InChargeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Model\SaleSources;
 use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
-use Ekyna\Component\Resource\Event\ResourceMessage;
 
 /**
- * Class SaleTransformer
+ * Class SaleDuplicator
  * @package Ekyna\Component\Commerce\Common\Transformer
- * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class SaleTransformer extends AbstractOperator implements SaleTransformerInterface
+class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
 {
-    protected readonly UploadToggler $uploadToggler;
-
-    public function setUploadToggler(UploadToggler $uploadToggler): void
-    {
-        $this->uploadToggler = $uploadToggler;
-    }
-
     public function initialize(SaleInterface $source, SaleInterface $target): ResourceEventInterface
     {
         $this->source = $source;
@@ -38,19 +32,43 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
             return $event;
         }
 
+        // Copies source to target
         $this
             ->saleCopierFactory
             ->create($this->source, $this->target)
-            ->copySale();
+            ->copyData()
+            ->copyItems();
+
+        $this->target
+            ->setCustomerGroup(null)
+            ->setShipmentMethod(null)
+            ->setPaymentMethod(null)
+            ->setPaymentTerm(null)
+            ->setOutstandingLimit(new Decimal(0))
+            ->setDepositTotal(new Decimal(0))
+            ->setSource(SaleSources::SOURCE_COMMERCIAL)
+            ->setExchangeRate(null)
+            ->setExchangeDate(null)
+            ->setAcceptedAt(null);
 
         $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_COPY);
 
         $this->getFactory($this->target)->initialize($this->target);
 
+        // Clear addresses
+        $this->target
+            ->setSameAddress(true)
+            ->setInvoiceAddress(null)
+            ->setDeliveryAddress(null);
+
+        if ($this->target instanceof InChargeSubjectInterface) {
+            $this->target->setInCharge(null);
+        }
+
         return $event;
     }
 
-    public function transform(): ?ResourceEventInterface
+    public function duplicate(): ?ResourceEventInterface
     {
         if (null === $this->source || null === $this->target) {
             throw new LogicException('Please call initialize first.');
@@ -58,7 +76,7 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
-        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_TRANSFORM);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_DUPLICATE);
         if ($event->hasErrors() || $event->isPropagationStopped()) {
             return $event;
         }
@@ -71,22 +89,7 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
 
         $this->getManager($this->target)->refresh($this->target);
 
-        // Disable the uploadable listener
-        $this->uploadToggler->setEnabled(false);
-
-        // Delete the source sale
-        $sourceEvent = $this->getManager($this->source)->delete($this->source, true); // Hard delete
-        foreach ($sourceEvent->getMessages() as $message) {
-            if (ResourceMessage::TYPE_ERROR === $message->getType()) {
-                $message->setType(ResourceMessage::TYPE_WARNING);
-            }
-            $event->addMessage($message);
-        }
-
-        // Enable the uploadable listener
-        $this->uploadToggler->setEnabled(true);
-
-        $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_TRANSFORM);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_DUPLICATE);
         if ($event->hasErrors() || $event->isPropagationStopped()) {
             return $event;
         }
