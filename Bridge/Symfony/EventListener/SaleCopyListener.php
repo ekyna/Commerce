@@ -5,20 +5,18 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\EventListener;
 
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
-use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Resource\Event\ResourceMessage;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class SaleTransformSubscriber
  * @package Ekyna\Component\Commerce\Bridge\Symfony\EventListener
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SaleCopyListener implements EventSubscriberInterface
+class SaleCopyListener
 {
-    public function onPreCopy(SaleTransformEvent $event): void
+    public function onInitTransform(SaleTransformEvent $event): void
     {
         $source = $event->getSource();
 
@@ -58,25 +56,22 @@ class SaleCopyListener implements EventSubscriberInterface
         }
 
         // If target sale is order and source customer has a parent
-        if ($target instanceof OrderInterface && $customer->hasParent()) {
-            // TODO Duplicate code
-            /** @see \Ekyna\Component\Commerce\Order\EventListener\OrderListener::fixCustomers() */
-
-            // Sets the parent as customer
-            $target->setCustomer($customer->getParent());
-
-            // Sets the origin customer
-            if (null === $target->getOriginCustomer()) {
-                $target->setOriginCustomer($customer);
-            }
+        if (!$target instanceof OrderInterface) {
+            return;
         }
-    }
+        if (!$customer->hasParent()) {
+            return;
+        }
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            SaleTransformEvents::PRE_COPY  => ['onPreCopy', 2048],
-            SaleTransformEvents::POST_COPY => ['onPostCopy', 2048],
-        ];
+        // TODO Duplicate code
+        /** @see \Ekyna\Component\Commerce\Order\EventListener\OrderListener::fixCustomers() */
+
+        // Sets the parent as customer
+        $target->setCustomer($customer->getParent());
+
+        // Sets the origin customer
+        if (null === $target->getOriginCustomer()) {
+            $target->setOriginCustomer($customer);
+        }
     }
 }

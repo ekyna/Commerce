@@ -27,7 +27,7 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
-        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_COPY);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::INIT_DUPLICATE);
         if ($event->isPropagationStopped()) {
             return $event;
         }

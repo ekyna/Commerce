@@ -33,7 +33,7 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
 
         $event = new SaleTransformEvent($this->source, $this->target);
 
-        $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_COPY);
+        $this->eventDispatcher->dispatch($event, SaleTransformEvents::INIT_TRANSFORM);
         if ($event->isPropagationStopped()) {
             return $event;
         }
