@@ -275,6 +275,7 @@
                         <a href="{{ button.path }}"{% with {attr: button.attributes} %} {{ block('attributes') }}{% endwith %}>
                             <i class="{{ button.icon }}"></i> {{ button.label }}
                         </a>
+                        {% if loop.index % 3 == 0 %}<br>{% endif %}
                     {% endfor %}
                 {% endif %}
             </div>
