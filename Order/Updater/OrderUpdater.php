@@ -24,6 +24,9 @@ class OrderUpdater implements OrderUpdaterInterface
         $this->marginCalculatorFactory = $marginCalculatorFactory;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function updateMargin(OrderInterface $order): bool
     {
         $result = $this->marginCalculatorFactory->create()->calculateSale($order);
@@ -37,6 +40,9 @@ class OrderUpdater implements OrderUpdaterInterface
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function updateItemsCount(OrderInterface $order): bool
     {
         $count = $this->calculateItemsCount($order->getItems());

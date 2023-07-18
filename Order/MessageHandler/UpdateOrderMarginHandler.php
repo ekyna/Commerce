@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\MessageHandler;
 
-use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceMarginCalculatorFactory;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Order\Manager\OrderInvoiceManagerInterface;
+use Ekyna\Component\Commerce\Order\Manager\OrderManagerInterface;
 use Ekyna\Component\Commerce\Order\Message\UpdateOrderMargin;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Commerce\Order\Updater\OrderInvoiceUpdaterInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
 use Ekyna\Component\Resource\Manager\ManagerFactoryInterface;
-
-use function get_class;
 
 /**
  * Class UpdateOrderMarginHandler
@@ -20,10 +21,10 @@ use function get_class;
 class UpdateOrderMarginHandler
 {
     public function __construct(
-        private readonly OrderRepositoryInterface       $repository,
-        private readonly OrderUpdaterInterface          $updater,
-        private readonly InvoiceMarginCalculatorFactory $invoiceMarginCalculatorFactory, // TODO InvoiceUpdaterInterface
-        private readonly ManagerFactoryInterface        $managerFactory,
+        private readonly OrderRepositoryInterface     $repository,
+        private readonly OrderUpdaterInterface        $orderUpdater,
+        private readonly OrderInvoiceUpdaterInterface $invoiceUpdater,
+        private readonly ManagerFactoryInterface      $managerFactory,
     ) {
     }
 
@@ -33,32 +34,24 @@ class UpdateOrderMarginHandler
             return;
         }
 
-        $changed = false;
-        $manager = $this->managerFactory->getManager(get_class($order));
-        if ($this->updater->updateMargin($order)) {
-            $manager->persist($order);
-            $changed = true;
+        $orderManager = $this->managerFactory->getManager('ekyna_commerce.order');
+        if (!$orderManager instanceof OrderManagerInterface) {
+            throw new UnexpectedTypeException($orderManager, OrderManagerInterface::class);
         }
 
-        $calculator = $this->invoiceMarginCalculatorFactory->create();
+        $invoiceManager = $this->managerFactory->getManager('ekyna_commerce.order_invoice');
+        if (!$invoiceManager instanceof OrderInvoiceManagerInterface) {
+            throw new UnexpectedTypeException($invoiceManager, OrderInvoiceManagerInterface::class);
+        }
+
+        if ($this->orderUpdater->updateMargin($order)) {
+            $orderManager->updateMargin($order);
+        }
 
         foreach ($order->getInvoices() as $invoice) {
-            $margin = $calculator->calculateInvoice($invoice);
-
-            if ($invoice->getMargin()->equals($margin)) {
-                continue;
+            if ($this->invoiceUpdater->updateMargin($invoice)) {
+                $invoiceManager->updateMargin($invoice);
             }
-
-            $invoice->setMargin($margin);
-
-            $this->managerFactory->getManager(get_class($invoice))->persist($invoice);
-            $changed = true;
         }
-
-        if (!$changed) {
-            return;
-        }
-
-        $manager->flush();
     }
 }
