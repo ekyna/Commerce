@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Customer\Model\CustomerContactInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\Exception\InvalidArgumentException;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Class CustomerContactValidator
@@ -17,24 +19,24 @@ class CustomerContactValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($contact, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $contact) {
+        if (null === $value) {
             return;
         }
 
-        if (!$contact instanceof CustomerContactInterface) {
-            throw new InvalidArgumentException('Expected instance of ' . CustomerContactInterface::class);
+        if (!$value instanceof CustomerContactInterface) {
+            throw new UnexpectedTypeException($value, CustomerContactInterface::class);
         }
         if (!$constraint instanceof CustomerContact) {
-            throw new InvalidArgumentException('Expected instance of ' . CustomerContact::class);
+            throw new UnexpectedTypeException($constraint, CustomerContact::class);
         }
 
-        if (empty($email = $contact->getEmail()) || is_null($customer = $contact->getCustomer())) {
+        if (empty($email = $value->getEmail()) || is_null($customer = $value->getCustomer())) {
             return;
         }
 
-        if ($email != $customer->getEmail()) {
+        if ($email !== $customer->getEmail()) {
             return;
         }
 

@@ -114,21 +114,24 @@ class SaleValidator extends ConstraintValidator
      */
     protected function validateIdentity(SaleInterface $sale, Sale $constraint): void
     {
-        if (null === $sale->getCustomer()) {
-            if (null === $sale->getCustomerGroup()) {
-                $this->context
-                    ->buildViolation($constraint->customer_group_is_required_if_no_customer)
-                    ->atPath('customerGroup')
-                    ->addViolation();
-            }
-            if (empty($sale->getEmail())) {
-                $this->context
-                    ->buildViolation($constraint->email_is_required_if_no_customer)
-                    ->atPath('email')
-                    ->addViolation();
-            }
+        IdentityValidator::validateIdentity($this->context, $sale);
 
-            IdentityValidator::validateIdentity($this->context, $sale);
+        if (null !== $sale->getCustomer()) {
+            return;
+        }
+
+        if (null === $sale->getCustomerGroup()) {
+            $this->context
+                ->buildViolation($constraint->customer_group_is_required_if_no_customer)
+                ->atPath('customerGroup')
+                ->addViolation();
+        }
+
+        if (empty($sale->getEmail())) {
+            $this->context
+                ->buildViolation($constraint->email_is_required_if_no_customer)
+                ->atPath('email')
+                ->addViolation();
         }
     }
 

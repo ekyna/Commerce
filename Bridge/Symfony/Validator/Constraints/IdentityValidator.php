@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\IdentityInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
@@ -17,22 +22,18 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class IdentityValidator extends ConstraintValidator
 {
-    /**
-     * @var \Symfony\Component\PropertyAccess\PropertyAccessor
-     */
-    private $propertyAccessor;
-
+    private ?PropertyAccessor $propertyAccessor = null;
 
     /**
      * @inheritDoc
      */
-    public function validate($identity, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $identity) {
+        if (null === $value) {
             return;
         }
 
-        if (!$identity instanceof IdentityInterface) {
+        if (!$value instanceof IdentityInterface) {
             throw new UnexpectedTypeException($constraint, IdentityInterface::class);
         }
         if (!$constraint instanceof Identity) {
@@ -40,9 +41,9 @@ class IdentityValidator extends ConstraintValidator
         }
 
         // All or none
-        $gender = $identity->getGender();
-        $firstName = $identity->getFirstName();
-        $lastName = $identity->getLastName();
+        $gender = $value->getGender();
+        $firstName = $value->getFirstName();
+        $lastName = $value->getLastName();
 
         $all = $gender . $lastName . $firstName;
 
@@ -56,16 +57,28 @@ class IdentityValidator extends ConstraintValidator
         } else {
             $config = [
                 'gender'    => [
-                    new Assert\NotBlank(['message' => $constraint->gender_is_mandatory]),
+                    new Assert\NotBlank([
+                        'message' => $constraint->gender_is_mandatory,
+                    ]),
                     new Gender(),
                 ],
                 'firstName' => [
-                    new Assert\NotBlank(['message' => $constraint->first_name_is_mandatory]),
-                    new Assert\Length(['min' => 2, 'max' => 32,]),
+                    new Assert\NotBlank([
+                        'message' => $constraint->first_name_is_mandatory,
+                    ]),
+                    new Assert\Length([
+                        'min' => 2,
+                        'max' => 32,
+                    ]),
+                    new NotHtml(),
                 ],
                 'lastName'  => [
                     new Assert\NotBlank(['message' => $constraint->last_name_is_mandatory]),
-                    new Assert\Length(['min' => 2, 'max' => 32,]),
+                    new Assert\Length([
+                        'min' => 2,
+                        'max' => 32,
+                    ]),
+                    new NotHtml(),
                 ],
             ];
 
@@ -74,10 +87,10 @@ class IdentityValidator extends ConstraintValidator
             }
 
             foreach ($config as $field => $constraints) {
-                $value = $this->propertyAccessor->getValue($identity, $field);
-                $violationList = $this->context->getValidator()->validate($value, $constraints);
+                $fieldValue = $this->propertyAccessor->getValue($value, $field);
+                $violationList = $this->context->getValidator()->validate($fieldValue, $constraints);
 
-                /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+                /** @var ConstraintViolationInterface $violation */
                 foreach ($violationList as $violation) {
                     $this->context
                         ->buildViolation($violation->getMessage())
@@ -94,21 +107,21 @@ class IdentityValidator extends ConstraintValidator
      * @param ExecutionContextInterface $context
      * @param IdentityInterface         $identity
      * @param array                     $config
-     * @param string                    $pathPrefix
+     * @param string|null               $pathPrefix
      */
-    static public function validateIdentity(
+    public static function validateIdentity(
         ExecutionContextInterface $context,
-        IdentityInterface $identity,
-        array $config = [],
-        $pathPrefix = null
-    ) {
+        IdentityInterface         $identity,
+        array                     $config = [],
+        string                    $pathPrefix = null
+    ): void {
         $violationList = $context->getValidator()->validate($identity, [new Identity($config)]);
 
         if (!empty($pathPrefix)) {
             $pathPrefix = rtrim($pathPrefix, '.') . '.';
         }
 
-        /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+        /** @var ConstraintViolationInterface $violation */
         foreach ($violationList as $violation) {
             $context
                 ->buildViolation($violation->getMessage())

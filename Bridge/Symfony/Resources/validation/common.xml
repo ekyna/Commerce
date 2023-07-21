@@ -47,6 +47,7 @@
             <option name="groups">
                 <value>Default</value>
                 <value>Address</value>
+                <value>CustomerAddress</value>
                 <value>Registration</value>
             </option>
         </constraint>
@@ -133,6 +134,13 @@
         <constraint name="Ekyna\Bundle\ResourceBundle\Validator\Constraints\Uploadable"/>
         <property name="file">
             <constraint name="File"/>
+        </property>
+        <property name="title">
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Checkout</value>
+                </option>
+            </constraint>
         </property>
     </class>
 
@@ -242,6 +250,22 @@
                 </option>
             </constraint>
         </property>
+        <property name="company">
+            <constraint name="Length">
+                <option name="max">255</option>
+                <option name="groups">
+                    <value>Default</value>
+                    <value>Identity</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Identity</value>
+                    <value>Checkout</value>
+                </option>
+            </constraint>
+        </property>
         <property name="vatNumber">
             <constraint name="Antalaron\Component\VatNumberValidator\VatNumber"/>
         </property>
@@ -276,6 +300,13 @@
         <property name="title">
             <constraint name="Length">
                 <option name="max">32</option>
+            </constraint>
+        </property>
+        <property name="comment">
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Checkout</value>
+                </option>
             </constraint>
         </property>
         <property name="voucherNumber">

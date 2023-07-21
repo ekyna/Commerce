@@ -45,6 +45,12 @@
                     <value>Profile</value>
                 </option>
             </constraint>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Registration</value>
+                    <value>Profile</value>
+                </option>
+            </constraint>
         </property>
         <property name="email">
             <constraint name="NotBlank">
@@ -187,12 +193,6 @@
                 </option>
             </constraint>
         </property>
-        <!--<constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Address">
-            <option name="groups">
-                <value>Default</value>
-                <value>Registration</value>
-            </option>
-        </constraint>-->
     </class>
 
     <class name="Ekyna\Component\Commerce\Customer\Entity\CustomerContact">
@@ -203,10 +203,20 @@
             <constraint name="Length">
                 <option name="max">255</option>
             </constraint>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Profile</value>
+                </option>
+            </constraint>
         </property>
         <property name="title">
             <constraint name="Length">
                 <option name="max">32</option>
+            </constraint>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml">
+                <option name="groups">
+                    <value>Profile</value>
+                </option>
             </constraint>
         </property>
         <property name="notifications">

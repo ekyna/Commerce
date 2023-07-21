@@ -1,4 +1,7 @@
 <?php
+/** @noinspection PhpPropertyNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
@@ -11,24 +14,17 @@ use Symfony\Component\Validator\Constraint;
  */
 class Address extends Constraint
 {
-    public $gender_is_mandatory     = 'ekyna_commerce.address.gender_is_mandatory';
-    public $first_name_is_mandatory = 'ekyna_commerce.address.first_name_is_mandatory';
-    public $last_name_is_mandatory  = 'ekyna_commerce.address.last_name_is_mandatory';
-    public $company_is_mandatory    = 'ekyna_commerce.address.company_is_mandatory';
-    public $phone_is_mandatory      = 'ekyna_commerce.address.phone_is_mandatory';
-    public $mobile_is_mandatory     = 'ekyna_commerce.address.mobile_is_mandatory';
-    public $invalid_zip_code         = 'ekyna_commerce.address.invalid_zip_code';
+    public string $invalid_zip_code = 'ekyna_commerce.address.invalid_zip_code';
 
-    public $identity                = false;
-    public $company                 = false;
-    public $phone                   = false;
-    public $mobile                  = false;
-
+    public bool $identity = false;
+    public bool $company  = false;
+    public bool $phone    = false;
+    public bool $mobile   = false;
 
     /**
      * @inheritDoc
      */
-    public function getTargets()
+    public function getTargets(): array|string
     {
         return self::CLASS_CONSTRAINT;
     }

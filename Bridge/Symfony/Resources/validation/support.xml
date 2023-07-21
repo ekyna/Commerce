@@ -20,6 +20,7 @@
             <constraint name="Length">
                 <option name="max">255</option>
             </constraint>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml"/>
         </property>
         <property name="messages">
             <constraint name="Valid"/>
@@ -36,6 +37,7 @@
         </property>
         <property name="content">
             <constraint name="NotBlank"/>
+            <constraint name="Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml"/>
         </property>
         <property name="attachments">
             <constraint name="Valid"/>

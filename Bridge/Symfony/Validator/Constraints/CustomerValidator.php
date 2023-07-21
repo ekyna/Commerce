@@ -19,22 +19,22 @@ class CustomerValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($customer, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $customer) {
+        if (null === $value) {
             return;
         }
 
-        if (!$customer instanceof CustomerInterface) {
+        if (!$value instanceof CustomerInterface) {
             throw new InvalidArgumentException('Expected instance of CustomerInterface');
         }
         if (!$constraint instanceof Customer) {
             throw new InvalidArgumentException('Expected instance of Customer (validation constraint)');
         }
 
-        if ($customer->hasParent()) {
+        if ($value->hasParent()) {
             // Prevent hierarchy overflow
-            if ($customer->hasChildren() || $customer->getParent()->hasParent()) {
+            if ($value->hasChildren() || $value->getParent()->hasParent()) {
                 $this
                     ->context
                     ->buildViolation($constraint->hierarchy_overflow)
@@ -42,8 +42,8 @@ class CustomerValidator extends ConstraintValidator
                     ->addViolation();
             }
 
-            // Prevent setting a parent to a customer who have non zero outstanding|credit balance
-            if (!$customer->getOutstandingBalance()->isZero() || !$customer->getCreditBalance()->isZero()) {
+            // Prevent setting a parent to a customer who have non-zero outstanding|credit balance
+            if (!$value->getOutstandingBalance()->isZero() || !$value->getCreditBalance()->isZero()) {
                 $this
                     ->context
                     ->buildViolation($constraint->non_zero_balance)
@@ -52,7 +52,7 @@ class CustomerValidator extends ConstraintValidator
             }
 
             // Child's parent must a have a company name
-            if (empty($customer->getParent()->getCompany())) {
+            if (empty($value->getParent()->getCompany())) {
                 $this
                     ->context
                     ->buildViolation($constraint->parent_company_is_mandatory)
@@ -61,7 +61,7 @@ class CustomerValidator extends ConstraintValidator
             }
 
             // Children can't have a default payment method
-            if ($customer->getDefaultPaymentMethod()) {
+            if ($value->getDefaultPaymentMethod()) {
                 $this
                     ->context
                     ->buildViolation($constraint->default_payment_method_must_be_null)
@@ -70,7 +70,7 @@ class CustomerValidator extends ConstraintValidator
             }
 
             // Children can't have restricted payment methods
-            if (0 < $customer->getPaymentMethods()->count()) {
+            if (0 < $value->getPaymentMethods()->count()) {
                 $this
                     ->context
                     ->buildViolation($constraint->payment_methods_must_be_empty)
@@ -80,7 +80,7 @@ class CustomerValidator extends ConstraintValidator
         }
 
         // Parent must have a company name
-        if ($customer->hasChildren() && empty($customer->getCompany())) {
+        if ($value->hasChildren() && empty($value->getCompany())) {
             $this
                 ->context
                 ->buildViolation($constraint->company_is_mandatory)
@@ -89,8 +89,8 @@ class CustomerValidator extends ConstraintValidator
         }
 
         // Outstanding / Payment term
-        $hasOutstanding = 0 < $customer->getOutstandingLimit();
-        $hasPaymentTerm = null !== $customer->getPaymentTerm();
+        $hasOutstanding = 0 < $value->getOutstandingLimit();
+        $hasPaymentTerm = null !== $value->getPaymentTerm();
         if ($hasOutstanding && !$hasPaymentTerm) {
             $this
                 ->context
@@ -105,9 +105,9 @@ class CustomerValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if ($default = $customer->getDefaultPaymentMethod()) {
+        if ($default = $value->getDefaultPaymentMethod()) {
             // Prevent duplicate
-            if ($customer->hasPaymentMethod($default)) {
+            if ($value->hasPaymentMethod($default)) {
                 $this
                     ->context
                     ->buildViolation($constraint->duplicate_payment_method)
@@ -123,7 +123,7 @@ class CustomerValidator extends ConstraintValidator
                     ->atPath('defaultPaymentMethod')
                     ->addViolation();
             }
-        } elseif (0 < $customer->getPaymentMethods()->count()) {
+        } elseif (0 < $value->getPaymentMethods()->count()) {
             // Customers with restricted payment methods must have a default payment method
             $this
                 ->context
@@ -133,7 +133,7 @@ class CustomerValidator extends ConstraintValidator
         }
 
         // Credit and Outstanding payment methods must not be added to customer
-        foreach ($customer->getPaymentMethods() as $method) {
+        foreach ($value->getPaymentMethods() as $method) {
             if ($method->isOutstanding() || $method->isCredit()) {
                 $this
                     ->context

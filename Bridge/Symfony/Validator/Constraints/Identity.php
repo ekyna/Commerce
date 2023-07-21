@@ -1,4 +1,6 @@
-<?php
+<?php /** @noinspection PhpPropertyNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
@@ -11,18 +13,18 @@ use Symfony\Component\Validator\Constraint;
  */
 class Identity extends Constraint
 {
-    public $mandatory               = 'ekyna_commerce.identity.mandatory';
-    public $gender_is_mandatory     = 'ekyna_commerce.identity.gender_is_mandatory';
-    public $first_name_is_mandatory = 'ekyna_commerce.identity.first_name_is_mandatory';
-    public $last_name_is_mandatory  = 'ekyna_commerce.identity.last_name_is_mandatory';
+    public string $mandatory               = 'ekyna_commerce.identity.mandatory';
+    public string $gender_is_mandatory     = 'ekyna_commerce.identity.gender_is_mandatory';
+    public string $first_name_is_mandatory = 'ekyna_commerce.identity.first_name_is_mandatory';
+    public string $last_name_is_mandatory  = 'ekyna_commerce.identity.last_name_is_mandatory';
 
-    public $required = true;
+    public bool $required = true;
 
 
     /**
      * @inheritDoc
      */
-    public function getDefaultOption()
+    public function getDefaultOption(): ?string
     {
         return 'required';
     }
@@ -30,7 +32,7 @@ class Identity extends Constraint
     /**
      * @inheritDoc
      */
-    public function getTargets()
+    public function getTargets(): array|string
     {
         return self::CLASS_CONSTRAINT;
     }

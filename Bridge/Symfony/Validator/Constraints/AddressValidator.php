@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Validator\NotHtml;
 use Ekyna\Component\Resource\Bridge\Symfony\Validator\ValidationHelper;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
 use Symfony\Component\Validator\Constraint;
@@ -23,7 +24,7 @@ class AddressValidator extends ConstraintValidator
      * @inheritDoc
      * @noinspection PhpParameterNameChangedDuringInheritanceInspection
      */
-    public function validate($address, Constraint $constraint)
+    public function validate($address, Constraint $constraint): void
     {
         if (null === $address) {
             return;
@@ -42,6 +43,7 @@ class AddressValidator extends ConstraintValidator
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'street'     => [
                 new Assert\NotBlank(),
@@ -49,24 +51,28 @@ class AddressValidator extends ConstraintValidator
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'complement' => [
                 new Assert\Length([
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'supplement' => [
                 new Assert\Length([
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'extra'      => [
                 new Assert\Length([
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'postalCode' => [
                 new Assert\NotBlank(),
@@ -81,6 +87,7 @@ class AddressValidator extends ConstraintValidator
                     'min' => 2,
                     'max' => 35,
                 ]),
+                new NotHtml(),
             ],
             'country'    => [
                 new Assert\NotNull(),
@@ -89,16 +96,19 @@ class AddressValidator extends ConstraintValidator
                 new Assert\Length([
                     'max' => 8,
                 ]),
+                new NotHtml(),
             ],
             'digicode2'  => [
                 new Assert\Length([
                     'max' => 8,
                 ]),
+                new NotHtml(),
             ],
             'intercom'   => [
                 new Assert\Length([
                     'max' => 10,
                 ]),
+                new NotHtml(),
             ],
         ];
 
