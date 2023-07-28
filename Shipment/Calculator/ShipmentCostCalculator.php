@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
+use Ekyna\Component\Commerce\Shipment\ShipmentUtil;
 
 /**
  * Class ShipmentCostCalculator
@@ -35,6 +36,10 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
         }
 
         $cost = new Cost();
+
+        if (!$sale->hasPhysicalItem()) {
+            return $cost;
+        }
 
         $country = $sale->getDeliveryCountry();
         $method = $sale->getShipmentMethod();
@@ -83,6 +88,10 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
     public function calculateShipment(ShipmentInterface $shipment, string $currency): Cost
     {
         $cost = new Cost();
+
+        if (!ShipmentUtil::hasPhysicalItem($shipment)) {
+            return $cost;
+        }
 
         $deliveryAddress = $this
             ->shipmentAddressResolver

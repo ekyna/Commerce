@@ -10,7 +10,6 @@ use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
-use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
 use Ekyna\Component\Commerce\Common\Model\AddressInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
@@ -21,6 +20,8 @@ use Ekyna\Component\Commerce\Payment\Releaser\ReleaserInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\InStore\InStorePlatform;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
 
+use function reset;
+
 /**
  * Class SaleUpdater
  * @package Ekyna\Component\Commerce\Common\Updater
@@ -28,40 +29,17 @@ use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentPriceResolverInterface;
  */
 class SaleUpdater implements SaleUpdaterInterface
 {
-    protected AddressBuilderInterface           $addressBuilder;
-    protected AdjustmentBuilderInterface        $adjustmentBuilder;
-    protected AmountCalculatorFactory           $calculatorFactory;
-    protected CurrencyConverterInterface        $currencyConverter;
-    protected WeightCalculatorInterface         $weightCalculator;
-    protected ShipmentPriceResolverInterface    $shipmentPriceResolver;
-    protected PaymentCalculatorInterface        $paymentCalculator;
-    protected InvoiceSubjectCalculatorInterface $invoiceCalculator;
-    protected ReleaserInterface                 $outstandingReleaser;
-    protected FactoryHelperInterface            $factoryHelper;
-    protected string                            $defaultCurrency;
-
     public function __construct(
-        AddressBuilderInterface           $addressBuilder,
-        AdjustmentBuilderInterface        $adjustmentBuilder,
-        AmountCalculatorFactory           $calculatorFactory,
-        CurrencyConverterInterface        $currencyConverter,
-        WeightCalculatorInterface         $weightCalculator,
-        ShipmentPriceResolverInterface    $shipmentPriceResolver,
-        PaymentCalculatorInterface        $paymentCalculator,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator,
-        ReleaserInterface                 $outstandingReleaser,
-        FactoryHelperInterface            $factoryHelper
+        private readonly AddressBuilderInterface           $addressBuilder,
+        private readonly AdjustmentBuilderInterface        $adjustmentBuilder,
+        private readonly AmountCalculatorFactory           $calculatorFactory,
+        private readonly CurrencyConverterInterface        $currencyConverter,
+        private readonly WeightCalculatorInterface         $weightCalculator,
+        private readonly ShipmentPriceResolverInterface    $shipmentPriceResolver,
+        private readonly PaymentCalculatorInterface        $paymentCalculator,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        private readonly ReleaserInterface                 $outstandingReleaser
     ) {
-        $this->addressBuilder = $addressBuilder;
-        $this->adjustmentBuilder = $adjustmentBuilder;
-        $this->calculatorFactory = $calculatorFactory;
-        $this->currencyConverter = $currencyConverter;
-        $this->weightCalculator = $weightCalculator;
-        $this->shipmentPriceResolver = $shipmentPriceResolver;
-        $this->paymentCalculator = $paymentCalculator;
-        $this->invoiceCalculator = $invoiceCalculator;
-        $this->outstandingReleaser = $outstandingReleaser;
-        $this->factoryHelper = $factoryHelper;
     }
 
     public function recalculate(SaleInterface $sale): bool

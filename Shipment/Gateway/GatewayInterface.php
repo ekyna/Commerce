@@ -24,6 +24,8 @@ interface GatewayInterface extends
     public const CAPABILITY_RETURN   = 2;
     public const CAPABILITY_PARCEL   = 4;
     public const CAPABILITY_RELAY    = 8;
+    public const CAPABILITY_VIRTUAL  = 16;
+    public const CAPABILITY_SYSTEM   = 32;
 
     public const REQUIREMENT_MOBILE = 1;
 

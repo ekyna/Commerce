@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Shipment\EventListener;
 
 use Behat\Transliterator\Transliterator;
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
+
+use function sprintf;
+use function uniqid;
 
 /**
  * Class ShipmentMethodListener
@@ -15,20 +20,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class ShipmentMethodListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param PersistenceHelperInterface $persistenceHelper
-     */
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
-        $this->persistenceHelper = $persistenceHelper;
+    public function __construct(
+        private readonly PersistenceHelperInterface $persistenceHelper
+    ) {
     }
 
     /**
@@ -36,21 +30,23 @@ class ShipmentMethodListener
      *
      * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $method = $this->getShipmentMethodFromEvent($event);
 
-        if (empty($method->getGatewayName())) {
-            $method->setGatewayName(sprintf(
-                '%s-%s',
-                Transliterator::transliterate($method->getPlatformName()),
-                uniqid()
-            ));
-
-            // TODO check uniqueness
-
-            $this->persistenceHelper->persistAndRecompute($method, false);
+        if (!empty($method->getGatewayName())) {
+            return;
         }
+
+        $method->setGatewayName(sprintf(
+            '%s-%s',
+            Transliterator::transliterate($method->getPlatformName()),
+            uniqid()
+        ));
+
+        // TODO check uniqueness
+
+        $this->persistenceHelper->persistAndRecompute($method, false);
     }
 
     /**
@@ -59,14 +55,14 @@ class ShipmentMethodListener
      * @param ResourceEventInterface $event
      *
      * @return ShipmentMethodInterface
-     * @throws InvalidArgumentException
+     * @throws UnexpectedTypeException
      */
-    private function getShipmentMethodFromEvent(ResourceEventInterface $event)
+    protected function getShipmentMethodFromEvent(ResourceEventInterface $event): ShipmentMethodInterface
     {
         $resource = $event->getResource();
 
         if (!$resource instanceof ShipmentMethodInterface) {
-            throw new InvalidArgumentException('Expected instance of ' . ShipmentMethodInterface::class);
+            throw new UnexpectedTypeException($resource, ShipmentMethodInterface::class);
         }
 
         return $resource;

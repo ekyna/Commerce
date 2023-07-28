@@ -230,7 +230,8 @@ abstract class AbstractSaleListener
         }
 
         // Update shipment and amount
-        if ($this->persistenceHelper->isChanged($sale, ['shipmentWeight', 'shipmentMethod', 'customerGroup'])) {
+        $properties = ['autoShipping', 'shipmentWeight', 'shipmentMethod', 'customerGroup'];
+        if ($this->persistenceHelper->isChanged($sale, $properties)) {
             $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
         }
 

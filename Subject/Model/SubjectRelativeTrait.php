@@ -26,7 +26,8 @@ trait SubjectRelativeTrait
     protected ?string $reference   = null;
     protected Decimal $netPrice;
     protected Decimal $weight;
-    protected string  $unit        = Units::PIECE;
+    protected bool    $physical;
+    protected string  $unit;
 
     protected function initializeSubjectRelative(): void
     {
@@ -34,6 +35,8 @@ trait SubjectRelativeTrait
 
         $this->netPrice = new Decimal(0);
         $this->weight = new Decimal(0);
+        $this->physical = true;
+        $this->unit = Units::PIECE;
     }
 
     public function getDesignation(): ?string
@@ -97,6 +100,21 @@ trait SubjectRelativeTrait
     public function setWeight(Decimal $weight): SubjectRelativeInterface
     {
         $this->weight = $weight;
+
+        return $this;
+    }
+
+    public function isPhysical(): bool
+    {
+        return $this->physical;
+    }
+
+    /**
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setPhysical(bool $physical): SubjectRelativeInterface
+    {
+        $this->physical = $physical;
 
         return $this;
     }

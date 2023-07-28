@@ -204,7 +204,7 @@ abstract class AbstractGateway implements GatewayInterface
     public function supportShipment(Shipment\ShipmentDataInterface $shipment, bool $throw = true): bool
     {
         if ($shipment instanceof Shipment\ShipmentParcelInterface) {
-            if (!(static::CAPABILITY_PARCEL & $this->getCapabilities())) {
+            if (!$this->supports(static::CAPABILITY_PARCEL)) {
                 $this->throwUnsupportedShipment($shipment->getShipment(), 'Parcel given as argument.');
             }
 

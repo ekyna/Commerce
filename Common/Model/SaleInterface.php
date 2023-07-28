@@ -195,4 +195,9 @@ interface SaleInterface extends
     public function canBeReleased(): bool;
 
     public function hasDiscountItemAdjustment(): bool;
+
+    /**
+     * Returns whether this sale has at least one physical item.
+     */
+    public function hasPhysicalItem(): bool;
 }

@@ -178,6 +178,7 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
      */
     protected function updateCompound(StockSubjectInterface $subject): bool
     {
+        $physical = false;
         $justInTime = $disabled = $resupply = true;
         $inStock = $virtualStock = $availableStock = $eda = null;
         $replenishmentTime = 0;
@@ -187,6 +188,10 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
 
         foreach ($composition as $component) {
             $child = $component->getSubject();
+
+            if ($child->isPhysical()) {
+                $physical = true;
+            }
 
             // Mode
             if ($child->getStockMode() === StockSubjectModes::MODE_DISABLED) {
@@ -285,6 +290,8 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
         $changed = $this->setSubjectData($subject, $inStock, $availableStock, $virtualStock, $eda);
 
         $changed = $this->setSubjectMode($subject, $mode) || $changed;
+
+        $changed = $this->setPhysical($subject, $physical) || $changed;
 
         return $this->setSubjectState($subject, $state) || $changed;
     }
@@ -428,6 +435,22 @@ class StockSubjectUpdater implements StockSubjectUpdaterInterface
     {
         if ($state !== $subject->getStockState()) {
             $subject->setStockState($state);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Sets whether the subject is physical.
+     *
+     * @return bool Whether the state has been changed.
+     */
+    private function setPhysical(StockSubjectInterface $subject, bool $physical): bool
+    {
+        if ($physical !== $subject->isPhysical()) {
+            $subject->setPhysical($physical);
 
             return true;
         }

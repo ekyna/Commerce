@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
@@ -7,6 +9,7 @@ use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Shipment\Gateway;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
+use Ekyna\Component\Commerce\Shipment\ShipmentUtil;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -18,44 +21,33 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class ShipmentValidator extends ConstraintValidator
 {
-    /**
-     * @var Gateway\GatewayRegistryInterface
-     */
-    private $registry;
-
-
-    /**
-     * Constructor.
-     *
-     * @param Gateway\GatewayRegistryInterface $gatewayRegistry
-     */
-    public function __construct(Gateway\GatewayRegistryInterface $gatewayRegistry)
-    {
-        $this->registry = $gatewayRegistry;
+    public function __construct(
+        private readonly Gateway\GatewayRegistryInterface $registry
+    ) {
     }
 
     /**
      * @inheritDoc
      */
-    public function validate($shipment, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $shipment) {
+        if (null === $value) {
             return;
         }
 
-        if (!$shipment instanceof ShipmentInterface) {
-            throw new UnexpectedTypeException($shipment, ShipmentInterface::class);
+        if (!$value instanceof ShipmentInterface) {
+            throw new UnexpectedTypeException($value, ShipmentInterface::class);
         }
         if (!$constraint instanceof Shipment) {
             throw new UnexpectedTypeException($constraint, Shipment::class);
         }
 
-        $sale = $shipment->getSale();
+        $sale = $value->getSale();
 
         /**
          * Shipment can't have a stockable state if order is not in a stockable state
          */
-        if (ShipmentStates::isStockableState($shipment, false)) {
+        if (ShipmentStates::isStockableState($value, false)) {
             // Only orders are supported.
             if (!$sale instanceof OrderInterface) {
                 throw new UnexpectedTypeException($sale, OrderInterface::class);
@@ -64,75 +56,104 @@ class ShipmentValidator extends ConstraintValidator
                 $this
                     ->context
                     ->buildViolation($constraint->shipped_state_denied)
-                    ->setInvalidValue($shipment->getState())
+                    ->setInvalidValue($value->getState())
                     ->atPath('state')
                     ->addViolation();
             }
         }
 
-        $method = $shipment->getMethod();
+        $method = $value->getMethod();
 
         $gateway = $this->registry->getGateway($method->getGatewayName());
 
+        // Disallow virtual platform if shipment contains at least one physical item
+        if (
+            $gateway->supports(Gateway\GatewayInterface::CAPABILITY_VIRTUAL)
+            && ShipmentUtil::hasPhysicalItem($value)
+        ) {
+            $this
+                ->context
+                ->buildViolation($constraint->method_is_virtual_shipment_is_physical)
+                ->atPath('method')
+                ->addViolation();
+
+            return;
+        }
+
         // Return or shipment capability
-        if ($shipment->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_RETURN)) {
+        if ($value->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_RETURN)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_return)
                 ->atPath('method')
                 ->addViolation();
-        } elseif (!$shipment->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_SHIPMENT)) {
+
+            return;
+        }
+
+        if (!$value->isReturn() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_SHIPMENT)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_shipment)
                 ->atPath('method')
                 ->addViolation();
+
+            return;
         }
 
         // Parcel capability
-        if ($shipment->hasParcels() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_PARCEL)) {
+        if ($value->hasParcels() && !$gateway->supports(Gateway\GatewayInterface::CAPABILITY_PARCEL)) {
             $this
                 ->context
                 ->buildViolation($constraint->method_does_not_support_parcel)
                 ->atPath('method')
                 ->addViolation();
+
+            return;
         }
 
         // Parcels count
-        if (1 === $shipment->getParcels()->count()) {
+        if (1 === $value->getParcels()->count()) {
             $this
                 ->context
                 ->buildViolation($constraint->at_least_two_parcels_or_none)
                 ->atPath('parcels')
                 ->addViolation();
+
+            return;
         }
-        if ($shipment->hasParcels()) {
+
+        if ($value->hasParcels()) {
             // Weight and parcels
-            if (0 < $weight = $shipment->getWeight()) {
+            if (0 < $weight = $value->getWeight()) {
                 $this
                     ->context
                     ->buildViolation($constraint->weight_or_parcels_but_not_both)
                     ->setInvalidValue($weight)
                     ->atPath('weight')
                     ->addViolation();
+
+                return;
             }
 
             // Valorization and parcels
-            if (0 < $valorization = $shipment->getValorization()) {
+            if (0 < $valorization = $value->getValorization()) {
                 $this
                     ->context
                     ->buildViolation($constraint->valorization_or_parcels_but_not_both)
                     ->setInvalidValue($valorization)
                     ->atPath('valorization')
                     ->addViolation();
+
+                return;
             }
         }
 
         // Max weight
         if (0 < $maxWeight = $gateway->getMaxWeight()) {
-            if ($shipment->hasParcels()) {
+            if ($value->hasParcels()) {
                 $index = 0;
-                foreach ($shipment->getParcels() as $parcel) {
+                foreach ($value->getParcels() as $parcel) {
                     if ($maxWeight < $weight = $parcel->getWeight()) {
                         $this
                             ->context
@@ -144,7 +165,7 @@ class ShipmentValidator extends ConstraintValidator
                             ->addViolation();
                     }
                 }
-            } elseif ($maxWeight < $weight = $shipment->getWeight()) {
+            } elseif ($maxWeight < $weight = $value->getWeight()) {
                 $this
                     ->context
                     ->buildViolation($constraint->max_weight, [
@@ -157,7 +178,7 @@ class ShipmentValidator extends ConstraintValidator
         }
 
         // Mobile requirement
-        $address = $gateway->getAddressResolver()->resolveReceiverAddress($shipment, true);
+        $address = $gateway->getAddressResolver()->resolveReceiverAddress($value, true);
         if ($gateway->requires(Gateway\GatewayInterface::REQUIREMENT_MOBILE)) {
             if (is_null($address->getMobile())) {
                 $this->context

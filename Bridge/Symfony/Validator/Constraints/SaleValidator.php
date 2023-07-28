@@ -114,11 +114,11 @@ class SaleValidator extends ConstraintValidator
      */
     protected function validateIdentity(SaleInterface $sale, Sale $constraint): void
     {
-        IdentityValidator::validateIdentity($this->context, $sale);
-
         if (null !== $sale->getCustomer()) {
             return;
         }
+
+        IdentityValidator::validateIdentity($this->context, $sale);
 
         if (null === $sale->getCustomerGroup()) {
             $this->context

@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use Decimal\Decimal;
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentZoneInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\TranslatableRepository;
@@ -52,6 +53,22 @@ class ShipmentMethodRepository extends TranslatableRepository implements Shipmen
                 'available' => true,
             ])
             ->getResult();
+    }
+
+    public function findOneByPlatform(string $platformName): ?ShipmentMethodInterface
+    {
+        $qb = $this->createQueryBuilder('m');
+
+        return $qb
+            ->andWhere($qb->expr()->eq('m.platformName', ':name'))
+            ->andWhere($qb->expr()->eq('m.enabled', ':enabled'))
+            ->setMaxResults(1)
+            ->getQuery()
+            ->setParameters([
+                'name'    => $platformName,
+                'enabled' => true,
+            ])
+            ->getOneOrNullResult();
     }
 
     /**

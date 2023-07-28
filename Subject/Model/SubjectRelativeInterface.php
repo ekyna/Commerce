@@ -39,6 +39,13 @@ interface SubjectRelativeInterface extends SubjectReferenceInterface, TaxableInt
      */
     public function setWeight(Decimal $weight): SubjectRelativeInterface;
 
+    public function isPhysical(): bool;
+
+    /**
+     * @return $this|SubjectRelativeInterface
+     */
+    public function setPhysical(bool $physical): SubjectRelativeInterface;
+
     public function getUnit(): string;
 
     /**

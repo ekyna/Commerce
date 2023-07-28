@@ -12,7 +12,7 @@ use function spl_object_id;
 /**
  * Class Weighting
  * @package Ekyna\Component\Commerce\Supplier\Model
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 final class Weighting
 {
@@ -22,8 +22,8 @@ final class Weighting
     private array $items = [];
 
     public function __construct(
-        public readonly bool   $missingWeight,
-        public readonly bool   $missingPrice,
+        public readonly bool $missingWeight,
+        public readonly bool $missingPrice,
     ) {
     }
 

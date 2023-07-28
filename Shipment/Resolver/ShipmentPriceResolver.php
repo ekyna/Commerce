@@ -9,11 +9,14 @@ use Ekyna\Component\Commerce\Common\Context\ContextInterface;
 use Ekyna\Component\Commerce\Common\Context\ContextProviderInterface;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface as Country;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
 use Ekyna\Component\Commerce\Pricing\Model\TaxInterface;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway\GatewayRegistryInterface;
+use Ekyna\Component\Commerce\Shipment\Gateway\Virtual\VirtualPlatform;
 use Ekyna\Component\Commerce\Shipment\Model\ResolvedShipmentPrice as Price;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentMethodInterface as Method;
+use Ekyna\Component\Commerce\Shipment\Repository\ShipmentMethodRepositoryInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentPriceRepositoryInterface;
 use Ekyna\Component\Commerce\Shipment\Repository\ShipmentRuleRepositoryInterface;
 
@@ -24,48 +27,38 @@ use Ekyna\Component\Commerce\Shipment\Repository\ShipmentRuleRepositoryInterface
  */
 class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 {
-    private ShipmentPriceRepositoryInterface $priceRepository;
-    private ShipmentRuleRepositoryInterface  $ruleRepository;
-    private GatewayRegistryInterface         $gatewayRegistry;
-    private TaxResolverInterface             $taxResolver;
-    private ContextProviderInterface         $contextProvider;
-
     /**
-     * [
-     *     {countryId} => [
-     *         [
-     *             'method'     => (ShipmentMethodInterface),
-     *             'max_weight' => (Decimal),
-     *             'prices'     => [
-     *                 [
-     *                     'weight' => (Decimal),
-     *                     'price'  => (Decimal),
-     *                 ]
-     *             ],
-     *         ]
-     *     ],
-     * ]
-     *
-     * @var array
+     * @var array<int, array<int, array{
+     *     method: Method,
+     *     max_weight: Decimal,
+     *     prices: array<int, array{
+     *         weight: Decimal,
+     *         price: Decimal
+     *     }
+     * }>>
      */
     private array $grids = [];
 
     public function __construct(
-        ShipmentPriceRepositoryInterface $priceRepository,
-        ShipmentRuleRepositoryInterface  $ruleRepository,
-        GatewayRegistryInterface         $gatewayRegistry,
-        TaxResolverInterface             $taxResolver,
-        ContextProviderInterface         $contextProvider
+        private readonly ShipmentPriceRepositoryInterface  $priceRepository,
+        private readonly ShipmentRuleRepositoryInterface   $ruleRepository,
+        private readonly ShipmentMethodRepositoryInterface $methodRepository,
+        private readonly GatewayRegistryInterface          $gatewayRegistry,
+        private readonly TaxResolverInterface              $taxResolver,
+        private readonly ContextProviderInterface          $contextProvider
     ) {
-        $this->priceRepository = $priceRepository;
-        $this->ruleRepository = $ruleRepository;
-        $this->gatewayRegistry = $gatewayRegistry;
-        $this->taxResolver = $taxResolver;
-        $this->contextProvider = $contextProvider;
     }
 
     public function getAvailablePricesBySale(SaleInterface $sale, bool $availableOnly = true): array
     {
+        if (!$sale->hasPhysicalItem()) {
+            if (null !== $price = $this->getNonPhysicalPrice()) {
+                return [$price];
+            }
+
+            return [];
+        }
+
         $context = $this->contextProvider->getContext($sale);
 
         $prices = [];
@@ -101,6 +94,10 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     public function getPriceBySale(SaleInterface $sale): ?Price
     {
+        if (!$sale->hasPhysicalItem()) {
+            return $this->getNonPhysicalPrice();
+        }
+
         if (null === $method = $sale->getShipmentMethod()) {
             return null;
         }
@@ -135,6 +132,15 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
         );
     }
 
+    public function getNonPhysicalPrice(): ?Price
+    {
+        if (null === $method = $this->methodRepository->findOneByPlatform(VirtualPlatform::NAME)) {
+            throw new LogicException('Failed to find shipment method using virtual platform');
+        }
+
+        return new Price($method, new Decimal(0), new Decimal(0));
+    }
+
     /**
      * Entity manager clear event handler.
      */
@@ -145,6 +151,15 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Resolves the price form the given grid entry and total weight.
+     *
+     * @param array{
+     *     method: Method,
+     *     max_weight: Decimal,
+     *     prices: array<int, array{
+     *         weight: Decimal,
+     *         price: Decimal
+     *     }
+     * } $entry
      */
     private function resolvePrice(array $entry, Decimal $weight): Decimal
     {
@@ -185,6 +200,15 @@ class ShipmentPriceResolver implements ShipmentPriceResolverInterface
 
     /**
      * Returns the price grid for the given country and method.
+     *
+     * @return null|array<int, array{
+     *     method: Method,
+     *     max_weight: Decimal,
+     *     prices: array<int, array{
+     *         weight: Decimal,
+     *         price: Decimal
+     *     }
+     * }>
      */
     private function getGridForCountryAndMethod(Country $country, Method $method): ?array
     {

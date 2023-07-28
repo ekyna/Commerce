@@ -49,6 +49,8 @@ class SaleItemEventSubscriber
             ->setReference($product->getReference())
             ->setNetPrice(clone $product->getNetPrice())
             ->setWeight(clone $product->getPackageWeight())
+            ->setPhysical($product->isPhysical())
+            ->setUnit($product->getUnit())
             ->setTaxGroup($product->getTaxGroup());
     }
 

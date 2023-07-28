@@ -138,11 +138,15 @@ interface ShipmentInterface extends
     /**
      * Returns whether the shipment is empty
      * (do not have at least one item with quantity greater than zero).
+     *
+     * @TODO Move to ShipmentUtil
      */
     public function isEmpty(): bool;
 
     /**
      * Returns whether this shipment is a partial one.
+     *
+     * @TODO Move to ShipmentUtil
      */
     public function isPartial(): bool;
 }

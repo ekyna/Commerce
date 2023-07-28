@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -17,24 +19,26 @@ class SalePaymentStepValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($sale, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $sale) {
+        if (null === $value) {
             return;
         }
 
-        if (!$sale instanceof SaleInterface) {
-            throw new UnexpectedTypeException($sale, SaleInterface::class);
+        if (!$value instanceof SaleInterface) {
+            throw new UnexpectedTypeException($value, SaleInterface::class);
         }
         if (!$constraint instanceof SalePaymentStep) {
             throw new UnexpectedTypeException($constraint, SalePaymentStep::class);
         }
 
-        if (null === $sale->getShipmentMethod()) {
-            $this->context
-                ->buildViolation($constraint->shipment_method_must_be_set)
-                ->atPath('shipmentMethod')
-                ->addViolation();
+        if (null !== $value->getShipmentMethod()) {
+            return;
         }
+
+        $this->context
+            ->buildViolation($constraint->shipment_method_must_be_set)
+            ->atPath('shipmentMethod')
+            ->addViolation();
     }
 }

@@ -438,4 +438,19 @@ abstract class AbstractSale extends AbstractResource implements Common\SaleInter
 
         return false;
     }
+
+    public function hasPhysicalItem(): bool
+    {
+        foreach ($this->items as $item) {
+            if ($item->hasPhysicalChildren()) {
+                return true;
+            }
+
+            if (!$item->isCompound() && $item->isPhysical()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

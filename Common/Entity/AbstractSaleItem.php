@@ -367,6 +367,21 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this->getQuantity()->mul($this->getParentsQuantity());
     }
 
+    public function hasPhysicalChildren(): bool
+    {
+        foreach ($this->children as $child) {
+            if ($child->hasPhysicalChildren()) {
+                return true;
+            }
+
+            if (!$child->isCompound() && $child->isPhysical()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isLast(): bool
     {
         if (null !== $this->parent) {

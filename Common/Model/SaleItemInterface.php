@@ -118,6 +118,11 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
     public function getTotalQuantity(): Decimal;
 
     /**
+     * Returns whether this item has at least one physical child item.
+     */
+    public function hasPhysicalChildren(): bool;
+
+    /**
      * Returns whether the item is the last one (by position).
      */
     public function isLast(): bool;

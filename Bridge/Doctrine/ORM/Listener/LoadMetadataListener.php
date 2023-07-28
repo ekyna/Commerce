@@ -589,6 +589,13 @@ class LoadMetadataListener
                 'default'    => 0,
             ],
             [
+                'fieldName'  => 'physical',
+                'columnName' => 'physical',
+                'type'       => Types::BOOLEAN,
+                'nullable'   => false,
+                'default'    => true,
+            ],
+            [
                 'fieldName'  => 'unit',
                 'columnName' => 'unit',
                 'type'       => Types::STRING,
@@ -705,6 +712,13 @@ class LoadMetadataListener
                 'type'       => Types::BOOLEAN,
                 'nullable'   => false,
                 'default'    => false,
+            ],
+            [
+                'fieldName'  => 'physical',
+                'columnName' => 'physical',
+                'type'       => Types::BOOLEAN,
+                'nullable'   => false,
+                'default'    => true,
             ],
             [
                 'fieldName'  => 'unit',

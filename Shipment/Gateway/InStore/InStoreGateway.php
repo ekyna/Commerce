@@ -25,21 +25,15 @@ class InStoreGateway extends AbstractGateway
             return false;
         }
 
-        switch ($action) {
-            case GatewayActions::SHIP:
-                return !in_array($shipment->getState(), [
-                    Shipment\ShipmentStates::STATE_READY,
-                    Shipment\ShipmentStates::STATE_SHIPPED,
-                ], true);
-
-            case GatewayActions::CANCEL:
-                return $shipment->getState() !== Shipment\ShipmentStates::STATE_CANCELED;
-
-            case GatewayActions::COMPLETE:
-                return $shipment->getState() === Shipment\ShipmentStates::STATE_READY;
-        }
-
-        return true;
+        return match ($action) {
+            GatewayActions::SHIP     => !in_array($shipment->getState(), [
+                Shipment\ShipmentStates::STATE_READY,
+                Shipment\ShipmentStates::STATE_SHIPPED,
+            ], true),
+            GatewayActions::CANCEL   => $shipment->getState() !== Shipment\ShipmentStates::STATE_CANCELED,
+            GatewayActions::COMPLETE => $shipment->getState() === Shipment\ShipmentStates::STATE_READY,
+            default                  => true,
+        };
     }
 
     public function ship(Shipment\ShipmentInterface $shipment): bool
@@ -84,6 +78,6 @@ class InStoreGateway extends AbstractGateway
 
     public function getCapabilities(): int
     {
-        return static::CAPABILITY_SHIPMENT | static::CAPABILITY_RETURN;
+        return static::CAPABILITY_SHIPMENT | static::CAPABILITY_RETURN | static::CAPABILITY_SYSTEM;
     }
 }

@@ -87,7 +87,7 @@ class WeightingCalculator implements WeightingCalculatorInterface
             $total['price'] += $price * $quantity;
             $total['quantity'] += $quantity;
 
-            if (0 < $weight) { // TODO Use packaging format
+            if ((0 < $weight) && $item->isPhysical()) { // TODO Use packaging format
                 $missingWeight = false;
             }
 

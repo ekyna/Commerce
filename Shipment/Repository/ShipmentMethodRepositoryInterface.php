@@ -33,4 +33,13 @@ interface ShipmentMethodRepositoryInterface extends TranslatableRepositoryInterf
      * @return array<ShipmentMethodInterface>
      */
     public function findAvailableByCountryAndWeight(CountryInterface $country, Decimal $weight): array;
+
+    /**
+     * Finds the enabled shipment method by platform name.
+     *
+     * @param string $platformName
+     *
+     * @return ShipmentMethodInterface|null
+     */
+    public function findOneByPlatform(string $platformName): ?ShipmentMethodInterface;
 }

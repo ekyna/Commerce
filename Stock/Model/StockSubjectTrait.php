@@ -33,6 +33,7 @@ trait StockSubjectTrait
     protected ?DateTimeInterface $releasedAt             = null;
     protected bool               $quoteOnly;
     protected bool               $endOfLife;
+    protected bool               $physical;
     protected Decimal            $weight;
     protected int                $height;
     protected int                $width;
@@ -58,6 +59,7 @@ trait StockSubjectTrait
         $this->releasedAt = null;
         $this->quoteOnly = false;
         $this->endOfLife = false;
+        $this->physical = false;
         $this->unit = Units::PIECE;
         $this->weight = new Decimal(0);
         $this->width = 0;
@@ -234,6 +236,18 @@ trait StockSubjectTrait
     public function setEndOfLife(bool $endOfLife): StockSubjectInterface
     {
         $this->endOfLife = $endOfLife;
+
+        return $this;
+    }
+
+    public function isPhysical(): bool
+    {
+        return $this->physical;
+    }
+
+    public function setPhysical(bool $physical): StockSubjectInterface
+    {
+        $this->physical = $physical;
 
         return $this;
     }

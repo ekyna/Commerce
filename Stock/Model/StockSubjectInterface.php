@@ -112,6 +112,13 @@ interface StockSubjectInterface extends SubjectInterface
      */
     public function setEndOfLife(bool $endOfLife): StockSubjectInterface;
 
+    public function isPhysical(): bool;
+
+    /**
+     * @return $this|StockSubjectInterface
+     */
+    public function setPhysical(bool $physical): StockSubjectInterface;
+
     public function getUnit(): string;
 
     /**
