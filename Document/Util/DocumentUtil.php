@@ -14,6 +14,17 @@ use Ekyna\Component\Commerce\Document\Model as Document;
  */
 final class DocumentUtil
 {
+    public static function findWithType(Common\SaleInterface $sale, string $type): ?Common\SaleAttachmentInterface
+    {
+        foreach ($sale->getAttachments() as $attachment) {
+            if ($attachment->getType() === $type) {
+                return $attachment;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns the types of the sale editable documents.
      *
@@ -28,12 +39,8 @@ final class DocumentUtil
                 continue;
             }
 
-            if ($noDuplicate) {
-                foreach ($sale->getAttachments() as $attachment) {
-                    if ($attachment->getType() === $type) {
-                        continue 2;
-                    }
-                }
+            if ($noDuplicate && DocumentUtil::findWithType($sale, $type)) {
+                continue;
             }
 
             $types[] = $type;

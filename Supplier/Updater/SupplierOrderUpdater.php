@@ -55,17 +55,21 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
 
     public function updateCarrier(SupplierOrderInterface $order): bool
     {
+        if (null !== $order->getCarrier()) {
+            return false;
+        }
+
         if (null === $supplier = $order->getSupplier()) {
             return false;
         }
 
-        if (null === $order->getCarrier()) {
-            $order->setCarrier($supplier->getCarrier());
-
-            return true;
+        if (null === $carrier = $supplier->getCarrier()) {
+            return false;
         }
 
-        return false;
+        $order->setCarrier($carrier);
+
+        return true;
     }
 
     public function updateNumber(SupplierOrderInterface $order): bool
