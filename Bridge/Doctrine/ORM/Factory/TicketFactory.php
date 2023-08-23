@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Factory;
 use Ekyna\Component\Commerce\Support\Factory\TicketFactoryInterface;
 use Ekyna\Component\Commerce\Support\Factory\TicketMessageFactoryInterface;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
+use Ekyna\Component\Commerce\Support\Model\TicketMessageInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Factory\ResourceFactory;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
@@ -30,9 +31,14 @@ class TicketFactory extends ResourceFactory implements TicketFactoryInterface
         $ticket = parent::create();
 
         $ticket->addMessage(
-            $this->messageFactory->create()
+            $this->createMessage()
         );
 
         return $ticket;
+    }
+
+    protected function createMessage(): TicketMessageInterface
+    {
+        return $this->messageFactory->create();
     }
 }
