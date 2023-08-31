@@ -59,7 +59,7 @@ trait StockSubjectTrait
         $this->releasedAt = null;
         $this->quoteOnly = false;
         $this->endOfLife = false;
-        $this->physical = false;
+        $this->physical = true;
         $this->unit = Units::PIECE;
         $this->weight = new Decimal(0);
         $this->width = 0;
