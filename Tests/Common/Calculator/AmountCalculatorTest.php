@@ -111,6 +111,10 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->assertAdjustment($taxes[0], 'VAT 5.5%', 36.07, 5.5);
         $this->assertAdjustment($taxes[1], 'VAT 7%', 6.17, 7);
         $this->assertAdjustment($taxes[2], 'VAT 20%', 19.06, 20);
+
+        $includes = $finalResult->getIncludedAdjustments();
+        self::assertCount(1, $includes);
+        $this->assertAdjustment($includes[0], 'Ecotax', 27.0, 0);
     }
 
     public function test_calculateSale_cached(): void
@@ -418,6 +422,29 @@ class AmountCalculatorTest extends AbstractAmountTest
         $this->createCalculator(Fixture::CURRENCY_EUR)->calculateSaleItem($item);
     }
 
+    public function test_calculateSaleItem_withIncluded(): void
+    {
+        $item = Fixture::orderItem([
+            'quantity' => 3,
+            'price'    => 100,
+            'taxes'    => [20],
+            'included' => [
+                [
+                    'designation' => 'Ecotax',
+                    'amount'      => 7,
+                ],
+            ],
+        ])->setOrder(Fixture::order());
+
+        $result = $this->createCalculator(Fixture::CURRENCY_EUR)->calculateSaleItem($item);
+
+        $this->assertResult($result, 100.00, 300.00, 0.00, 300.00, 60.00, 360.00);
+
+        $included = $result->getIncludedAdjustments();
+        static::assertCount(1, $included);
+        $this->assertAdjustment($included[0], 'Ecotax', 21, 0.0);
+    }
+
     public function test_calculateParentSaleItem_withPublicChildren(): void
     {
         $item = Fixture::orderItem([
@@ -426,6 +453,12 @@ class AmountCalculatorTest extends AbstractAmountTest
             'price'     => 32.59,
             'discounts' => [7],
             'taxes'     => [20],
+            'included' => [
+                [
+                    'designation' => 'Ecotax',
+                    'amount'      => 3, // 9
+                ],
+            ],
         ]);
 
         $public1 = Fixture::orderItem([
@@ -434,6 +467,12 @@ class AmountCalculatorTest extends AbstractAmountTest
             'price'     => 12.34,
             'discounts' => [5],
             'taxes'     => [5.5],
+            'included' => [
+                [
+                    'designation' => 'Ecotax',
+                    'amount'      => 2, // 30
+                ],
+            ],
         ]);
 
         $public2 = Fixture::orderItem([
@@ -449,11 +488,22 @@ class AmountCalculatorTest extends AbstractAmountTest
         $result = $calculator->calculateSaleItem($item);
         $this->assertResult($result, 32.59, 97.77, 6.84, 90.93, 18.19, 109.12);
 
+        $included = $result->getIncludedAdjustments();
+        static::assertCount(1, $included);
+        $this->assertAdjustment($included[0], 'Ecotax', 9.0, 0.0);
+
         $result = $calculator->calculateSaleItem($public1);
         $this->assertResult($result, 12.34, 185.1, 9.25, 175.85, 9.67, 185.52);
 
+        $included = $result->getIncludedAdjustments();
+        static::assertCount(1, $included);
+        $this->assertAdjustment($included[0], 'Ecotax', 30.0, 0.0);
+
         $result = $calculator->calculateSaleItem($public2);
         $this->assertResult($result, 47.99, 1151.76, 115.18, 1036.58, 57.01, 1093.59);
+
+        $included = $result->getIncludedAdjustments();
+        static::assertCount(0, $included);
     }
 
     public function test_calculateParentSaleItem_withPublicAndPrivateChildren(): void
@@ -508,6 +558,12 @@ class AmountCalculatorTest extends AbstractAmountTest
                     'quantity' => 2,
                     'price'    => 47.99,
                     'private'  => true,
+                    'included' => [
+                        [
+                            'designation' => 'Ecotax',
+                            'amount'      => 5, // 10
+                        ],
+                    ],
                 ],
                 [
                     'quantity' => 4,
@@ -523,6 +579,12 @@ class AmountCalculatorTest extends AbstractAmountTest
                             'quantity' => 2,
                             'price'    => 3.99,
                             'private'  => true,
+                            'included' => [
+                                [
+                                    'designation' => 'Ecotax',
+                                    'amount'      => 1, // 8
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -534,6 +596,18 @@ class AmountCalculatorTest extends AbstractAmountTest
         $result = $calculator->calculateSaleItem($item);
 
         $this->assertResult($result, 293.6, 880.8, 88.08, 792.72, 43.60, 836.32);
+
+        $discounts = $result->getDiscountAdjustments();
+        self::assertCount(1, $discounts);
+        $this->assertAdjustment($discounts[0], 'Discount 10%', 88.08, 10);
+
+        $taxes = $result->getTaxAdjustments();
+        static::assertCount(1, $taxes);
+        $this->assertAdjustment($taxes[0], 'VAT 5.5%', 43.60, 5.5);
+
+        $included = $result->getIncludedAdjustments();
+        static::assertCount(1, $included);
+        $this->assertAdjustment($included[0], 'Ecotax', 54.0, 0.0);
     }
 
     public function test_calculateCompoundSaleItem_withPublicChildren(): void

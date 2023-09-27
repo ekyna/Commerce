@@ -135,8 +135,7 @@ class AmountCalculator implements AmountCalculatorInterface
         Decimal                 $quantity = null,
         bool                    $asPublic = false,
         bool                    $withChildren = true // TODO $single = false
-    ): Model\Amount
-    {
+    ): Model\Amount {
         if (null !== $quantity && $quantity->isNegative()) {
             throw new Exception\InvalidArgumentException('Specific quantity must be greater than or equal to zero.');
         }
@@ -149,15 +148,24 @@ class AmountCalculator implements AmountCalculatorInterface
             return $result;
         }
 
-        $sale = $item->getRootSale();
-        $ati = $sale->isAtiDisplayMode();
+        $result = new Model\Amount($this->currency);
+        $this->set($key, $result);
 
+        $sale = $item->getRootSale();
+
+        if ($sale->isSample()) {
+            // Sample sale case : zero amounts
+            return $result;
+        }
+
+        $ati = $sale->isAtiDisplayMode();
         $taxGroup = $item->getTaxGroup();
 
         // Round unit price only for 'net' calculation
         $unit = $this
             ->currencyConverter
             ->convertWithSubject($item->getNetPrice(), $sale, $this->currency, !$ati);
+        $result->addUnit($unit);
 
         // Add private items unit prices
         if ($withChildren) {
@@ -186,89 +194,104 @@ class AmountCalculator implements AmountCalculatorInterface
                     $childUnit = Money::round($childUnit, $this->currency);
                 }
 
-                $unit += $childUnit->mul($child->getQuantity());
+                $result->addUnit($childUnit->mul($child->getQuantity()));
             }
         }
 
         $quantity = $quantity ?? $item->getTotalQuantity();
 
-        if ($item->getRootSale()->isSample()) {
-            // Sample sale case : zero amounts
-            $result = new Model\Amount($this->currency);
-        } elseif ($item->isPrivate() && !$asPublic) {
-            // Private case : we just need unit amount
-            $result = new Model\Amount($this->currency, $unit);
-        } else {
-            // Regular case
-            $discounts = $taxes = [];
-            $discount = new Decimal(0);
-            $tax = new Decimal(0);
-
-            // Gross price
-            $gross = $unit->mul($quantity);
-
-            $parent = $item->getParent();
-            $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
-
-            // Items without subject inherit discounts from their non-compound parent
-            if (empty($discountAdjustments)) {
-                if (!$item->hasSubjectIdentity() && $parent && !$parent->isCompound()) {
-                    $discountAdjustments = $parent
-                        ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
-                } elseif ($item->isPrivate() && $asPublic) {
-                    $discountAdjustments = $item
-                        ->getPublicParent()
-                        ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
-                }
+        if ($item->isPrivate() && !$asPublic) {
+            // Private case: we just need unit amount
+            if ($ati) {
+                $result->round();
             }
 
-            // Discount amount and result adjustments
-            $discountBase = $gross;
-            foreach ($discountAdjustments as $data) {
-                $adjustment = $this->createPercentAdjustment($data, $discountBase);
-                $discountBase -= $adjustment->getAmount();
-                $discount += $adjustment->getAmount();
-                $discounts[] = $adjustment;
-            }
-
-            // Base
-            $base = $gross->sub($discount);
-            $base = $ati ? $base->round(5) : Money::round($base, $this->currency);
-
-            // Tax amount and result adjustments
-            if ($item->isPrivate() && $asPublic) {
-                $taxAdjustments = $item
-                    ->getPublicParent()
-                    ->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
-            } else {
-                $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
-            }
-
-            foreach ($taxAdjustments as $data) {
-                $adjustment = $this->createPercentAdjustment($data, $base);
-
-                $tax += $adjustment->getAmount();
-                $taxes[] = $adjustment;
-            }
-
-            // Total
-            $total = Money::round($base + $tax, $this->currency);
-
-            // Result
-            $result = new Model\Amount(
-                $this->currency,
-                $unit, $gross, $discount, $base,
-                $tax, $total, $discounts, $taxes
-            );
+            return $result;
         }
+
+        $this->addIncludedAdjustments($result, $item, $withChildren);
+
+        // Regular case
+        $result->addGross($result->getUnit()->mul($quantity));
+
+        $parent = $item->getParent();
+        $discountAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+
+        // Items without a subject inherit discounts from their non-compound parent
+        if (empty($discountAdjustments)) {
+            if (!$item->hasSubjectIdentity() && $parent && !$parent->isCompound()) {
+                $discountAdjustments = $parent
+                    ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            } elseif ($item->isPrivate() && $asPublic) {
+                $discountAdjustments = $item
+                    ->getPublicParent()
+                    ->getAdjustments(Model\AdjustmentTypes::TYPE_DISCOUNT)->toArray();
+            }
+        }
+
+        // Discount amount and result adjustments
+        $discountBase = clone $result->getGross();
+        foreach ($discountAdjustments as $data) {
+            $adjustment = $this->createPercentAdjustment($data, $discountBase);
+            $discountBase -= $adjustment->getAmount();
+            $result->addDiscount($adjustment->getAmount());
+            $result->addDiscountAdjustment($adjustment);
+        }
+
+        // Base
+        $base = $result->getGross()->sub($result->getDiscount());
+        $base = $ati ? $base->round(5) : Money::round($base, $this->currency);
+        $result->addBase($base);
+
+        // Tax amount and result adjustments
+        if ($item->isPrivate() && $asPublic) {
+            $taxAdjustments = $item
+                ->getPublicParent()
+                ->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+        } else {
+            $taxAdjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_TAXATION)->toArray();
+        }
+
+        foreach ($taxAdjustments as $data) {
+            $adjustment = $this->createPercentAdjustment($data, $base);
+
+            $result->addTax($adjustment->getAmount());
+            $result->addTaxAdjustment($adjustment);
+        }
+
+        // Total
+        $result->addTotal(Money::round($result->getBase() + $result->getTax(), $this->currency));
 
         if ($ati) {
             $result->round();
         }
 
-        $this->set($key, $result);
-
         return $result;
+    }
+
+    private function addIncludedAdjustments(Model\Amount $result, Model\SaleItemInterface $item, bool $recurse): void
+    {
+        // Included
+        /** @var array<Model\AdjustmentInterface> $adjustments */
+        $adjustments = $item->getAdjustments(Model\AdjustmentTypes::TYPE_INCLUDED)->toArray();
+        foreach ($adjustments as $data) {
+            $result->addIncludedAdjustment(new Model\Adjustment(
+                $data->getDesignation() ?: '',
+                $data->getAmount()->mul($item->getTotalQuantity())
+            ));
+        }
+
+        if (!$recurse) {
+            return;
+        }
+
+        foreach ($item->getChildren() as $child) {
+            if (!$child->isPrivate()) {
+                continue;
+            }
+
+            $this->addIncludedAdjustments($result, $child, true);
+        }
     }
 
     public function calculateSaleDiscount(

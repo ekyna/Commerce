@@ -9,6 +9,7 @@
 
         <field name="designation" column="designation" type="string" length="255"/>
         <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="included" column="included" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="32"/>
         <field name="unit" column="unit" type="php_decimal" precision="13" scale="3"/>
         <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3"/>

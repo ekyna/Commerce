@@ -45,4 +45,11 @@ interface AdjustmentInterface extends ResourceModel\ResourceInterface, ResourceM
     public function equals(AdjustmentInterface $adjustment): bool;
 
     public function getAdjustable(): ?AdjustableInterface;
+
+    /**
+     * Returns the adjustment data.
+     *
+     * @return AdjustmentDataInterface
+     */
+    public function toAdjustmentData(): AdjustmentDataInterface;
 }

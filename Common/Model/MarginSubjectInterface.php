@@ -21,5 +21,5 @@ interface MarginSubjectInterface
      *
      * @return MarginSubjectInterface
      */
-    public function setMargin(Margin $margin): self|MarginSubjectInterface;
+    public function setMargin(Margin $margin): self;
 }

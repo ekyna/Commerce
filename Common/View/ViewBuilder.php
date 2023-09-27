@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Helper\SaleItemHelper;
+use Ekyna\Component\Commerce\Common\Helper\ViewHelper;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Util\Formatter;
@@ -19,6 +20,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Locale;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
+use function sprintf;
 
 /**
  * Class ViewBuilder
@@ -34,6 +37,7 @@ class ViewBuilder
     private array                     $types;
     private int                       $lineNumber;
     private Formatter                 $formatter;
+    private ViewHelper                $viewHelper;
     private AmountCalculatorInterface $amountCalculator;
     private MarginCalculatorInterface $marginCalculator;
 
@@ -185,6 +189,7 @@ class ViewBuilder
         $this->view->ati = $this->options['ati'];
 
         $this->formatter = $this->formatterFactory->create($this->options['locale'], $this->options['currency']);
+        $this->viewHelper = new ViewHelper($this->formatter);
 
         foreach ($this->types as $type) {
             $type->setFormatter($this->formatter);
@@ -203,10 +208,21 @@ class ViewBuilder
         $amounts = $this->amountCalculator->calculateSale($sale);
 
         foreach ($amounts->getTaxAdjustments() as $tax) {
-            $this->view->addTax(new TaxView(
-                $tax->getName(),
-                $this->currency($tax->getAmount())
-            ));
+            $this->view->addTax(
+                new TaxView(
+                    $tax->getName(),
+                    $this->currency($tax->getAmount())
+                )
+            );
+        }
+
+        foreach ($amounts->getIncludedAdjustments() as $include) {
+            $this->view->addInclude(
+                new TaxView(
+                    $include->getName(),
+                    $this->currency($include->getAmount())
+                )
+            );
         }
     }
 
@@ -261,7 +277,7 @@ class ViewBuilder
 
         $result = $this->amountCalculator->calculateSaleItem($item);
 
-        $unit = $gross = $discountRates = $discountAmount = $base = $taxRates = $taxAmount = $total = null;
+        $unit = $gross = $discountRates = $discountAmount = $base = $includes = $taxRates = $taxAmount = $total = null;
 
         if (!($item->isCompound() && !$item->hasPrivateChildren())) {
             $ati = $this->view->ati;
@@ -276,6 +292,7 @@ class ViewBuilder
             if (0 < $tax = $result->getTax()) {
                 $taxAmount = $this->currency($tax);
             }
+            $includes = $this->viewHelper->buildIncludesDescription($result, $item->getQuantity());
             $total = $this->currency($result->getTotal());
         }
 
@@ -305,6 +322,7 @@ class ViewBuilder
         $view->discountRates = $discountRates;
         $view->discountAmount = $discountAmount;
         $view->base = $base;
+        $view->includes = $includes;
         $view->taxRates = $taxRates;
         $view->taxAmount = $taxAmount;
         $view->total = $total;
@@ -329,8 +347,11 @@ class ViewBuilder
             $view->margin = $this->percent($margin->getPercent(false), $margin->isAverage() ? '~' : '');
         }
 
-        if (!$item->hasParent() && !$this->saleItemHelper->isShippedOrInvoiced($item)) {
-            $view->batchable = true;
+        if (!$item->hasParent()) {
+            if (!$this->saleItemHelper->isShippedOrInvoiced($item)) {
+                $view->batchable = true;
+            }
+            // TODO Append included taxes detail to description
         }
 
         if ($item->hasChildren()) {

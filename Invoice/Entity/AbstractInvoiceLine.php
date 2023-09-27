@@ -33,9 +33,6 @@ abstract class AbstractInvoiceLine extends Document\DocumentLine implements Mode
         $this->clearChildren();
     }
 
-    /**
-     * @return Model\InvoiceInterface
-     */
     public function getDocument(): ?Document\DocumentInterface
     {
         return $this->getInvoice();

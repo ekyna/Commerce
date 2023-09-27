@@ -20,6 +20,7 @@ class DocumentItem implements DocumentItemInterface
     protected ?DocumentInterface $document;
     protected ?string            $designation = null;
     protected ?string            $description = null;
+    protected ?string            $included    = null;
     protected ?string            $reference   = null;
     protected Decimal            $unit;
     protected Decimal            $quantity;
@@ -87,6 +88,18 @@ class DocumentItem implements DocumentItemInterface
     public function setDescription(?string $description): DocumentItemInterface
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getIncluded(): ?string
+    {
+        return $this->included;
+    }
+
+    public function setIncluded(?string $included): DocumentItemInterface
+    {
+        $this->included = $included;
 
         return $this;
     }

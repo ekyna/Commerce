@@ -40,7 +40,7 @@ interface AdjustableInterface
     /**
      * Returns the adjustments, optionally filtered by type.
      *
-     * @return Collection|AdjustmentInterface[]
+     * @return Collection<AdjustmentInterface>
      */
     public function getAdjustments(string $type = null): Collection;
 }

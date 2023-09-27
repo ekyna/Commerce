@@ -31,10 +31,8 @@ use Ekyna\Component\Commerce\Subject\Guesser\SubjectCostGuesserInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
-use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase as BaseTestCase;
-use RuntimeException;
+use Ekyna\Component\Resource\Tests\PhpUnit\TestCase as BaseTestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -52,10 +50,6 @@ abstract class TestCase extends BaseTestCase
     protected const PAYMENT_METHOD_OUTSTANDING = 2;
     protected const PAYMENT_METHOD_CREDIT      = 3;
 
-    /**
-     * @var array<string, MockObject>
-     */
-    private array                       $mocks;
     private ?CurrencyConverterInterface $currencyConverter = null;
     private ?FactoryHelperInterface     $saleFactory       = null;
 
@@ -66,7 +60,8 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
-        $this->mocks = [];
+        parent::tearDown();
+
         $this->currencyConverter = null;
         $this->saleFactory = null;
         $this->paymentMethods = [];
@@ -74,36 +69,19 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param string $interface
+     * Returns a sale factory helper.
      *
-     * @return bool
+     * @return FactoryHelperInterface
      */
-    private function hasMock(string $interface): bool
+    protected function getFactoryHelper(): FactoryHelperInterface
     {
-        return isset($this->mocks[$interface]);
-    }
-
-    /**
-     * @param string $interface
-     *
-     * @return MockObject
-     */
-    private function getMock(string $interface): MockObject
-    {
-        if (!$this->hasMock($interface)) {
-            throw new RuntimeException("$interface has not been mocked yet.");
+        if (null !== $this->saleFactory) {
+            return $this->saleFactory;
         }
 
-        return $this->mocks[$interface];
-    }
-
-    protected function mockService(string $interface): MockObject
-    {
-        if ($this->hasMock($interface)) {
-            return $this->getMock($interface);
-        }
-
-        return $this->mocks[$interface] = parent::createMock($interface);
+        return $this->saleFactory = new FactoryHelper(
+            $this->getFactoryFactoryMock()
+        );
     }
 
     /**
@@ -306,14 +284,6 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Returns the persistence helper mock.
-     */
-    protected function getPersistenceHelperMock(): PersistenceHelperInterface|MockObject
-    {
-        return $this->mockService(PersistenceHelperInterface::class);
-    }
-
-    /**
      * Returns the purchase cost guesser mock.
      */
     protected function getPurchaseCostGuesserMock(): SubjectCostGuesserInterface|MockObject
@@ -322,17 +292,11 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Returns a sale factory.
-     *
-     * @return FactoryHelperInterface
+     * Returns the sale factory helper mock.
      */
-    protected function getSaleFactory(): FactoryHelperInterface
+    protected function getFactoryHelperMock(): FactoryHelperInterface|MockObject
     {
-        if (null !== $this->saleFactory) {
-            return $this->saleFactory;
-        }
-
-        return $this->saleFactory = new FactoryHelper();
+        return $this->mockService(FactoryHelperInterface::class);
     }
 
     /**

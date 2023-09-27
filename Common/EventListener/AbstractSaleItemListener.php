@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
-use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
+use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -17,15 +17,15 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractSaleItemListener
 {
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected AdjustmentBuilderInterface $adjustmentBuilder;
+    protected PersistenceHelperInterface     $persistenceHelper;
+    protected SaleAdjustmentBuilderInterface $adjustmentBuilder;
 
     public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper): void
     {
         $this->persistenceHelper = $persistenceHelper;
     }
 
-    public function setAdjustmentBuilder(AdjustmentBuilderInterface $adjustmentBuilder): void
+    public function setSaleAdjustmentBuilder(SaleAdjustmentBuilderInterface $adjustmentBuilder): void
     {
         $this->adjustmentBuilder = $adjustmentBuilder;
     }

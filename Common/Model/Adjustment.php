@@ -17,7 +17,6 @@ class Adjustment
     private Decimal $amount;
     private ?Decimal $rate;
 
-
     public function __construct(string $name, Decimal $amount, Decimal $rate = null)
     {
         $this->name = $name;
@@ -42,7 +41,12 @@ class Adjustment
 
     public function addAmount(Decimal $amount): void
     {
-        $this->amount += $amount;
+        $this->amount = $this->amount->add($amount);
+    }
+
+    public function multiplyAmount(Decimal $factor): void
+    {
+        $this->amount = $this->amount->mul($factor);
     }
 
     /**

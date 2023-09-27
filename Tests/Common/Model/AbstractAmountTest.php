@@ -9,6 +9,8 @@ use Ekyna\Component\Commerce\Common\Model\Adjustment;
 use Ekyna\Component\Commerce\Common\Model\Amount;
 use Ekyna\Component\Commerce\Tests\TestCase;
 
+use function sprintf;
+
 /**
  * Class AbstractAmountTest
  * @package Ekyna\Component\Commerce\Tests\Common\Model
@@ -28,12 +30,17 @@ abstract class AbstractAmountTest extends TestCase
         float  $tax,
         float  $total
     ): void {
-        self::assertEquals(new Decimal((string)$unit), $result->getUnit());
-        self::assertEquals(new Decimal((string)$gross), $result->getGross());
-        self::assertEquals(new Decimal((string)$discount), $result->getDiscount());
-        self::assertEquals(new Decimal((string)$base), $result->getBase());
-        self::assertEquals(new Decimal((string)$tax), $result->getTax());
-        self::assertEquals(new Decimal((string)$total), $result->getTotal());
+        self::assertDecimalEquals(new Decimal((string)$unit), $result->getUnit());
+        self::assertDecimalEquals(new Decimal((string)$gross), $result->getGross());
+        self::assertDecimalEquals(new Decimal((string)$discount), $result->getDiscount());
+        self::assertDecimalEquals(new Decimal((string)$base), $result->getBase());
+        self::assertDecimalEquals(new Decimal((string)$tax), $result->getTax());
+        self::assertDecimalEquals(new Decimal((string)$total), $result->getTotal());
+    }
+
+    protected function assertDecimalEquals(Decimal $a, Decimal $b): void
+    {
+        self::assertEquals($a, $b, sprintf('%s and %s are not equal', $a->toString(), $b->toString()));
     }
 
     /**

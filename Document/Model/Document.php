@@ -33,6 +33,7 @@ class Document implements DocumentInterface
     protected Decimal $shipmentBase;
     protected Decimal $taxesTotal;
     protected array   $taxesDetails;
+    protected array   $includedDetails;
     /** The grand total in document currency. */
     protected Decimal $grandTotal;
     /** The grand total in default currency. */
@@ -52,6 +53,7 @@ class Document implements DocumentInterface
         $this->shipmentBase = new Decimal(0);
         $this->taxesTotal = new Decimal(0);
         $this->taxesDetails = [];
+        $this->includedDetails = [];
         $this->grandTotal = new Decimal(0);
         $this->realGrandTotal = new Decimal(0);
         $this->lines = new ArrayCollection();
@@ -366,6 +368,18 @@ class Document implements DocumentInterface
     public function setTaxesDetails(array $details): DocumentInterface
     {
         $this->taxesDetails = $details;
+
+        return $this;
+    }
+
+    public function getIncludedDetails(): array
+    {
+        return $this->includedDetails;
+    }
+
+    public function setIncludedDetails(array $details): DocumentInterface
+    {
+        $this->includedDetails = $details;
 
         return $this;
     }

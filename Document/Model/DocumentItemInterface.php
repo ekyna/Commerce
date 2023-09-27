@@ -26,6 +26,10 @@ interface DocumentItemInterface extends TaxableInterface
 
     public function setDescription(?string $description): DocumentItemInterface;
 
+    public function getIncluded(): ?string;
+
+    public function setIncluded(?string $included): DocumentItemInterface;
+
     public function getReference(): ?string;
 
     public function setReference(?string $reference): DocumentItemInterface;

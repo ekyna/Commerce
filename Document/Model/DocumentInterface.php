@@ -171,6 +171,13 @@ interface DocumentInterface extends LocalizedInterface
      */
     public function setTaxesDetails(array $details): DocumentInterface;
 
+    public function getIncludedDetails(): array;
+
+    /**
+     * @return $this|DocumentInterface
+     */
+    public function setIncludedDetails(array $includes): DocumentInterface;
+
     /**
      * Returns the grand total (document currency).
      */

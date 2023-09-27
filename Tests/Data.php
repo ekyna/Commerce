@@ -159,6 +159,12 @@ class Data
                     'price'      => 32.59,
                     'discounts'  => [7],
                     'taxes'      => [20],
+                    'included' => [
+                        [
+                            'designation' => 'Ecotax',
+                            'amount'      => 5,
+                        ],
+                    ],
                     // Calculation results
                     '_amount'    => [
                         'unit'     => 32.59,
@@ -382,6 +388,12 @@ class Data
                             'quantity'   => 2, // 12
                             'price'      => 4.14,
                             'private'    => true,
+                            'included' => [
+                                [
+                                    'designation' => 'Ecotax',
+                                    'amount'      => 1,
+                                ],
+                            ],
                             '_amount'    => [
                                 'unit'    => 4.14,
                                 '_single' => [

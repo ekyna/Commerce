@@ -24,17 +24,13 @@ use function array_filter;
  */
 class DocumentBuilder implements DocumentBuilderInterface
 {
-    protected LocaleProviderInterface   $localeProvider;
-    protected ArrayToAddressTransformer $addressTransformer;
-    private PhoneNumberUtil             $phoneNumberUtil;
+    protected PhoneNumberUtil $phoneNumberUtil;
 
     public function __construct(
-        LocaleProviderInterface   $localeProvider,
-        ArrayToAddressTransformer $addressTransformer,
-        PhoneNumberUtil           $phoneNumberUtil = null
+        protected readonly LocaleProviderInterface   $localeProvider,
+        protected readonly ArrayToAddressTransformer $addressTransformer,
+        PhoneNumberUtil                              $phoneNumberUtil = null
     ) {
-        $this->localeProvider = $localeProvider;
-        $this->addressTransformer = $addressTransformer;
         $this->phoneNumberUtil = $phoneNumberUtil ?: PhoneNumberUtil::getInstance();
     }
 
@@ -146,7 +142,7 @@ class DocumentBuilder implements DocumentBuilderInterface
         Common\SaleItemInterface   $item,
         Document\DocumentInterface $document
     ): ?Document\DocumentLineInterface {
-        // Abort if document contains one of the public parents
+        // Abort if the document contains one of the public parents
         if ($item->isPrivate() && DocumentUtil::hasPublicParent($document, $item)) {
             return null;
         }

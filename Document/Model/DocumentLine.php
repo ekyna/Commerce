@@ -19,6 +19,7 @@ class DocumentLine implements DocumentLineInterface
     protected ?string                         $type           = null;
     protected ?string                         $designation    = null;
     protected ?string                         $description    = null;
+    protected ?string                         $included       = null;
     protected ?string                         $reference      = null;
     protected Decimal                         $unit;
     protected Decimal                         $quantity;
@@ -28,6 +29,7 @@ class DocumentLine implements DocumentLineInterface
     protected Decimal                         $base;
     protected Decimal                         $tax;
     protected array                           $taxRates;
+    protected array                           $includedDetails;
     protected Decimal                         $total;
     protected ?Common\SaleItemInterface       $saleItem       = null;
     protected ?Common\SaleAdjustmentInterface $saleAdjustment = null;
@@ -42,6 +44,7 @@ class DocumentLine implements DocumentLineInterface
         $this->base = new Decimal(0);
         $this->tax = new Decimal(0);
         $this->taxRates = [];
+        $this->includedDetails = [];
         $this->total = new Decimal(0);
     }
 
@@ -100,6 +103,18 @@ class DocumentLine implements DocumentLineInterface
     public function setDescription(?string $description): DocumentLineInterface
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getIncluded(): ?string
+    {
+        return $this->included;
+    }
+
+    public function setIncluded(?string $included): DocumentLineInterface
+    {
+        $this->included = $included;
 
         return $this;
     }
@@ -208,6 +223,18 @@ class DocumentLine implements DocumentLineInterface
     public function setTaxRates(array $rates): DocumentLineInterface
     {
         $this->taxRates = $rates;
+
+        return $this;
+    }
+
+    public function getIncludedDetails(): array
+    {
+        return $this->includedDetails;
+    }
+
+    public function setIncludedDetails(array $details): DocumentLineInterface
+    {
+        $this->includedDetails = $details;
 
         return $this;
     }

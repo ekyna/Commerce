@@ -33,6 +33,8 @@ class SaleView extends AbstractView
     private array $discounts = [];
     /** @var array<int, TaxView> */
     private array $taxes = [];
+    /** @var array<int, TaxView> */
+    private array $includes = [];
     /** @var array<int, Button> */
     private array $buttons = [];
     /** @var array<int, string> */
@@ -107,6 +109,24 @@ class SaleView extends AbstractView
     public function getTaxes(): array
     {
         return $this->taxes;
+    }
+
+    /**
+     * Adds the tax view.
+     */
+    public function addInclude(TaxView $view): void
+    {
+        $this->includes[] = $view;
+    }
+
+    /**
+     * Returns the includes views.
+     *
+     * @return array<int, TaxView>
+     */
+    public function getIncludes(): array
+    {
+        return $this->includes;
     }
 
     /**

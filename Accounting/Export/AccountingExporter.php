@@ -107,7 +107,7 @@ class AccountingExporter implements AccountingExporterInterface
 
         $zip = new ZipArchive();
 
-        if (true !== $zip->open($path)) {
+        if (true !== $zip->open($path, ZipArchive::OVERWRITE)) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 

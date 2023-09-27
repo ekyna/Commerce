@@ -10,6 +10,7 @@
         <field name="type" column="type" type="string" length="16"/>
         <field name="designation" column="designation" type="string" length="255" nullable="true"/>
         <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="included" column="included" type="string" length="255" nullable="true"/>
         <field name="reference" column="reference" type="string" length="32" nullable="true"/>
         <field name="unit" column="unit" type="php_decimal" precision="13" scale="3"/>
         <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3"/>
@@ -19,6 +20,7 @@
         <field name="base" column="base" type="php_decimal" precision="13" scale="3"/>
         <field name="tax" column="tax" type="php_decimal" precision="13" scale="3"/>
         <field name="taxRates" column="tax_rates" type="json"/>
+        <field name="includedDetails" column="included_details" type="json"/>
         <field name="total" column="total" type="php_decimal" precision="13" scale="3"/>
 
     </mapped-superclass>

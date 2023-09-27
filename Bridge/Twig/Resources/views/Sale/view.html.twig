@@ -125,6 +125,9 @@
         {%- else -%}
             {{ line.designation|raw }}
         {%- endif -%}
+        {%- if line.includes is not empty -%}
+            <br><em>{{ line.includes }}</em>
+        {%- endif -%}
         {%- if line.description is not empty -%}
             <br><em>{{ line.description|raw }}</em>
         {%- endif -%}
@@ -348,6 +351,14 @@
             <tr>
                 <td>{{ tax.name }}</td>
                 <td class="text-right">{{ tax.total }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tbody>
+        {% for include in view.includes %}
+            <tr>
+                <td>{{ include.name }}</td>
+                <td class="text-right">{{ include.total }}</td>
             </tr>
         {% endfor %}
         </tbody>

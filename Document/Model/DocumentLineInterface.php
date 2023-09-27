@@ -40,6 +40,10 @@ interface DocumentLineInterface
 
     public function setDescription(?string $description): DocumentLineInterface;
 
+    public function getIncluded(): ?string;
+
+    public function setIncluded(?string $included): DocumentLineInterface;
+
     public function getReference(): ?string;
 
     public function setReference(?string $reference): DocumentLineInterface;
@@ -75,6 +79,10 @@ interface DocumentLineInterface
     public function getTaxRates(): array;
 
     public function setTaxRates(array $rates): DocumentLineInterface;
+
+    public function getIncludedDetails(): array;
+
+    public function setIncludedDetails(array $details): DocumentLineInterface;
 
     public function getTotal(): Decimal;
 

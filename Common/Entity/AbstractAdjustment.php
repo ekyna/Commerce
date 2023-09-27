@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Common\Entity;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Model\AdjustmentDataInterface;
 use Ekyna\Component\Resource\Copier\CopierInterface;
 use Ekyna\Component\Resource\Copier\CopyInterface;
 use Ekyna\Component\Resource\Model\AbstractResource;
@@ -137,4 +138,14 @@ abstract class AbstractAdjustment extends AbstractResource implements Model\Adju
     }
 
     abstract public function getAdjustable(): ?Model\AdjustableInterface;
+
+    public function toAdjustmentData(): AdjustmentDataInterface
+    {
+        return new Model\AdjustmentData(
+            $this->mode,
+            $this->designation,
+            $this->amount,
+            $this->source
+        );
+    }
 }

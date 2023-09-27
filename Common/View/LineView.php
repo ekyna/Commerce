@@ -21,6 +21,7 @@ class LineView extends AbstractView
     public ?string $discountRates  = null;
     public ?string $discountAmount = null;
     public ?string $base           = null; // Total price after applying discounts and before applying taxes.
+    public ?string $includes       = null;
     public ?string $taxRates       = null;
     public ?string $taxAmount      = null;
     public ?string $total          = null; // Total price after applying discounts and taxes.

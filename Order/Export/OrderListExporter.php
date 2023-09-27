@@ -53,7 +53,7 @@ class OrderListExporter extends AbstractExporter
 
         $zip = new ZipArchive();
 
-        if (false === $zip->open($path)) {
+        if (false === $zip->open($path, ZipArchive::OVERWRITE)) {
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 

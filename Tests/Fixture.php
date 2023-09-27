@@ -735,9 +735,10 @@ class Fixture
 
         $adjustment
             ->setQuantity(self::decimal($data['quantity']))
-            ->setReason($data['debit']
-                ? StockM\StockAdjustmentReasons::REASON_DEBIT
-                : StockM\StockAdjustmentReasons::REASON_CREDIT
+            ->setReason(
+                $data['debit']
+                    ? StockM\StockAdjustmentReasons::REASON_DEBIT
+                    : StockM\StockAdjustmentReasons::REASON_CREDIT
             );
 
         return $adjustment;
@@ -1463,6 +1464,7 @@ class Fixture
      *     immutable:   bool,
      *     discounts:   array,
      *     taxes:       array,
+     *     included:    array,
      *     children:    array,
      *     assignments: array,
      * } $data The item object, ID, reference or data.
@@ -1491,6 +1493,7 @@ class Fixture
             'immutable'   => false,
             'discounts'   => [],
             'taxes'       => [],
+            'included'    => [],
             'children'    => [],
             'assignments' => [],
         ], $data);
@@ -1523,22 +1526,33 @@ class Fixture
 
         foreach ($data['discounts'] as $datum) {
             if (is_numeric($datum)) {
-                $datum = [
-                    'type'   => CommonM\AdjustmentTypes::TYPE_DISCOUNT,
-                    'amount' => $datum,
-                ];
+                $datum = ['amount' => $datum,];
             }
+
+            $datum['type'] = CommonM\AdjustmentTypes::TYPE_DISCOUNT;
+            $datum['mode'] = CommonM\AdjustmentModes::MODE_PERCENT;
 
             $item->addAdjustment(self::orderItemAdjustment($datum));
         }
 
         foreach ($data['taxes'] as $datum) {
             if (is_numeric($datum)) {
-                $datum = [
-                    'type'   => CommonM\AdjustmentTypes::TYPE_TAXATION,
-                    'amount' => $datum,
-                ];
+                $datum = ['amount' => $datum,];
             }
+
+            $datum['type'] = CommonM\AdjustmentTypes::TYPE_TAXATION;
+            $datum['mode'] = CommonM\AdjustmentModes::MODE_PERCENT;
+
+            $item->addAdjustment(self::orderItemAdjustment($datum));
+        }
+
+        foreach ($data['included'] as $datum) {
+            if (is_numeric($datum)) {
+                $datum = ['amount' => $datum,];
+            }
+
+            $datum['type'] = CommonM\AdjustmentTypes::TYPE_INCLUDED;
+            $datum['mode'] = CommonM\AdjustmentModes::MODE_FLAT;
 
             $item->addAdjustment(self::orderItemAdjustment($datum));
         }
@@ -1575,11 +1589,12 @@ class Fixture
         }
 
         $data = array_replace([
-            'type'   => CommonM\AdjustmentTypes::TYPE_TAXATION,
-            'mode'   => CommonM\AdjustmentModes::MODE_PERCENT,
-            'item'   => null,
-            'amount' => null,
-            'source' => null,
+            'type'        => CommonM\AdjustmentTypes::TYPE_TAXATION,
+            'mode'        => CommonM\AdjustmentModes::MODE_PERCENT,
+            'item'        => null,
+            'amount'      => null,
+            'source'      => null,
+            'designation' => null,
         ], $data);
 
         if (null !== $datum = $data['item']) {
@@ -1589,7 +1604,7 @@ class Fixture
         $adjustment
             ->setType($data['type'])
             ->setMode($data['mode'])
-            ->setDesignation(self::adjustmentDesignation($data))
+            ->setDesignation($data['designation'] ?: self::adjustmentDesignation($data))
             ->setAmount(self::decimal($data['amount']))
             ->setSource($data['source']);
 
@@ -2164,10 +2179,13 @@ class Fixture
             }
 
             foreach ($data as $code => $datum) {
-                call_user_func($factory, array_replace([
-                    '_reference' => $code,
-                    'code'       => $code,
-                ], $datum));
+                call_user_func(
+                    $factory,
+                    array_replace([
+                        '_reference' => $code,
+                        'code'       => $code,
+                    ], $datum)
+                );
             }
         };
 

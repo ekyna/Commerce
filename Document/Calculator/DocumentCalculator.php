@@ -8,7 +8,9 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
+use Ekyna\Component\Commerce\Common\Helper\ViewHelper;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Document\Model;
 use Ekyna\Component\Commerce\Document\Util\DocumentUtil;
@@ -21,19 +23,16 @@ use Ekyna\Component\Commerce\Exception\LogicException;
  */
 class DocumentCalculator implements DocumentCalculatorInterface
 {
-    protected AmountCalculatorFactory    $calculatorFactory;
-    protected CurrencyConverterInterface $currencyConverter;
-
     protected string                    $currency;
     protected bool                      $changed;
     protected AmountCalculatorInterface $calculator;
+    protected ViewHelper                $viewHelper;
 
     public function __construct(
-        AmountCalculatorFactory    $calculatorFactory,
-        CurrencyConverterInterface $currencyConverter
+        protected readonly AmountCalculatorFactory    $calculatorFactory,
+        protected readonly CurrencyConverterInterface $currencyConverter,
+        protected readonly FormatterFactory           $formatterFactory,
     ) {
-        $this->calculatorFactory = $calculatorFactory;
-        $this->currencyConverter = $currencyConverter;
     }
 
     public function calculate(Model\DocumentInterface $document): bool
@@ -44,8 +43,10 @@ class DocumentCalculator implements DocumentCalculatorInterface
             throw new LogicException('Document can\'t be recalculated.');
         }
 
-        $this->currency = $currency ?? $document->getCurrency();
+        $this->currency = $document->getCurrency();
         $this->calculator = $this->calculatorFactory->create($this->currency);
+        $formatter = $this->formatterFactory->create($document->getLocale(), $this->currency);
+        $this->viewHelper = new ViewHelper($formatter);
 
         $this->calculateDocument($document);
 
@@ -135,10 +136,12 @@ class DocumentCalculator implements DocumentCalculatorInterface
     protected function calculateGoodLine(Model\DocumentLineInterface $line): ?Common\Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_GOOD) {
-            throw new LogicException(sprintf(
-                'Expected document line with type \'%s\'.',
-                Model\DocumentLineTypes::TYPE_GOOD
-            ));
+            throw new LogicException(
+                sprintf(
+                    'Expected document line with type \'%s\'.',
+                    Model\DocumentLineTypes::TYPE_GOOD
+                )
+            );
         }
 
         if (null === $item = $line->getSaleItem()) {
@@ -207,10 +210,12 @@ class DocumentCalculator implements DocumentCalculatorInterface
         Common\Amount               $final
     ): void {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_DISCOUNT) {
-            throw new LogicException(sprintf(
-                "Expected document line with type '%s'.",
-                Model\DocumentLineTypes::TYPE_DISCOUNT
-            ));
+            throw new LogicException(
+                sprintf(
+                    "Expected document line with type '%s'.",
+                    Model\DocumentLineTypes::TYPE_DISCOUNT
+                )
+            );
         }
 
         /** @var Common\SaleAdjustmentInterface $adjustment */
@@ -231,10 +236,12 @@ class DocumentCalculator implements DocumentCalculatorInterface
     protected function calculateShipmentLine(Model\DocumentLineInterface $line, Common\Amount $final): Common\Amount
     {
         if ($line->getType() !== Model\DocumentLineTypes::TYPE_SHIPMENT) {
-            throw new LogicException(sprintf(
-                "Expected document line with type '%s'.",
-                Model\DocumentLineTypes::TYPE_SHIPMENT
-            ));
+            throw new LogicException(
+                sprintf(
+                    "Expected document line with type '%s'.",
+                    Model\DocumentLineTypes::TYPE_SHIPMENT
+                )
+            );
         }
 
         $sale = $line->getDocument()->getSale();
@@ -292,6 +299,19 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
         if ($document->getTaxesDetails() !== $taxesDetails) {
             $document->setTaxesDetails($taxesDetails);
+            $this->changed = true;
+        }
+
+        // Includes
+        $includes = [];
+        foreach ($final->getIncludedAdjustments() as $include) {
+            $includes[] = [
+                'name'   => $include->getName(),
+                'amount' => $include->getAmount(),
+            ];
+        }
+        if ($document->getIncludedDetails() !== $includes) {
+            $document->setIncludedDetails($includes);
             $this->changed = true;
         }
 
@@ -358,6 +378,28 @@ class DocumentCalculator implements DocumentCalculatorInterface
         }
         if ($taxRates !== $line->getTaxRates()) {
             $line->setTaxRates($taxRates);
+            $this->changed = true;
+        }
+
+        // Includes
+        $includes = [];
+        if (!empty($adjustments = $result->getIncludedAdjustments())) {
+            foreach ($adjustments as $adjustment) {
+                $includes[] = [
+                    'name'   => $adjustment->getName(),
+                    'amount' => $adjustment->getAmount(),
+                ];
+            }
+        }
+        if ($includes !== $line->getIncludedDetails()) {
+            $line->setIncludedDetails($includes);
+            $this->changed = true;
+        }
+
+        // Included
+        $included = $this->viewHelper->buildIncludesDescription($result, $line->getQuantity());
+        if ($included !== $line->getIncluded()) {
+            $line->setIncluded($included);
             $this->changed = true;
         }
 

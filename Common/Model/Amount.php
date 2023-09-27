@@ -26,6 +26,8 @@ final class Amount
     private array $discounts;
     /** @var array<Adjustment> */
     private array $taxes;
+    /** @var array<Adjustment> */
+    private array $included;
 
 
     /**
@@ -41,7 +43,8 @@ final class Amount
         Decimal $tax = null,
         Decimal $total = null,
         array   $discounts = [],
-        array   $taxes = []
+        array   $taxes = [],
+        array   $included = [],
     ) {
         $this->currency = $currency;
         $this->unit = $unit ?: new Decimal(0);
@@ -53,6 +56,7 @@ final class Amount
 
         $this->taxes = $taxes;
         $this->discounts = $discounts;
+        $this->included = $included;
     }
 
     public function getCurrency(): string
@@ -152,6 +156,27 @@ final class Amount
         $this->tax += $amount;
     }
 
+    /**
+     * @return Adjustment[]
+     */
+    public function getIncludedAdjustments(): array
+    {
+        return $this->included;
+    }
+
+    public function addIncludedAdjustment(Adjustment $included): void
+    {
+        foreach ($this->included as $t) {
+            if ($t->isSameAs($included)) {
+                $t->addAmount($included->getAmount());
+
+                return;
+            }
+        }
+
+        $this->included[] = clone $included;
+    }
+
     public function getTotal(): Decimal
     {
         return $this->total;
@@ -200,6 +225,10 @@ final class Amount
             foreach ($amount->getTaxAdjustments() as $a) {
                 $this->addTaxAdjustment($a);
             }
+
+            foreach ($amount->getIncludedAdjustments() as $a) {
+                $this->addIncludedAdjustment($a);
+            }
         }
     }
 
@@ -212,7 +241,7 @@ final class Amount
     }
 
     /**
-     * Rounds the tax adjustments amounts.
+     * Rounds the tax adjustment's amounts.
      */
     public function finalize(): void
     {
@@ -245,6 +274,8 @@ final class Amount
         });
 
         $this->taxes = $new;
+
+        // TODO Same with included ?
     }
 
     /**
@@ -276,6 +307,9 @@ final class Amount
         );
         foreach ($gross->getTaxAdjustments() as $t) {
             $final->addTaxAdjustment($t);
+        }
+        foreach ($gross->getIncludedAdjustments() as $t) {
+            $final->addIncludedAdjustment($t);
         }
 
         return $final;

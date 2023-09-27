@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Common\Updater;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Builder\AddressBuilderInterface;
-use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
+use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
@@ -31,7 +31,7 @@ class SaleUpdater implements SaleUpdaterInterface
 {
     public function __construct(
         private readonly AddressBuilderInterface           $addressBuilder,
-        private readonly AdjustmentBuilderInterface        $adjustmentBuilder,
+        private readonly SaleAdjustmentBuilderInterface    $adjustmentBuilder,
         private readonly AmountCalculatorFactory           $calculatorFactory,
         private readonly CurrencyConverterInterface        $currencyConverter,
         private readonly WeightCalculatorInterface         $weightCalculator,

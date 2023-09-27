@@ -1,13 +1,20 @@
 <?php
+/** @noinspection PhpMethodNamingConventionInspection */
+
+declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Tests\Common\Builder;
 
+use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilder;
 use Ekyna\Component\Commerce\Common\Builder\AdjustmentBuilderInterface;
+use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilder;
+use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentData;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentModes;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
+use Ekyna\Component\Commerce\Order\Entity\OrderItemAdjustment;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\TestCase;
 
@@ -16,24 +23,25 @@ use Ekyna\Component\Commerce\Tests\TestCase;
  * @package Ekyna\Component\Commerce\Tests\Common\Builder
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class AdjustmentBuilderTest extends TestCase
+class SaleAdjustmentBuilderTest extends TestCase
 {
-    /**
-     * @var AdjustmentBuilderInterface
-     */
-    private $builder;
-
+    private ?AdjustmentBuilderInterface     $adjustmentBuilder     = null;
+    private ?SaleAdjustmentBuilderInterface $saleAdjustmentBuilder = null;
 
     /**
      * @inheritDoc
      */
     protected function setUp(): void
     {
-        $this->builder = new AdjustmentBuilder(
-            $this->getSaleFactory(),
+        $this->adjustmentBuilder = new AdjustmentBuilder(
+            $this->getFactoryHelperMock(),
+            $this->getPersistenceHelperMock(),
+        );
+
+        $this->saleAdjustmentBuilder = new SaleAdjustmentBuilder(
+            $this->adjustmentBuilder,
             $this->getTaxResolverMock(),
             $this->getDiscountResolverMock(),
-            $this->getPersistenceHelperMock()
         );
     }
 
@@ -44,11 +52,12 @@ class AdjustmentBuilderTest extends TestCase
     {
         parent::tearDown();
 
-        $this->builder = null;
+        $this->saleAdjustmentBuilder = null;
+        $this->adjustmentBuilder = null;
     }
 
     /**
-     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
+     * @covers SaleAdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withSingleItem()
     {
@@ -57,21 +66,30 @@ class AdjustmentBuilderTest extends TestCase
 
         // Given the discount resolver will return a 7% discount adjustment data.
         $this
+            ->getFactoryHelperMock()
+            ->method('createAdjustmentFor')
+            ->with($item)
+            ->willReturn(new OrderItemAdjustment());
+
+        // Given the discount resolver will return a 7% discount adjustment data.
+        $this
             ->getDiscountResolverMock()
             ->method('resolveSaleItem')
             ->with($item)
-            ->willReturn([new AdjustmentData(AdjustmentModes::MODE_PERCENT, 'Discount 7%', 7, 'test')]);
+            ->willReturn([
+                new AdjustmentData(AdjustmentModes::MODE_PERCENT, 'Discount 7%', new Decimal(7), 'test'),
+            ]);
 
-        $this->builder->buildSaleItemDiscountAdjustments($item);
+        $this->saleAdjustmentBuilder->buildSaleItemDiscountAdjustments($item);
 
         $adjustments = $item->getAdjustments();
-        $this->assertCount(1, $adjustments);
+        self::assertCount(1, $adjustments);
 
         $this->assertDiscount($adjustments[0], 7, 'Discount 7%', $item);
     }
 
     /**
-     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
+     * @covers SaleAdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withParentItemAndPublicChildren()
     {
@@ -81,7 +99,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
+     * @covers SaleAdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildItemDiscount_withParentItemAndPrivateChildren()
     {
@@ -91,7 +109,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
+     * @covers SaleAdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildSaleItemDiscount_withComposedItemAndPublicChildren()
     {
@@ -101,7 +119,7 @@ class AdjustmentBuilderTest extends TestCase
     }
 
     /**
-     * @covers AdjustmentBuilder::buildSaleItemDiscountAdjustments()
+     * @covers SaleAdjustmentBuilder::buildSaleItemDiscountAdjustments()
      */
     public function test_buildSaleItemDiscount_withComposedItemAndPriveChildren()
     {
@@ -120,12 +138,12 @@ class AdjustmentBuilderTest extends TestCase
      * @param string              $designation
      * @param mixed               $adjustable
      */
-    private function assertDiscount(AdjustmentInterface $discount, $amount, $designation, $adjustable)
+    private function assertDiscount(AdjustmentInterface $discount, $amount, $designation, $adjustable): void
     {
-        $this->assertEquals(AdjustmentTypes::TYPE_DISCOUNT, $discount->getType());
-        $this->assertEquals($amount, $discount->getAmount());
-        $this->assertEquals($designation, $discount->getDesignation());
-        $this->assertTrue($discount->isImmutable());
-        $this->assertEquals($adjustable, $discount->getAdjustable());
+        self::assertEquals(AdjustmentTypes::TYPE_DISCOUNT, $discount->getType());
+        self::assertEquals(new Decimal((string)$amount), $discount->getAmount());
+        self::assertEquals($designation, $discount->getDesignation());
+        self::assertTrue($discount->isImmutable());
+        self::assertEquals($adjustable, $discount->getAdjustable());
     }
 }

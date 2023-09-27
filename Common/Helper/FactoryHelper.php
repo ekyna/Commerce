@@ -127,67 +127,56 @@ class FactoryHelper implements FactoryHelperInterface
 
     public function createAttachmentForSale(Model\SaleInterface $sale): Model\SaleAttachmentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::ATTACHMENT, $sale);
     }
 
     public function createNotificationForSale(Model\SaleInterface $sale): Model\SaleNotificationInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::NOTIFICATION, $sale);
     }
 
     public function createAdjustmentForItem(Model\SaleItemInterface $item): Model\AdjustmentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::ITEM_ADJUSTMENT, $item);
     }
 
     public function createStockAssignmentForItem(Model\SaleItemInterface $item): Stock\StockAssignmentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::ITEM_STOCK_ASSIGNMENT, $item);
     }
 
     public function createAdjustmentForSale(Model\SaleInterface $sale): Model\AdjustmentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::ADJUSTMENT, $sale);
     }
 
     public function createItemForSale(Model\SaleInterface $sale): Model\SaleItemInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::ITEM, $sale);
     }
 
     public function createItemForShipment(Shipment\ShipmentInterface $shipment): Shipment\ShipmentItemInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::SHIPMENT_ITEM, $shipment);
     }
 
     public function createLineForInvoice(Invoice\InvoiceInterface $invoice): Invoice\InvoiceLineInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::INVOICE_LINE, $invoice);
     }
 
     public function createPaymentForSale(Model\SaleInterface $sale): Payment\PaymentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::PAYMENT, $sale);
     }
 
     public function createShipmentForSale(Model\SaleInterface $sale): Shipment\ShipmentInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::SHIPMENT, $sale);
     }
 
     public function createInvoiceForSale(Model\SaleInterface $sale): Invoice\InvoiceInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->resolveClassAndCreateObject(self::INVOICE, $sale);
     }
 

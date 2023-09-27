@@ -24,6 +24,7 @@
         <field name="shipmentBase" column="shipment_base" type="php_decimal" precision="15" scale="5"/>
         <field name="taxesTotal" column="taxes_total" type="php_decimal" precision="15" scale="5"/>
         <field name="taxesDetails" column="taxes_details" type="json"/>
+        <field name="includedDetails" column="included_details" type="json"/>
         <field name="grandTotal" column="grand_total" type="php_decimal" precision="15" scale="5">
             <options>
                 <option name="comment">The grand total in sale currency.</option>
