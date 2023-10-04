@@ -57,7 +57,7 @@ class PaymentValidator extends ConstraintValidator
             return;
         }
 
-        if (in_array('Checkout', $constraint->groups, true)) {
+        if ('Checkout' === $this->context->getGroup()) {
             // Abort as we need the sale for further validation, and it's
             // not available when payment is created through CheckoutManager.
             return;

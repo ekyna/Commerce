@@ -60,6 +60,7 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
     public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject): ?DateTimeInterface
     {
+        // TODO Greater than today ?
         $result = $this
             ->getGetMinEdaBySubjectQuery()
             ->setParameters([

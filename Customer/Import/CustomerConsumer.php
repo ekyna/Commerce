@@ -112,7 +112,7 @@ class CustomerConsumer extends AbstractConsumer
 
     protected function validateResource(): bool
     {
-        $skip = $this->config->isSkipDuplicateEmail();
+        $skip = $this->config->isSkipDuplicateEmail(); // TODO Database does not allow duplicate email
         if (!empty($email = $this->resource->getEmail())) {
             if ($skip && $this->getCustomerRepository()->findOneByEmail($email)) {
                 return false;

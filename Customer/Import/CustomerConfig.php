@@ -20,6 +20,7 @@ use Ekyna\Component\Resource\Import\AbstractConfig;
 class CustomerConfig extends AbstractConfig
 {
     protected static array $definitions = [
+        // TODO 'prefix' => [], // to prefix company
         'company'              => ['field.company', 'EkynaUi'],
         'companyNumber'        => ['customer.field.company_number', 'EkynaCommerce'],
         'email'                => ['field.email', 'EkynaUi'],

@@ -10,6 +10,8 @@ use Generator;
  * Class Combination
  * @package Ekyna\Component\Commerce\Common\Util
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO Use drupol/phpermutations ?
  */
 final class Combination
 {

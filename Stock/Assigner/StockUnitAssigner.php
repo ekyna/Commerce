@@ -30,6 +30,9 @@ use function sprintf;
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
  * This class is responsible for assigning sale items to stock units.
+ *
+ * TODO Use InvoiceSubjectCalculator to get sold quantity.
+ *      Update regarding difference between this result and stock assignments sold quantity sum.
  */
 class StockUnitAssigner implements StockUnitAssignerInterface
 {

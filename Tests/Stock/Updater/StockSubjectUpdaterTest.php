@@ -48,10 +48,10 @@ class StockSubjectUpdaterTest extends TestCase
      * @dataProvider provideUpdate
      */
     public function testUpdate(
-        array      $result,
-        Product    $subject,
-        array      $units = [],
-        DateTime   $eda = null,
+        array $result,
+        Product $subject,
+        array $units = [],
+        DateTime $eda = null,
         string|int $available = 0
     ): void {
         $this
@@ -503,10 +503,10 @@ class StockSubjectUpdaterTest extends TestCase
 
         yield 'Compound 7' => [
             [
-                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
-                'state'     => StockSubjectStates::STATE_IN_STOCK,
-                'virtual'   => 10,
-                'eda'       => $eda,
+                'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'   => StockSubjectStates::STATE_IN_STOCK,
+                'virtual' => 10,
+                'eda'     => $eda,
             ],
             $subject,
         ];
@@ -541,6 +541,45 @@ class StockSubjectUpdaterTest extends TestCase
                 'in'        => 16,
                 'available' => 16,
                 'eda'       => null,
+            ],
+            $subject,
+        ];
+
+        $subject = Fixture::subject(['mode' => StockSubjectModes::MODE_DISABLED]);
+        $subject->setStockCompound(true);
+        $subject->setStockComposition([
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 0,
+                    'virtual'   => 20,
+                    'eda'       => $eda = new DateTime('+2 days'),
+                ]),
+                new Decimal(1)
+            ),
+            new StockComponent(
+                Fixture::subject([
+                    'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                    'state'     => StockSubjectStates::STATE_IN_STOCK,
+                    'in'        => 20,
+                    'available' => 20,
+                    'virtual'   => 20,
+                    'eda'       => new DateTime('+3 days'),
+                ]),
+                new Decimal(1)
+            ),
+        ]);
+
+        yield 'Compound 9' => [
+            [
+                'mode'      => StockSubjectModes::MODE_JUST_IN_TIME,
+                'state'     => StockSubjectStates::STATE_IN_STOCK,
+                'in'        => 20,
+                'available' => 0,
+                'virtual'   => 20,
+                'eda'       => $eda,
             ],
             $subject,
         ];
@@ -587,7 +626,7 @@ class StockSubjectUpdaterTest extends TestCase
             ],
         ]);
 
-        yield 'Compound 9' => [
+        yield 'Compound 10' => [
             [
                 'mode'    => StockSubjectModes::MODE_JUST_IN_TIME,
                 'state'   => StockSubjectStates::STATE_IN_STOCK,
