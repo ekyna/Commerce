@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Customer\EventListener;
 
+use Ekyna\Component\Commerce\Customer\Helper\FlagHelper;
 use Ekyna\Component\Commerce\Customer\Model\CustomerAddressInterface;
+use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
@@ -17,12 +19,12 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class CustomerAddressListener
 {
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected bool                       $enabled = true;
+    protected bool $enabled = true;
 
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
-        $this->persistenceHelper = $persistenceHelper;
+    public function __construct(
+        protected readonly PersistenceHelperInterface $persistenceHelper,
+        protected readonly FlagHelper                 $flagHelper,
+    ) {
     }
 
     /**
@@ -54,7 +56,11 @@ class CustomerAddressListener
             if (!($customer->hasParent() && null !== $customer->getParent()->getDefaultInvoiceAddress())) {
                 throw new IllegalOperationException(); // TODO reason message
             }
-        } elseif ($address->isDeliveryDefault()) {
+
+            return;
+        }
+
+        if ($address->isDeliveryDefault()) {
             if (!($customer->hasParent() && null !== $customer->getParent()->getDefaultDeliveryAddress())) {
                 throw new IllegalOperationException(); // TODO reason message
             }
@@ -74,6 +80,8 @@ class CustomerAddressListener
 
         $this->fixInvoiceDefault($address);
         $this->fixDeliveryDefault($address);
+
+        $this->setInternational($address->getCustomer());
     }
 
     /**
@@ -89,6 +97,8 @@ class CustomerAddressListener
 
         $this->fixInvoiceDefault($address);
         $this->fixDeliveryDefault($address);
+
+        $this->setInternational($address->getCustomer());
     }
 
     /**
@@ -113,7 +123,11 @@ class CustomerAddressListener
                     $this->persistenceHelper->persistAndRecompute($a, false);
                 }
             }
-        } elseif (null === $customer->getDefaultInvoiceAddress(true)) {
+
+            return;
+        }
+
+        if (null === $customer->getDefaultInvoiceAddress(true)) {
             $address->setInvoiceDefault(true);
             $this->persistenceHelper->persistAndRecompute($address, false);
         }
@@ -145,6 +159,19 @@ class CustomerAddressListener
             $address->setDeliveryDefault(true);
             $this->persistenceHelper->persistAndRecompute($address, false);
         }
+    }
+
+    protected function setInternational(CustomerInterface $customer): void
+    {
+        $international = $this->flagHelper->isInternational($customer);
+
+        if ($international === $customer->isInternational()) {
+            return;
+        }
+
+        $customer->setInternational($international);
+
+        $this->persistenceHelper->persistAndRecompute($customer, false);
     }
 
     /**

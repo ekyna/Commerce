@@ -176,6 +176,14 @@ interface CustomerInterface extends
 
     public function setState(string $state): CustomerInterface;
 
+    public function isProspect(): bool;
+
+    public function setProspect(bool $prospect): CustomerInterface;
+
+    public function isInternational(): ?bool;
+
+    public function setInternational(?bool $international): CustomerInterface;
+
     public function getDescription(): ?string;
 
     public function setDescription(?string $description): CustomerInterface;

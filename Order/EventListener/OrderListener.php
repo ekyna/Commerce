@@ -185,6 +185,12 @@ class OrderListener extends AbstractSaleListener
         }
 
         if ($customer && $customer->getId()) {
+            if ($customer->isProspect()) {
+                $customer->setProspect(false);
+
+                $this->persistenceHelper->persistAndRecompute($customer, false);
+            }
+
             $first = !$this->orderRepository->existsForCustomer($customer);
         } else {
             $first = !$this->orderRepository->existsForEmail($order->getEmail());

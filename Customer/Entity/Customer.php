@@ -9,7 +9,6 @@ use DateTimeInterface;
 use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Customer\Model as Model;
 use Ekyna\Component\Commerce\Document\Model\DocumentTypes;
@@ -36,38 +35,42 @@ class Customer extends AbstractResource implements Model\CustomerInterface
     use RM\TimestampableTrait;
     use VatNumberSubjectTrait;
 
-    protected ?string                  $company          = null;
-    protected ?string                  $companyNumber    = null;
-    protected ?string                  $email            = null;
-    protected ?PhoneNumber             $phone            = null;
-    protected ?PhoneNumber             $mobile           = null;
-    protected ?CustomerPosition        $customerPosition = null;
-    protected ?DateTimeInterface       $birthday         = null;
-    protected ?Model\CustomerInterface $parent           = null;
+    protected ?string                         $company              = null;
+    protected ?string                         $companyNumber        = null;
+    protected ?string                         $email                = null;
+    protected ?PhoneNumber                    $phone                = null;
+    protected ?PhoneNumber                    $mobile               = null;
+    protected ?CustomerPosition               $customerPosition     = null;
+    protected ?DateTimeInterface              $birthday             = null;
+    protected ?Model\CustomerInterface        $parent               = null;
+    protected ?Model\CustomerGroupInterface   $customerGroup        = null;
+    protected ?Payment\PaymentMethodInterface $defaultPaymentMethod = null;
+    protected ?CustomerLogo                   $brandLogo            = null;
+    protected ?string                         $brandColor           = null;
+    protected ?string                         $brandUrl             = null;
+    protected ?string                         $documentFooter       = null;
+    protected int                             $loyaltyPoints        = 0;
+    protected Decimal                         $creditBalance;
+    protected Decimal                         $outstandingLimit;
+    protected bool                            $outstandingOverflow  = false;
+    protected Decimal                         $outstandingBalance;
+    protected string                          $state                = Model\CustomerStates::STATE_NEW;
+    protected bool                            $prospect             = true;
+    protected ?bool                           $international        = null;
+    protected ?string                         $description          = null;
+
     /** @var Collection<int, Model\CustomerInterface> */
-    protected Collection                    $children;
-    protected ?Model\CustomerGroupInterface $customerGroup = null;
+    protected Collection $children;
     /** @var Collection<int, Model\CustomerAddressInterface> */
     protected Collection $addresses;
     /** @var Collection<int, Model\CustomerAddressInterface> */
-    protected Collection                      $contacts;
-    protected ?Payment\PaymentMethodInterface $defaultPaymentMethod = null;
+    protected Collection $contacts;
     /** @var Collection<int, Payment\PaymentMethodInterface> */
-    protected Collection    $paymentMethods;
-    protected ?CustomerLogo $brandLogo           = null;
-    protected ?string       $brandColor          = null;
-    protected ?string       $brandUrl            = null;
-    protected ?string       $documentFooter      = null;
-    protected int           $loyaltyPoints       = 0;
-    protected Decimal       $creditBalance;
-    protected Decimal       $outstandingLimit;
-    protected bool          $outstandingOverflow = false;
-    protected Decimal       $outstandingBalance;
-    protected string        $state               = Model\CustomerStates::STATE_NEW;
-    protected ?string       $description         = null;
+    protected Collection $paymentMethods;
+
     /**
      * @var array<string>
-     * @see \Ekyna\Component\Commerce\Document\Model\DocumentTypes
+     * @see DocumentTypes
      */
     protected array $documentTypes = [];
 
@@ -222,9 +225,7 @@ class Customer extends AbstractResource implements Model\CustomerInterface
             return $this;
         }
 
-        if ($this->parent) {
-            $this->parent->removeChild($this);
-        }
+        $this->parent?->removeChild($this);
 
         if ($this->parent = $parent) {
             $this->parent->addChild($this);
@@ -388,9 +389,7 @@ class Customer extends AbstractResource implements Model\CustomerInterface
     public function setBrandLogo(?CustomerLogo $logo): Model\CustomerInterface
     {
         if ($logo !== $this->brandLogo) {
-            if ($this->brandLogo) {
-                $this->brandLogo->setCustomer(null);
-            }
+            $this->brandLogo?->setCustomer(null);
 
             $this->brandLogo = $logo;
 
@@ -528,6 +527,30 @@ class Customer extends AbstractResource implements Model\CustomerInterface
         return $this;
     }
 
+    public function isProspect(): bool
+    {
+        return $this->prospect;
+    }
+
+    public function setProspect(bool $prospect): Model\CustomerInterface
+    {
+        $this->prospect = $prospect;
+
+        return $this;
+    }
+
+    public function isInternational(): ?bool
+    {
+        return $this->international;
+    }
+
+    public function setInternational(?bool $international): Model\CustomerInterface
+    {
+        $this->international = $international;
+
+        return $this;
+    }
+
     public function getDescription(): ?string
     {
         return $this->description;
@@ -548,8 +571,10 @@ class Customer extends AbstractResource implements Model\CustomerInterface
             }
         }
 
-        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('invoiceDefault', true))) {
-            return $address;
+        foreach ($this->addresses as $address) {
+            if ($address->isInvoiceDefault()) {
+                return $address;
+            }
         }
 
         return null;
@@ -563,28 +588,9 @@ class Customer extends AbstractResource implements Model\CustomerInterface
             }
         }
 
-        if (null !== $address = $this->findOneAddressBy(Criteria::expr()->eq('deliveryDefault', true))) {
-            return $address;
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds one address by expression.
-     *
-     * @param mixed $expression
-     */
-    private function findOneAddressBy($expression): ?Model\CustomerAddressInterface
-    {
-        if (0 < $this->addresses->count()) {
-            $criteria = Criteria::create()
-                ->where($expression)
-                ->setMaxResults(1);
-
-            $matches = $this->addresses->matching($criteria);
-            if (1 === $matches->count()) {
-                return $matches->first();
+        foreach ($this->addresses as $address) {
+            if ($address->isDeliveryDefault()) {
+                return $address;
             }
         }
 

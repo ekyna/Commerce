@@ -50,10 +50,11 @@ class CustomerUpdater implements CustomerUpdaterInterface
             $fromAccepted = in_array($stateCs[0], $acceptedStates, true);
             $toAccepted = in_array($stateCs[1], $acceptedStates, true);
 
-            // If payment state has changed from or to a accepted state
+            // If payment state has changed from or to the accepted state
             if ($fromAccepted xor $toAccepted) {
                 // Update the customer balance, use old amount if state changed from accepted.
                 $amount = ($fromAccepted && !empty($amountCs)) ? ($amountCs[0] ?? new Decimal(0)) : null;
+
                 return $this->updateCustomerBalance($payment, $amount);
             }
         }
