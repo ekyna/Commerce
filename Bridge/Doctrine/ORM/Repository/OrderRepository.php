@@ -34,18 +34,26 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 {
     private ?Query $findByAcceptedAtQuery = null;
 
-    public function existsForCustomer(CustomerInterface $customer): bool
+    public function existsForCustomer(CustomerInterface $customer, bool $notSample = false): bool
     {
         $qb = $this->createQueryBuilder('o');
+        $qb
+            ->select('o.id')
+            ->andWhere($qb->expr()->eq('o.customer', ':customer'));
+
+        $parameters = [
+            'customer' => $customer,
+        ];
+
+        if ($notSample) {
+            $qb->andWhere($qb->expr()->eq('o.sample', ':sample'));
+            $parameters['sample'] = false;
+        }
 
         $id = $qb
-            ->select('o.id')
-            ->andWhere($qb->expr()->eq('o.customer', ':customer'))
             ->getQuery()
             ->setMaxResults(1)
-            ->setParameters([
-                'customer' => $customer,
-            ])
+            ->setParameters($parameters)
             ->getOneOrNullResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
 
         return null !== $id;
@@ -72,11 +80,13 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $sale = $qb
             ->join('o.customer', 'c')
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->eq('c', ':customer'),
-                $qb->expr()->eq('c.parent', ':customer'),
-                $qb->expr()->eq('o.originCustomer', ':customer')
-            ))
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->eq('c', ':customer'),
+                    $qb->expr()->eq('c.parent', ':customer'),
+                    $qb->expr()->eq('o.originCustomer', ':customer')
+                )
+            )
             ->andWhere($qb->expr()->eq('o.number', ':number'))
             ->getQuery()
             ->setParameters([
@@ -99,10 +109,12 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         $qb = $this->createQueryBuilder('o');
 
         $qb
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->eq('o.customer', ':customer'),
-                $qb->expr()->eq('o.originCustomer', ':customer')
-            ))
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->eq('o.customer', ':customer'),
+                    $qb->expr()->eq('o.originCustomer', ':customer')
+                )
+            )
             ->addOrderBy('o.createdAt', 'DESC');
 
         $parameters = ['customer' => $customer];
@@ -172,18 +184,20 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
             ->leftJoin('o.paymentTerm', 't')
             ->andWhere($ex->eq('o.sample', ':not_sample'))             // Not sample
             ->andWhere($ex->lt('o.paidTotal', 'o.grandTotal'))         // Paid total lower than grand total
-            ->andWhere($ex->orX(
-                $ex->andX(                                             // Outstanding
-                    $ex->isNotNull('o.paymentTerm'),                   // - With payment term
-                    $this->getDueClauses(),                            // - Terms triggered
-                    // - Payment limit date lower than or equal today
-                    $qb->expr()->lte('o.outstandingDate', ':today')
-                ),
-                $ex->andX(                                             // Regular
-                    $ex->isNull('o.paymentTerm'),                      // - Without payment term
-                    $ex->eq('o.shipmentState', ':state_fully_shipped') // - Shipped
+            ->andWhere(
+                $ex->orX(
+                    $ex->andX(                                             // Outstanding
+                        $ex->isNotNull('o.paymentTerm'),                   // - With payment term
+                        $this->getDueClauses(),                            // - Terms triggered
+                        // - Payment limit date lower than or equal today
+                        $qb->expr()->lte('o.outstandingDate', ':today')
+                    ),
+                    $ex->andX(                                             // Regular
+                        $ex->isNull('o.paymentTerm'),                      // - Without payment term
+                        $ex->eq('o.shipmentState', ':state_fully_shipped') // - Shipped
+                    )
                 )
-            ))
+            )
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->getQuery();
 
@@ -334,7 +348,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $total = new Decimal(0);
         foreach ($orders as $order) {
-            $total+= $order['grandTotal']->sub($order['invoiceTotal']);
+            $total += $order['grandTotal']->sub($order['invoiceTotal']);
         }
 
         return $total;
@@ -412,28 +426,32 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         $qb
             ->select('o')
             ->leftJoin('o.invoices', 'i', Expr\Join::WITH, $ex->eq('i.credit', ':credit')) // Only invoices
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':sample'), // Not sample
-                $ex->eq('o.state', ':state')    // Accepted
-            ))
+            ->where(
+                $ex->andX(
+                    $ex->eq('o.sample', ':sample'), // Not sample
+                    $ex->eq('o.state', ':state')    // Accepted
+                )
+            )
             ->groupBy('o.id')
-            ->having($ex->orX(
-                $ex->eq($ex->count('i'), 0), // Not invoiced
-                $ex->andX(
-                    $ex->eq($ex->count('i'), 1), // Single invoice
-                    // invoice-credit total lower than grand total
-                    $ex->lt('o.invoiceTotal', 'o.grandTotal')
-                ),
-                $ex->andX(
-                    $ex->gt($ex->count('i'), 1), // Multiple invoices
-                    // Allow difference between grand total and invoice-credit total
-                    // by two cents per invoice
-                    $ex->gt(
-                        $ex->diff('o.grandTotal', 'o.invoiceTotal'),
-                        $ex->prod($ex->count('i'), '0.02')
+            ->having(
+                $ex->orX(
+                    $ex->eq($ex->count('i'), 0), // Not invoiced
+                    $ex->andX(
+                        $ex->eq($ex->count('i'), 1), // Single invoice
+                        // invoice-credit total lower than grand total
+                        $ex->lt('o.invoiceTotal', 'o.grandTotal')
+                    ),
+                    $ex->andX(
+                        $ex->gt($ex->count('i'), 1), // Multiple invoices
+                        // Allow difference between grand total and invoice-credit total
+                        // by two cents per invoice
+                        $ex->gt(
+                            $ex->diff('o.grandTotal', 'o.invoiceTotal'),
+                            $ex->prod($ex->count('i'), '0.02')
+                        )
                     )
                 )
-            ))
+            )
             ->addOrderBy('o.createdAt', 'ASC')
             ->setParameter('credit', false)
             ->setParameter('sample', false)
@@ -451,13 +469,15 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
         $ex = $qb->expr();
 
         return $qb
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),                    // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
-                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
-                $ex->eq('o.shipmentState', ':shipped'),                // Shipped
-                $ex->isNull('o.paymentTerm')                           // Without payment term
-            ))
+            ->where(
+                $ex->andX(
+                    $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                    $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                    $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                    $ex->eq('o.shipmentState', ':shipped'),                // Shipped
+                    $ex->isNull('o.paymentTerm')                           // Without payment term
+                )
+            )
             ->addOrderBy('o.createdAt', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('shipped', ShipmentStates::STATE_COMPLETED)
@@ -474,13 +494,15 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $qb
             ->join('o.paymentTerm', 't')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),                    // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
-                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
-                $qb->expr()->lte('o.outstandingDate', ':today'),       // Payment limit date lower than today
-                $this->getDueClauses()                                 // Terms triggered
-            ))
+            ->where(
+                $ex->andX(
+                    $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                    $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                    $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                    $qb->expr()->lte('o.outstandingDate', ':today'),       // Payment limit date lower than today
+                    $this->getDueClauses()                                 // Terms triggered
+                )
+            )
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
@@ -501,13 +523,15 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $qb
             ->join('o.paymentTerm', 't')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),                    // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
-                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
-                $qb->expr()->gt('o.outstandingDate', ':today'),        // Payment limit date greater than today
-                $this->getDueClauses()                                 // Terms triggered
-            ))
+            ->where(
+                $ex->andX(
+                    $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                    $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                    $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                    $qb->expr()->gt('o.outstandingDate', ':today'),        // Payment limit date greater than today
+                    $this->getDueClauses()                                 // Terms triggered
+                )
+            )
             ->addOrderBy('o.outstandingDate', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('today', (new DateTime())->setTime(23, 59, 59, 999999), Types::DATETIME_MUTABLE)
@@ -528,12 +552,14 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         $qb
             ->join('o.paymentTerm', 't')
-            ->where($ex->andX(
-                $ex->eq('o.sample', ':not_sample'),                    // Not sample
-                $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
-                $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
-                $ex->not($this->getDueClauses())                       // Terms not triggered
-            ))
+            ->where(
+                $ex->andX(
+                    $ex->eq('o.sample', ':not_sample'),                    // Not sample
+                    $ex->lt('o.paidTotal', 'o.grandTotal'),                // Paid total lower than grand total
+                    $ex->notIn('o.invoiceState', ':canceled_or_refunded'), // Not canceled/refunded
+                    $ex->not($this->getDueClauses())                       // Terms not triggered
+                )
+            )
             ->addOrderBy('o.createdAt', 'ASC')
             ->setParameter('not_sample', false)
             ->setParameter('canceled_or_refunded', [InvoiceStates::STATE_CANCELED, InvoiceStates::STATE_CREDITED]);

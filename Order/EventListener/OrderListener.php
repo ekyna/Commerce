@@ -178,6 +178,10 @@ class OrderListener extends AbstractSaleListener
      */
     protected function setIsFirst(OrderInterface $order): bool
     {
+        if ($order->isSample()) {
+            return false;
+        }
+
         if ($customer = $order->getCustomer()) {
             if ($customer->hasParent()) {
                 $customer = $customer->getParent();

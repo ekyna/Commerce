@@ -22,7 +22,7 @@ class FlagHelper
 
     public function isProspect(CustomerInterface $customer): bool
     {
-        return !$this->orderRepository->existsForCustomer($customer);
+        return !$this->orderRepository->existsForCustomer($customer, true);
     }
 
     public function isInternational(CustomerInterface $customer): ?bool

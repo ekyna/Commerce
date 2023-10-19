@@ -24,7 +24,7 @@ interface OrderRepositoryInterface extends SaleRepositoryInterface
     /**
      * Returns whether an order exists for the given customer.
      */
-    public function existsForCustomer(CustomerInterface $customer): bool;
+    public function existsForCustomer(CustomerInterface $customer, bool $notSample = false): bool;
 
     /**
      * Returns whether an order exists for the given email.
