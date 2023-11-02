@@ -73,16 +73,10 @@ class SupplierOrderStateResolver extends AbstractStateResolver
             $resolved = SupplierOrderStates::STATE_PARTIAL;
 
             if ($ordered == $received) {
-                $resolved = SupplierOrderStates::STATE_COMPLETED;
+                $resolved = SupplierOrderStates::STATE_RECEIVED;
 
-                if (null === $subject->getPaymentDate()) {
-                    $resolved = SupplierOrderStates::STATE_RECEIVED;
-                } elseif (
-                    $subject->getCarrier()
-                    && 0 < $subject->getForwarderTotal()
-                    && is_null($subject->getForwarderDate())
-                ) {
-                    $resolved = SupplierOrderStates::STATE_RECEIVED;
+                if ($subject->isPaid()) {
+                    $resolved = SupplierOrderStates::STATE_COMPLETED;
                 }
             }
         }

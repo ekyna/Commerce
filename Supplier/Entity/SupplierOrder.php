@@ -10,6 +10,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Commerce\Supplier\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderAttachmentInterface;
@@ -24,6 +27,7 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
 class SupplierOrder extends AbstractResource implements Model\SupplierOrderInterface
 {
     use Common\ExchangeSubjectTrait;
+    // TODO (Remove ExchangeSubjectTrait) use Common\CurrencySubjectTrait;
     use Common\NumberSubjectTrait;
     use Common\StateSubjectTrait;
     use TimestampableTrait;
@@ -38,26 +42,28 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     protected Collection $deliveries;
     /** @var Collection<int, Model\SupplierOrderAttachmentInterface> */
     protected Collection $attachments;
+    /** @var Collection<int, Model\SupplierPaymentInterface> */
+    protected Collection $payments;
 
-    protected Decimal $shippingCost;
-    protected Decimal $discountTotal;
-    protected Decimal $taxTotal;
-    protected Decimal $paymentTotal;
-
-    protected ?DateTimeInterface $paymentDate    = null;
+    protected Decimal            $shippingCost;
+    protected Decimal            $discountTotal;
+    protected Decimal            $taxTotal;
+    protected Decimal            $paymentTotal;
+    protected Decimal            $paymentPaidTotal;
+    protected ?DateTimeInterface $paymentDate    = null; // TODO Remove
     protected ?DateTimeInterface $paymentDueDate = null;
 
-    protected Decimal $customsTax;
-    protected Decimal $customsVat;
-    protected Decimal $forwarderFee;
-    protected Decimal $forwarderTotal;
+    protected Decimal            $customsTax;
+    protected Decimal            $customsVat;
+    protected Decimal            $forwarderFee;
+    protected Decimal            $forwarderTotal;
+    protected Decimal            $forwarderPaidTotal;
+    protected ?DateTimeInterface $forwarderDate    = null; // TODO Remove
+    protected ?DateTimeInterface $forwarderDueDate = null;
 
-    protected ?DateTimeInterface $forwarderDate          = null;
-    protected ?DateTimeInterface $forwarderDueDate       = null;
     protected ?DateTimeInterface $estimatedDateOfArrival = null;
-
-    protected ?array  $trackingUrls = null;
-    protected ?string $description  = null;
+    protected ?array             $trackingUrls           = null;
+    protected ?string            $description            = null;
 
     protected ?DateTimeInterface $orderedAt   = null;
     protected ?DateTimeInterface $completedAt = null;
@@ -71,14 +77,17 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
         $this->discountTotal = new Decimal(0);
         $this->taxTotal = new Decimal(0);
         $this->paymentTotal = new Decimal(0);
+        $this->paymentPaidTotal = new Decimal(0);
         $this->customsTax = new Decimal(0);
         $this->customsVat = new Decimal(0);
         $this->forwarderFee = new Decimal(0);
         $this->forwarderTotal = new Decimal(0);
+        $this->forwarderPaidTotal = new Decimal(0);
 
         $this->items = new ArrayCollection();
         $this->deliveries = new ArrayCollection();
         $this->attachments = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -244,6 +253,57 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
         return $this->attachments;
     }
 
+    public function hasPayments(bool $toForwarder = null): bool
+    {
+        if (null === $toForwarder) {
+            return !$this->payments->isEmpty();
+        }
+
+        foreach ($this->payments as $payment) {
+            if ($toForwarder === $payment->isToForwarder()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasPayment(Model\SupplierPaymentInterface $payment): bool
+    {
+        return $this->payments->contains($payment);
+    }
+
+    public function addPayment(Model\SupplierPaymentInterface $payment): Model\SupplierOrderInterface
+    {
+        if (!$this->hasPayment($payment)) {
+            $this->payments->add($payment);
+            $payment->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Model\SupplierPaymentInterface $payment): Model\SupplierOrderInterface
+    {
+        if ($this->hasPayment($payment)) {
+            $this->payments->removeElement($payment);
+            $payment->setOrder(null);
+        }
+
+        return $this;
+    }
+
+    public function getPayments(bool $toForwarder = null): Collection
+    {
+        if (null === $toForwarder) {
+            return $this->payments;
+        }
+
+        return $this->payments->filter(
+            static fn(Model\SupplierPaymentInterface $p): bool => $toForwarder === $p->isToForwarder()
+        );
+    }
+
     public function getShippingCost(): Decimal
     {
         return $this->shippingCost;
@@ -288,6 +348,18 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     public function setPaymentTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->paymentTotal = $amount;
+
+        return $this;
+    }
+
+    public function getPaymentPaidTotal(): Decimal
+    {
+        return $this->paymentPaidTotal;
+    }
+
+    public function setPaymentPaidTotal(Decimal $amount): Model\SupplierOrderInterface
+    {
+        $this->paymentPaidTotal = $amount;
 
         return $this;
     }
@@ -360,6 +432,18 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     public function setForwarderTotal(Decimal $amount): Model\SupplierOrderInterface
     {
         $this->forwarderTotal = $amount;
+
+        return $this;
+    }
+
+    public function getForwarderPaidTotal(): Decimal
+    {
+        return $this->forwarderPaidTotal;
+    }
+
+    public function setForwarderPaidTotal(Decimal $amount): Model\SupplierOrderInterface
+    {
+        $this->forwarderPaidTotal = $amount;
 
         return $this;
     }
@@ -448,19 +532,68 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
         return $this;
     }
 
+    public function isPaid(): bool
+    {
+        return $this->paymentPaidTotal->equals($this->paymentTotal)
+            && $this->forwarderPaidTotal->equals($this->forwarderTotal);
+    }
+
     public function getBaseCurrency(): ?string
     {
-        if ($this->currency) {
-            return $this->currency->getCode();
-        }
-
-        return null;
+        return $this->currency?->getCode();
     }
 
     public function getLocale(): ?string
     {
-        if ($this->supplier) {
-            return $this->supplier->getLocale();
+        return $this->supplier?->getLocale();
+    }
+
+    // TODO Remove next exchange rate & date methods
+
+    public function getExchangeRate(): ?Decimal
+    {
+        return $this->exchangeRate ?? $this->resolveExchangeRate();
+    }
+
+    /**
+     * @return $this|ExchangeSubjectInterface
+     */
+    public function setExchangeRate(?Decimal $rate): ExchangeSubjectInterface
+    {
+        throw new LogicException("Supplier order's exchange rate is resolved payments.");
+    }
+
+    public function getExchangeDate(): ?DateTimeInterface
+    {
+        return $this->exchangeDate ?? $this->resolveExchangeDate();
+    }
+
+    /**
+     * @return $this|ExchangeSubjectInterface
+     */
+    public function setExchangeDate(?DateTimeInterface $date): ExchangeSubjectInterface
+    {
+        throw new LogicException("Supplier order's exchange date is resolved payments.");
+    }
+
+    private function resolveExchangeDate(): ?DateTimeInterface
+    {
+        return $this->getFirstValidCapturedPayment()?->getExchangeDate();
+    }
+
+    private function resolveExchangeRate(): ?Decimal
+    {
+        return $this->getFirstValidCapturedPayment()?->getExchangeRate();
+    }
+
+    private function getFirstValidCapturedPayment(): ?Model\SupplierPaymentInterface
+    {
+        foreach ($this->getPayments(false) as $payment) {
+            if (PaymentStates::STATE_CAPTURED !== $payment->getState()) {
+                continue;
+            }
+
+            return $payment;
         }
 
         return null;

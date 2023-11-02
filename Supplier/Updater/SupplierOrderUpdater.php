@@ -6,7 +6,6 @@ namespace Ekyna\Component\Commerce\Supplier\Updater;
 
 use DateTime;
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderCalculatorInterface;
@@ -20,22 +19,11 @@ use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
  */
 class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
 {
-    protected GeneratorInterface $numberGenerator;
-    protected StateResolverInterface $stateResolver;
-    protected SupplierOrderCalculatorInterface $calculator;
-    protected CurrencyConverterInterface $currencyConverter;
-
-
     public function __construct(
-        GeneratorInterface $numberGenerator,
-        StateResolverInterface $stateResolver,
-        SupplierOrderCalculatorInterface $calculator,
-        CurrencyConverterInterface $currencyConverter)
-    {
-        $this->numberGenerator = $numberGenerator;
-        $this->stateResolver = $stateResolver;
-        $this->calculator = $calculator;
-        $this->currencyConverter = $currencyConverter;
+        protected readonly GeneratorInterface               $numberGenerator,
+        protected readonly StateResolverInterface           $stateResolver,
+        protected readonly SupplierOrderCalculatorInterface $calculator,
+    ) {
     }
 
     public function updateCurrency(SupplierOrderInterface $order): bool
@@ -81,31 +69,6 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         $order->setNumber($this->numberGenerator->generate($order));
 
         return true;
-    }
-
-    public function updateState(SupplierOrderInterface $order): bool
-    {
-        $changed = $this->stateResolver->resolve($order);
-
-        // If state is canceled, clear dates
-        if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
-            $order
-                ->setEstimatedDateOfArrival(null)
-                ->setPaymentDate(null)
-                ->setForwarderDate(null)
-                ->setCompletedAt(null);
-        }
-        // If order state is 'completed' and 'competed at' date is not set
-        elseif (
-            ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
-            && is_null($order->getCompletedAt())
-        ) {
-            // Set the 'completed at' date
-            $order->setCompletedAt(new DateTime());
-            $changed = true;
-        }
-
-        return $changed;
     }
 
     public function updateTotals(SupplierOrderInterface $order): bool
@@ -160,23 +123,46 @@ class SupplierOrderUpdater implements SupplierOrderUpdaterInterface
         return $changed;
     }
 
-    public function updateExchangeRate(SupplierOrderInterface $order): bool
+    public function updatePaidTotals(SupplierOrderInterface $order): bool
     {
-        // TODO Remove when supplier order payments will be implemented.
-        if (null !== $order->getExchangeRate()) {
-            return false;
+        $changed = false;
+
+        $total = $this->calculator->calculateSupplierPaidTotal($order);
+        if (!$total->equals($order->getPaymentPaidTotal())) {
+            $order->setPaymentPaidTotal($total);
+            $changed = true;
         }
 
-        if (SupplierOrderStates::isDeletableState($order->getState())) {
-            return false;
+        $total = $this->calculator->calculateForwarderPaidTotal($order);
+        if (!$total->equals($order->getForwarderPaidTotal())) {
+            $order->setForwarderPaidTotal($total);
+            $changed = true;
         }
 
-        if (null === $date = $order->getPaymentDate()) {
-            return false;
+        return $changed;
+    }
+
+    public function updateState(SupplierOrderInterface $order): bool
+    {
+        $changed = $this->stateResolver->resolve($order);
+
+        // If state is canceled, clear dates
+        if ($order->getState() === SupplierOrderStates::STATE_CANCELED) {
+            $order
+                ->setEstimatedDateOfArrival(null)
+                ->setPaymentDate(null)
+                ->setForwarderDate(null)
+                ->setCompletedAt(null);
+        } // If order state is 'completed' and 'competed at' date is not set
+        elseif (
+            ($order->getState() === SupplierOrderStates::STATE_COMPLETED)
+            && is_null($order->getCompletedAt())
+        ) {
+            // Set the 'completed at' date
+            $order->setCompletedAt(new DateTime());
+            $changed = true;
         }
 
-        $order->setExchangeDate($date);
-
-        return $this->currencyConverter->setSubjectExchangeRate($order);
+        return $changed;
     }
 }

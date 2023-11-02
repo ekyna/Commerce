@@ -29,6 +29,7 @@
         <field name="discountTotal" column="discount_total" type="php_decimal" precision="15" scale="5"/>
         <field name="taxTotal" column="tax_total" type="php_decimal" precision="15" scale="5"/>
         <field name="paymentTotal" column="payment_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="paymentPaidTotal" column="payment_paid_total" type="php_decimal" precision="15" scale="5"/>
         <field name="paymentDate" column="payment_date" type="date" nullable="true"/>
         <field name="paymentDueDate" column="payment_due_date" type="date" nullable="true"/>
 
@@ -36,6 +37,7 @@
         <field name="customsTax" column="customs_tax" type="php_decimal" precision="15" scale="5"/>
         <field name="customsVat" column="customs_vat" type="php_decimal" precision="15" scale="5"/>
         <field name="forwarderTotal" column="forwarder_total" type="php_decimal" precision="15" scale="5"/>
+        <field name="forwarderPaidTotal" column="forwarder_paid_total" type="php_decimal" precision="15" scale="5"/>
         <field name="forwarderDate" column="forwarder_date" type="date" nullable="true"/>
         <field name="forwarderDueDate" column="forwarder_due_date" type="date" nullable="true"/>
 
@@ -64,6 +66,17 @@
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryInterface"
                      field="deliveries" mapped-by="order" orphan-removal="true" index-by="id">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierPaymentInterface"
+                     field="payments" mapped-by="order" orphan-removal="true" index-by="id">
+            <order-by>
+                <order-by-field name="exchangeDate"/>
+            </order-by>
             <cascade>
                 <cascade-persist/>
                 <cascade-remove/>

@@ -34,6 +34,20 @@ final class PaymentStates
     public const STATE_DEPOSIT     = 'deposit';
     public const STATE_COMPLETED   = 'completed';
 
+    /**
+     * Returns the states available.
+     *
+     * @return array<int, string>
+     */
+    public static function getSupplierPaymentStates(): array
+    {
+        return [
+            self::STATE_PENDING,
+            self::STATE_CAPTURED,
+            self::STATE_FAILED,
+            self::STATE_CANCELED,
+        ];
+    }
 
     /**
      * Returns all the states.

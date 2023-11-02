@@ -55,10 +55,10 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
     protected DateTimeInterface  $createdAt;
     protected ?DateTimeInterface $closedAt = null;
 
-    /** @var Collection|Model\StockAssignmentInterface[] */
-    protected $stockAssignments;
-    /** @var Collection|Model\StockAdjustmentInterface[] */
-    protected $stockAdjustments;
+    /** @var Collection<Model\StockAssignmentInterface> */
+    protected Collection $stockAssignments;
+    /** @var Collection<Model\StockAdjustmentInterface> */
+    protected Collection $stockAdjustments;
 
 
     public function __construct()
@@ -414,38 +414,22 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
 
     public function getSupplierOrder(): ?SupplierOrderInterface
     {
-        if ($this->supplierOrderItem) {
-            return $this->supplierOrderItem->getOrder();
-        }
-
-        return null;
+        return $this->supplierOrderItem?->getOrder();
     }
 
     public function getCurrency(): ?CurrencyInterface
     {
-        if ($this->supplierOrderItem) {
-            return $this->supplierOrderItem->getOrder()->getCurrency();
-        }
-
-        return null;
+        return $this->supplierOrderItem?->getOrder()->getCurrency();
     }
 
     public function getExchangeRate(): ?Decimal
     {
-        if ($this->supplierOrderItem) {
-            return $this->supplierOrderItem->getOrder()->getExchangeRate();
-        }
-
-        return null;
+        return $this->supplierOrderItem?->getOrder()->getExchangeRate();
     }
 
     public function getExchangeDate(): ?DateTimeInterface
     {
-        if ($this->supplierOrderItem) {
-            return $this->supplierOrderItem->getOrder()->getExchangeDate();
-        }
-
-        return null;
+        return $this->supplierOrderItem?->getOrder()->getExchangeDate();
     }
 
     public function getBaseCurrency(): ?string

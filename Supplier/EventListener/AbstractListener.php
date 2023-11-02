@@ -82,7 +82,6 @@ abstract class AbstractListener
             return;
         }
 
-
         throw new Exception\UnexpectedTypeException($resource, [
             Model\SupplierOrderItemInterface::class,
             Model\SupplierOrderInterface::class,

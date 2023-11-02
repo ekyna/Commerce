@@ -38,4 +38,14 @@ interface SupplierOrderCalculatorInterface
      * Calculates the supplier order's weight total.
      */
     public function calculateWeightTotal(SupplierOrderInterface $order): Decimal;
+
+    /**
+     * Calculates the total paid to the supplier.
+     */
+    public function calculateSupplierPaidTotal(SupplierOrderInterface $order): Decimal;
+
+    /**
+     * Calculates the total paid to the forwarder.
+     */
+    public function calculateForwarderPaidTotal(SupplierOrderInterface $order): Decimal;
 }

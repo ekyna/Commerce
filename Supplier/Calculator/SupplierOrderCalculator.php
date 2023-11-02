@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Supplier\Calculator;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Util\Money;
+use Ekyna\Component\Commerce\Payment\Model\PaymentStates;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 
@@ -128,6 +129,31 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
 
         foreach ($order->getItems() as $item) {
             $total += $item->getWeight() * $item->getQuantity();
+        }
+
+        return $total;
+    }
+
+    public function calculateSupplierPaidTotal(SupplierOrderInterface $order): Decimal
+    {
+        return $this->calculatePaymentSum($order, false);
+    }
+
+    public function calculateForwarderPaidTotal(SupplierOrderInterface $order): Decimal
+    {
+        return $this->calculatePaymentSum($order, true);
+    }
+
+    private function calculatePaymentSum(SupplierOrderInterface $order, bool $toForwarder): Decimal
+    {
+        $total = new Decimal(0);
+
+        foreach ($order->getPayments($toForwarder) as $payment) {
+            if (PaymentStates::STATE_CAPTURED !== $payment->getState()) {
+                continue;
+            }
+
+            $total = $total->add($payment->getAmount());
         }
 
         return $total;

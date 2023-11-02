@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Export;
 
 use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
@@ -15,21 +17,14 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterfac
 class SupplierOrderExporter extends AbstractExporter
 {
     /**
-     * @var SupplierOrderRepositoryInterface
-     */
-    protected $repository;
-
-
-    /**
      * Constructor.
      *
      * @param SupplierOrderRepositoryInterface $repository
      */
-    public function __construct(SupplierOrderRepositoryInterface $repository)
-    {
+    public function __construct(
+        protected readonly SupplierOrderRepositoryInterface $repository
+    ) {
         parent::__construct();
-
-        $this->repository = $repository;
     }
 
     /**
@@ -96,54 +91,42 @@ class SupplierOrderExporter extends AbstractExporter
     public function getDefaultMap(): array
     {
         return [
-            'number'             => 'number',
-            'state'              => 'state',
-            'ordered_at'         => function (SupplierOrderInterface $order): ?string {
+            'number'               => 'number',
+            'state'                => 'state',
+            'ordered_at'           => function (SupplierOrderInterface $order): ?string {
                 if (null !== $date = $order->getOrderedAt()) {
                     return $date->format(DateUtil::DATE_FORMAT);
                 }
 
                 return null;
             },
-            'completed_at'       => function (SupplierOrderInterface $order): ?string {
+            'completed_at'         => function (SupplierOrderInterface $order): ?string {
                 if (null !== $date = $order->getCompletedAt()) {
                     return $date->format(DateUtil::DATE_FORMAT);
                 }
 
                 return null;
             },
-            'supplier'           => 'supplier.name',
-            'payment_total'      => 'paymentTotal',
-            'payment_date'       => function (SupplierOrderInterface $order): ?string {
-                if (null !== $date = $order->getPaymentDate()) {
-                    return $date->format(DateUtil::DATE_FORMAT);
-                }
-
-                return null;
-            },
-            'payment_due_date'   => function (SupplierOrderInterface $order): ?string {
+            'supplier'             => 'supplier.name',
+            'payment_total'        => 'paymentTotal',
+            'payment_paid_total'   => 'paymentPaidTotal',
+            'payment_due_date'     => function (SupplierOrderInterface $order): ?string {
                 if (null !== $date = $order->getPaymentDueDate()) {
                     return $date->format(DateUtil::DATE_FORMAT);
                 }
 
                 return null;
             },
-            'carrier'            => function (SupplierOrderInterface $order): ?string {
+            'carrier'              => function (SupplierOrderInterface $order): ?string {
                 if (null !== $carrier = $order->getCarrier()) {
                     return $carrier->getName();
                 }
 
                 return null;
             },
-            'forwarder_total'    => 'forwarderTotal',
-            'forwarder_date'     => function (SupplierOrderInterface $order): ?string {
-                if (null !== $date = $order->getForwarderDate()) {
-                    return $date->format(DateUtil::DATE_FORMAT);
-                }
-
-                return null;
-            },
-            'forwarder_due_date' => function (SupplierOrderInterface $order): ?string {
+            'forwarder_total'      => 'forwarderTotal',
+            'forwarder_paid_total' => 'forwarderPaidTotal',
+            'forwarder_due_date'   => function (SupplierOrderInterface $order): ?string {
                 if (null !== $date = $order->getForwarderDueDate()) {
                     return $date->format(DateUtil::DATE_FORMAT);
                 }

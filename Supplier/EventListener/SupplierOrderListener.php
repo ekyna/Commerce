@@ -19,7 +19,6 @@ class SupplierOrderListener extends AbstractListener
 {
     protected SupplierOrderUpdaterInterface $supplierOrderUpdater;
 
-
     public function __construct(SupplierOrderUpdaterInterface $supplierOrderUpdater)
     {
         $this->supplierOrderUpdater = $supplierOrderUpdater;
@@ -34,11 +33,11 @@ class SupplierOrderListener extends AbstractListener
 
         $changed = $this->supplierOrderUpdater->updateNumber($order);
 
-        $changed = $this->supplierOrderUpdater->updateState($order) || $changed;
-
         $changed = $this->supplierOrderUpdater->updateTotals($order) || $changed;
 
-        $changed = $this->supplierOrderUpdater->updateExchangeRate($order) || $changed;
+        $changed = $this->supplierOrderUpdater->updatePaidTotals($order) || $changed;
+
+        $changed = $this->supplierOrderUpdater->updateState($order) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order, false);
@@ -54,11 +53,11 @@ class SupplierOrderListener extends AbstractListener
 
         $changed = $this->supplierOrderUpdater->updateNumber($order);
 
-        $changed = $this->supplierOrderUpdater->updateState($order) || $changed;
-
         $changed = $this->supplierOrderUpdater->updateTotals($order) || $changed;
 
-        $changed = $this->supplierOrderUpdater->updateExchangeRate($order) || $changed;
+        $changed = $this->supplierOrderUpdater->updatePaidTotals($order) || $changed;
+
+        $changed = $this->supplierOrderUpdater->updateState($order) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order, false);
@@ -68,7 +67,7 @@ class SupplierOrderListener extends AbstractListener
         if ($this->persistenceHelper->isChanged($order, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($order, 'state');
 
-            // If order's state has changed to a non stockable state
+            // If order's state has changed to a non-stockable state
             if (SupplierOrderStates::hasChangedFromStockable($stateCs)) {
                 // Delete stock unit (if exists) for each supplier order items.
                 foreach ($order->getItems() as $item) {
@@ -95,9 +94,11 @@ class SupplierOrderListener extends AbstractListener
     {
         $order = $this->getSupplierOrderFromEvent($event);
 
-        $changed = $this->supplierOrderUpdater->updateState($order);
+        $changed = $this->supplierOrderUpdater->updateTotals($order);
 
-        $changed = $this->supplierOrderUpdater->updateTotals($order) || $changed;
+        $changed = $this->supplierOrderUpdater->updatePaidTotals($order) || $changed;
+
+        $changed = $this->supplierOrderUpdater->updateState($order) || $changed;
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($order, false);
@@ -152,6 +153,12 @@ class SupplierOrderListener extends AbstractListener
 
         foreach ($order->getItems() as $item) {
             if ($this->persistenceHelper->isChanged($item, ['quantity', 'netPrice', 'weight'])) {
+                return true;
+            }
+        }
+
+        foreach ($order->getPayments() as $payment) {
+            if ($this->persistenceHelper->isChanged($payment, ['amount', 'state', 'exchangeRate'])) {
                 return true;
             }
         }

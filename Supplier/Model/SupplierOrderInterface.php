@@ -102,6 +102,21 @@ interface SupplierOrderInterface extends
      */
     public function getAttachments(): Collection;
 
+    public function hasPayments(bool $toForwarder = null): bool;
+
+    public function hasPayment(SupplierPaymentInterface $payment): bool;
+
+    public function addPayment(SupplierPaymentInterface $payment): SupplierOrderInterface;
+
+    public function removePayment(SupplierPaymentInterface $payment): SupplierOrderInterface;
+
+    /**
+     * Returns the payments.
+     *
+     * @return Collection<int, SupplierPaymentInterface>
+     */
+    public function getPayments(bool $toForwarder = null): Collection;
+
     public function getShippingCost(): Decimal;
 
     public function setShippingCost(Decimal $amount): SupplierOrderInterface;
@@ -117,6 +132,10 @@ interface SupplierOrderInterface extends
     public function getPaymentTotal(): Decimal;
 
     public function setPaymentTotal(Decimal $amount): SupplierOrderInterface;
+
+    public function getPaymentPaidTotal(): Decimal;
+
+    public function setPaymentPaidTotal(Decimal $amount): SupplierOrderInterface;
 
     public function getPaymentDate(): ?DateTimeInterface;
 
@@ -141,6 +160,10 @@ interface SupplierOrderInterface extends
     public function getForwarderTotal(): Decimal;
 
     public function setForwarderTotal(Decimal $amount): SupplierOrderInterface;
+
+    public function getForwarderPaidTotal(): Decimal;
+
+    public function setForwarderPaidTotal(Decimal $amount): SupplierOrderInterface;
 
     /**
      * Returns the forwarder payment date.

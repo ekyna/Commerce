@@ -203,6 +203,25 @@
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\SupplierDeliveryItem"/>
     </class>
 
+    <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierPayment">
+        <property name="order">
+            <constraint name="NotNull" />
+        </property>
+        <property name="amount">
+            <constraint name="NotNull"/>
+            <constraint name="GreaterThan">0</constraint>
+        </property>
+        <property name="state">
+            <constraint name="NotBlank"/>
+            <constraint name="Choice">
+                <option name="callback">
+                    <value>Ekyna\Component\Commerce\Payment\Model\PaymentStates</value>
+                    <value>getSupplierPaymentStates</value>
+                </option>
+            </constraint>
+        </property>
+    </class>
+
     <class name="Ekyna\Component\Commerce\Supplier\Entity\SupplierProduct">
         <property name="supplier">
             <constraint name="NotNull" />

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Updater;
 
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
@@ -16,7 +18,7 @@ interface SupplierOrderUpdaterInterface
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether or not the supplier order number has been changed.
+     * @return bool Whether the supplier order number has been changed.
      */
     public function updateCurrency(SupplierOrderInterface $order): bool;
 
@@ -25,7 +27,7 @@ interface SupplierOrderUpdaterInterface
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether or not the supplier order number has been changed.
+     * @return bool Whether the supplier order number has been changed.
      */
     public function updateCarrier(SupplierOrderInterface $order): bool;
 
@@ -34,34 +36,34 @@ interface SupplierOrderUpdaterInterface
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether or not the supplier order number has been changed.
+     * @return bool Whether the supplier order number has been changed.
      */
     public function updateNumber(SupplierOrderInterface $order): bool;
-
-    /**
-     * Updates the state.
-     *
-     * @param SupplierOrderInterface $order
-     *
-     * @return bool Whether or not the supplier order has been changed.
-     */
-    public function updateState(SupplierOrderInterface $order): bool;
 
     /**
      * Updates the payment and forwarder totals.
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether or not the supplier order has been changed.
+     * @return bool Whether the supplier order has been changed.
      */
     public function updateTotals(SupplierOrderInterface $order): bool;
 
     /**
-     * Updates the order exchange rate.
+     * Updates the payment and forwarder paid totals.
      *
      * @param SupplierOrderInterface $order
      *
-     * @return bool Whether the payment has been changed or not.
+     * @return bool Whether the supplier order has been changed.
      */
-    public function updateExchangeRate(SupplierOrderInterface $order): bool;
+    public function updatePaidTotals(SupplierOrderInterface $order): bool;
+
+    /**
+     * Updates the state.
+     *
+     * @param SupplierOrderInterface $order
+     *
+     * @return bool Whether the supplier order has been changed.
+     */
+    public function updateState(SupplierOrderInterface $order): bool;
 }

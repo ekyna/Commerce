@@ -163,9 +163,11 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
      */
     private function getExpiredDue(string $prefix): Decimal
     {
+        $as = $this->getAlias();
+
         $total = $this
             ->getExpiredDueQueryBuilder($prefix)
-            ->select('SUM(' . $this->getAlias() . '.' . $prefix . 'Total)')
+            ->select("SUM($as.{$prefix}Total - $as.{$prefix}PaidTotal)")
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -177,9 +179,11 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
      */
     private function getFallDue(string $prefix): Decimal
     {
+        $as = $this->getAlias();
+
         $total = $this
             ->getFallDueQueryBuilder($prefix)
-            ->select('SUM(' . $this->getAlias() . '.' . $prefix . 'Total)')
+            ->select("SUM($as.{$prefix}Total - $as.{$prefix}PaidTotal)")
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -196,8 +200,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
         $ex = $qb->expr();
 
         return $qb
-            ->andWhere($ex->gt($as . '.' . $prefix . 'Total', 0))
-            ->andWhere($ex->isNull($as . '.' . $prefix . 'Date'))
+            ->andWhere($ex->lt($as . '.' . $prefix . 'PaidTotal', $as . '.' . $prefix . 'Total'))
             ->andWhere($ex->isNotNull($as . '.' . $prefix . 'DueDate'))
             ->andWhere($ex->lt($as . '.' . $prefix . 'DueDate', ':today'))
             ->andWhere($ex->neq($as . '.state', ':state'))
@@ -216,8 +219,7 @@ class SupplierOrderRepository extends ResourceRepository implements SupplierOrde
         $ex = $qb->expr();
 
         return $qb
-            ->andWhere($ex->gt($as . '.' . $prefix . 'Total', 0))
-            ->andWhere($ex->isNull($as . '.' . $prefix . 'Date'))
+            ->andWhere($ex->lt($as . '.' . $prefix . 'PaidTotal', $as . '.' . $prefix . 'Total'))
             ->andWhere($ex->orX(
                 $ex->isNull($as . '.' . $prefix . 'DueDate'),
                 $ex->gte($as . '.' . $prefix . 'DueDate', ':today')
