@@ -788,6 +788,13 @@ class LoadMetadataListener
                 'nullable'   => false,
                 'default'    => 0,
             ],
+            [
+                'fieldName'  => 'hsCode',
+                'columnName' => 'hs_code',
+                'type'       => Types::STRING,
+                'length'     => 6,
+                'nullable'   => true,
+            ],
         ];
     }
 

@@ -230,6 +230,19 @@ interface StockSubjectInterface extends SubjectInterface
     public function setPackageDepth(int $depth): StockSubjectInterface;
 
     /**
+     * Returns the « Harmonized System » code.
+     *
+     * @return string|null
+     */
+    public function getHsCode(): ?string;
+
+    /**
+     * Sets the « Harmonized System » code.
+     *
+     * @return $this|StockSubjectInterface
+     */
+    public function setHsCode(?string $hsCode): StockSubjectInterface;
+    /**
      * Returns whether all the package dimensions are set.
      */
     public function hasPackageDimensions(): bool;

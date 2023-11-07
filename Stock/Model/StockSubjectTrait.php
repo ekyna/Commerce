@@ -43,6 +43,7 @@ trait StockSubjectTrait
     protected int                $packageHeight;
     protected int                $packageWidth;
     protected int                $packageDepth;
+    protected ?string $hsCode = null;
 
     protected function initializeStock(): void
     {
@@ -361,6 +362,18 @@ trait StockSubjectTrait
     public function setPackageDepth(int $depth): StockSubjectInterface
     {
         $this->packageDepth = $depth;
+
+        return $this;
+    }
+
+    public function getHsCode(): ?string
+    {
+        return $this->hsCode;
+    }
+
+    public function setHsCode(?string $hsCode): StockSubjectInterface
+    {
+        $this->hsCode = $hsCode;
 
         return $this;
     }
