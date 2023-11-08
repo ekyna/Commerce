@@ -25,7 +25,7 @@ class ShipmentParcelNormalizer extends ResourceNormalizer
             'id' => $object->getId(),
         ];
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
                 'weight'          => $object->getWeight()->toFixed(3),
                 'valorization'    => $object->getValorization(),

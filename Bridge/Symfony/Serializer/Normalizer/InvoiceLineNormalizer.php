@@ -23,7 +23,7 @@ class InvoiceLineNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $saleItem = $object->getSaleItem();
 
             $data = array_replace($data, [

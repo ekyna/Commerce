@@ -26,7 +26,7 @@ class StockAdjustmentNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup('StockView', $context)) {
+        if (self::contextHasGroup('StockView', $context)) {
             $formatter = $this->getFormatter();
 
             $data = array_replace($data, [

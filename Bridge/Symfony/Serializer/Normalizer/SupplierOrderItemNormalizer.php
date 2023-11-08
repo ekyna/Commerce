@@ -38,7 +38,7 @@ class SupplierOrderItemNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $order = $object->getOrder();
 
             $received = 0;

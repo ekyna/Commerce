@@ -28,7 +28,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
+        if (self::contextHasGroup(['StockView', 'StockAssignment'], $context)) {
             $formatter = $this->getFormatter();
 
             $data = array_replace($data, [
@@ -38,7 +38,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
                 'ready'   => $object->isFullyShipped() || $object->isFullyShippable(),
             ]);
 
-            if ($this->contextHasGroup('StockView', $context)) {
+            if (self::contextHasGroup('StockView', $context)) {
                 $sale = $object->getSaleItem()->getRootSale();
                 $data['order_id'] = $sale->getId();
                 $data['preparation'] =
@@ -46,7 +46,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
                     && $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
             }
 
-            if ($this->contextHasGroup('StockAssignment', $context)) {
+            if (self::contextHasGroup('StockAssignment', $context)) {
                 $data['unit'] = $this->normalizeObject($object->getStockUnit(), $format, $context);
             }
         }

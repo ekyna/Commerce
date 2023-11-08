@@ -23,7 +23,7 @@ class SupplierProductNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup(['Default', 'SupplierProduct', 'Search'], $context)) {
+        if (self::contextHasGroup(['Default', 'SupplierProduct', 'Search'], $context)) {
             $supplier = $object->getSupplier();
 
             $data = array_replace($data, [

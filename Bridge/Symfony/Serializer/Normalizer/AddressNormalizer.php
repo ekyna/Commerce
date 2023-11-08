@@ -50,7 +50,7 @@ class AddressNormalizer extends ResourceNormalizer
         $data = [];
         $exclude = [];
 
-        if (!$this->contextHasGroup(self::RESOURCE_GROUPS, $context)) {
+        if (!self::contextHasGroup(self::RESOURCE_GROUPS, $context)) {
             $exclude = [
                 'digicode1',
                 'digicode2',
@@ -63,7 +63,7 @@ class AddressNormalizer extends ResourceNormalizer
             $data = parent::normalize($object, $format, $context);
         }
 
-        if ($asChoice = $this->contextHasGroup('AddressChoice', $context)) {
+        if ($asChoice = self::contextHasGroup('AddressChoice', $context)) {
             $exclude += ['phone', 'mobile'];
         }
 

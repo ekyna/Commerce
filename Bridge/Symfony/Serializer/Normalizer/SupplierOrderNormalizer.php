@@ -23,7 +23,7 @@ class SupplierOrderNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup('Search', $context)) {
+        if (self::contextHasGroup('Search', $context)) {
             $carrier = $object->getCarrier();
 
             $data = array_replace($data, [
@@ -40,7 +40,7 @@ class SupplierOrderNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $items = [];
             foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Helper;
 
+use Decimal\Decimal;
 use Ekyna\Bundle\CommerceBundle\Service\ConstantsHelper;
 use Ekyna\Bundle\ResourceBundle\Helper\ResourceHelper;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
@@ -13,8 +14,12 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
+use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderItemRepositoryInterface;
+use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 use Ekyna\Component\Resource\Repository\RepositoryFactoryInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+
+use function sprintf;
 
 /**
  * Class SubjectNormalizerHelper
@@ -26,20 +31,13 @@ class SubjectNormalizerHelper
     use FormatterAwareTrait;
     use NormalizerAwareTrait;
 
-    protected ConstantsHelper $constantHelper;
-    protected ResourceHelper $resourceHelper;
-    protected RepositoryFactoryInterface $repositoryFactory;
-
     public function __construct(
-        FormatterFactory $formatterFactory,
-        ConstantsHelper $constantHelper,
-        ResourceHelper $resourceHelper,
-        RepositoryFactoryInterface $repositoryFactory
+        FormatterFactory                              $formatterFactory,
+        protected readonly ConstantsHelper            $constantHelper,
+        protected readonly ResourceHelper             $resourceHelper,
+        protected readonly RepositoryFactoryInterface $repositoryFactory
     ) {
         $this->formatterFactory = $formatterFactory;
-        $this->constantHelper = $constantHelper;
-        $this->resourceHelper = $resourceHelper;
-        $this->repositoryFactory = $repositoryFactory;
     }
 
     /**
@@ -47,38 +45,89 @@ class SubjectNormalizerHelper
      */
     public function normalizeStock(StockSubjectInterface $subject, string $format = null, array $context = []): array
     {
-        $translator = $this->constantHelper->getTranslator();
-        $formatter = $this->getFormatter();
+        $data = [];
 
-        if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
-            $eda = $formatter->date($eda);
-        } else {
-            $eda = $translator->trans('value.undefined', [], 'EkynaUi');
+        if (ResourceNormalizer::contextHasGroup('StockView', $context)) {
+            $translator = $this->constantHelper->getTranslator();
+            $formatter = $this->getFormatter();
+
+            if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
+                $eda = $formatter->date($eda);
+            } else {
+                $eda = $translator->trans('value.undefined', [], 'EkynaUi');
+            }
+            if (null !== $releasedAt = $subject->getReleasedAt()) {
+                $releasedAt = $formatter->date($releasedAt);
+            } else {
+                $releasedAt = $translator->trans('value.undefined', [], 'EkynaUi');
+            }
+
+            $virtual = $formatter->number($subject->getVirtualStock());
+            if (null !== $pending = $this->getPendingQuantity($subject)) {
+                $virtual = sprintf('%s (+%s)', $virtual, $formatter->number($pending));
+            }
+
+            $data = [
+                //'mode_label'    => $this->constantHelper->renderStockSubjectModeLabel($subject),
+                'mode_badge'     => $this->constantHelper->renderStockSubjectModeBadge($subject),
+                //'state_label'   => $this->constantHelper->renderStockSubjectStateLabel($subject),
+                'state_badge'    => $this->constantHelper->renderStockSubjectStateBadge($subject),
+                'unit'           => $this->constantHelper->renderUnit($subject->getUnit()),
+                'in'             => $formatter->number($subject->getInStock()),
+                'available'      => $formatter->number($subject->getAvailableStock()),
+                'virtual'        => $virtual,
+                'floor'          => $formatter->number($subject->getStockFloor()),
+                'geocode'        => $subject->getGeocode(),
+                'replenishment'  => $formatter->number($subject->getReplenishmentTime()),
+                'eda'            => $eda,
+                'released_at'    => $releasedAt,
+                'hs_code'        => $subject->getHsCode(),
+                'moq'            => $formatter->number($subject->getMinimumOrderQuantity()),
+                'weight'         => $formatter->number($subject->getWeight()),
+                'width'          => $formatter->number($subject->getWidth()),
+                'height'         => $formatter->number($subject->getHeight()),
+                'depth'          => $formatter->number($subject->getDepth()),
+                'package_weight' => $formatter->number($subject->getPackageWeight()),
+                'package_width'  => $formatter->number($subject->getPackageWidth()),
+                'package_height' => $formatter->number($subject->getPackageHeight()),
+                'package_depth'  => $formatter->number($subject->getPackageDepth()),
+                'physical'       => $this->badge($subject->isPhysical(), 'success', 'warning'),
+                'quote_only'     => $this->badge($subject->isQuoteOnly()),
+                'end_of_life'    => $this->badge($subject->isEndOfLife()),
+            ];
         }
 
-        $stockUnits = $this->findStockUnits($subject);
+        if (ResourceNormalizer::contextHasGroup('StockUnit', $context)) {
+            $stockUnits = $this->findStockUnits($subject);
 
-        return [
-            'mode_label'    => $this->constantHelper->renderStockSubjectModeLabel($subject),
-            'mode_badge'    => $this->constantHelper->renderStockSubjectModeBadge($subject),
-            'state_label'   => $this->constantHelper->renderStockSubjectStateLabel($subject),
-            'state_badge'   => $this->constantHelper->renderStockSubjectStateBadge($subject),
-            'in'            => $formatter->number($subject->getInStock()),
-            'available'     => $formatter->number($subject->getAvailableStock()),
-            'virtual'       => $formatter->number($subject->getVirtualStock()),
-            'floor'         => $formatter->number($subject->getStockFloor()),
-            'geocode'       => $subject->getGeocode(),
-            'replenishment' => $formatter->number($subject->getReplenishmentTime()),
-            'eda'           => $eda,
-            'moq'           => $formatter->number($subject->getMinimumOrderQuantity()),
-            'quote_only'    => $subject->isQuoteOnly()
-                ? $translator->trans('value.yes', [], 'EkynaUi')
-                : $translator->trans('value.no', [], 'EkynaUi'),
-            'end_of_life'   => $subject->isEndOfLife()
-                ? $translator->trans('value.yes', [], 'EkynaUi')
-                : $translator->trans('value.no', [], 'EkynaUi'),
-            'stock_units'   => $this->normalizer->normalize($stockUnits, $format, $context),
-        ];
+            $data['stock_units'] = $this->normalizer->normalize($stockUnits, $format, $context);
+        }
+
+        return $data;
+    }
+
+    private function badge(bool $flag, string $true = 'warning', string $false = 'success'): string
+    {
+        $translator = $this->constantHelper->getTranslator();
+
+        $label = $flag
+            ? $translator->trans('value.yes', [], 'EkynaUi')
+            : $translator->trans('value.no', [], 'EkynaUi');
+
+        $theme = $flag ? $true : $false;
+
+        return sprintf('<span class="label label-%s">%s</span>', $theme, $label);
+    }
+
+    private function getPendingQuantity(StockSubjectInterface $subject): ?Decimal
+    {
+        $repository = $this->repositoryFactory->getRepository('ekyna_commerce.supplier_order_item');
+
+        if (!$repository instanceof SupplierOrderItemRepositoryInterface) {
+            throw new UnexpectedTypeException($repository, SupplierOrderItemRepositoryInterface::class);
+        }
+
+        return $repository->getPendingQuantity($subject);
     }
 
     /**

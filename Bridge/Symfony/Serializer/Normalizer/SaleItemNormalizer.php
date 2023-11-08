@@ -48,7 +48,7 @@ class SaleItemNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $children = [];
             foreach ($object->getChildren() as $child) {
                 $children[] = $this->normalize($child, $format, $context);

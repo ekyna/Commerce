@@ -22,7 +22,7 @@ class CustomerNormalizer extends ResourceNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
+        if ($format === 'csv' && self::contextHasGroup('TableExport', $context)) {
             return (string)$object;
         }
 
@@ -30,7 +30,7 @@ class CustomerNormalizer extends ResourceNormalizer
 
         $parent = $object->getParent();
 
-        if ($this->contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
+        if (self::contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
             $data = array_replace($data, [
                 'number'         => $object->getNumber(),
                 'company'        => $object->getCompany(),
@@ -44,14 +44,14 @@ class CustomerNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if ($this->contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
+        if (self::contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
             $data = array_replace($data, [
                 'phone'  => $this->normalizeObject($object->getPhone(), $format, $context),
                 'mobile' => $this->normalizeObject($object->getMobile(), $format, $context),
             ]);
         }
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $payment = $parent ?: $object;
 
             $data = array_replace($data, [

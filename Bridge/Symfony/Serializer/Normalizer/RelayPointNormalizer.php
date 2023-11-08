@@ -37,7 +37,7 @@ class RelayPointNormalizer extends ResourceNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        if ($this->contextHasGroup(['Default', 'RelayPoint'], $context)) {
+        if (self::contextHasGroup(['Default', 'RelayPoint'], $context)) {
             $data = [
                 'id'          => $object->getId(),
                 'number'      => $object->getNumber(),

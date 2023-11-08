@@ -36,7 +36,7 @@ class ShipmentNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup(['Default', 'OrderShipment'], $context)) {
+        if (self::contextHasGroup(['Default', 'OrderShipment'], $context)) {
             $sale = $object->getSale();
 
             $data = array_replace($data, [
@@ -50,7 +50,7 @@ class ShipmentNormalizer extends ResourceNormalizer
                 'tracking_number' => $object->getTrackingNumber(),
                 'description'     => $object->getDescription(),
             ]);
-        } elseif ($this->contextHasGroup('Summary', $context)) {
+        } elseif (self::contextHasGroup('Summary', $context)) {
             $items = [];
             $parcels = [];
 

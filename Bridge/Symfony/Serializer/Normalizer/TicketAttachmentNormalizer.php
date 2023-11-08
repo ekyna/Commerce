@@ -20,7 +20,7 @@ class TicketAttachmentNormalizer extends AbstractAttachmentNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        if ($this->contextHasGroup(['Default', 'Ticket', 'TicketMessage', 'TicketAttachment'], $context)) {
+        if (self::contextHasGroup(['Default', 'Ticket', 'TicketMessage', 'TicketAttachment'], $context)) {
             $data = $this->normalizeAttachment($object);
 
             $data['ticket'] = $object->getMessage()->getTicket()->getId();

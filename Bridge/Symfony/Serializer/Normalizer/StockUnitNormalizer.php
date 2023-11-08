@@ -45,7 +45,7 @@ class StockUnitNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup(['StockView', 'StockAssignment'], $context)) {
+        if (self::contextHasGroup(['StockUnit', 'StockAssignment'], $context)) {
             $formatter = $this->getFormatter();
 
             if (null !== $eda = $object->getEstimatedDateOfArrival()) {
@@ -55,7 +55,7 @@ class StockUnitNormalizer extends ResourceNormalizer
             $adjustments = [];
             $assignments = [];
 
-            if ($this->contextHasGroup('StockView', $context)) {
+            if (self::contextHasGroup('StockView', $context)) {
                 foreach ($object->getStockAdjustments() as $adjustment) {
                     $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
                 }

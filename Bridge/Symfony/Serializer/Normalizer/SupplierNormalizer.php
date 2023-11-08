@@ -23,12 +23,12 @@ class SupplierNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup('Search', $context)) {
+        if (self::contextHasGroup('Search', $context)) {
             $data = array_replace($data, [
                 'name'        => $object->getName(),
                 'description' => $object->getDescription(),
             ]);
-        } elseif ($this->contextHasGroup('Summary', $context)) {
+        } elseif (self::contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
                 'description' => $object->getDescription(),
             ]);

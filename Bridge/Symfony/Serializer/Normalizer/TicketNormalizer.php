@@ -25,7 +25,7 @@ class TicketNormalizer extends ResourceNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        if ($this->contextHasGroup(['Default', 'Ticket'], $context)) {
+        if (self::contextHasGroup(['Default', 'Ticket'], $context)) {
             $formatter = $this->getFormatter();
 
             $data = [
@@ -66,7 +66,7 @@ class TicketNormalizer extends ResourceNormalizer
                 ];
             }
 
-            if ($this->contextHasGroup('Ticket', $context)) {
+            if (self::contextHasGroup('Ticket', $context)) {
                 $data += ['messages' => []];
 
                 foreach ($this->filterMessages($object) as $message) {

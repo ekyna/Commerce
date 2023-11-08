@@ -23,7 +23,7 @@ class InvoiceNormalizer extends ResourceNormalizer
     {
         $data = parent::normalize($object, $format, $context);
 
-        if ($this->contextHasGroup(['Default', 'OrderInvoice', 'Search'], $context)) {
+        if (self::contextHasGroup(['Default', 'OrderInvoice', 'Search'], $context)) {
             $sale = $object->getSale();
 
             $data = array_replace($data, [
@@ -36,7 +36,7 @@ class InvoiceNormalizer extends ResourceNormalizer
                 'description' => $object->getDescription(),
                 'comment'     => $object->getComment(),
             ]);
-        } elseif ($this->contextHasGroup(['Summary'], $context)) {
+        } elseif (self::contextHasGroup(['Summary'], $context)) {
             $lines = [];
             foreach ($object->getLines() as $line) {
                 $lines[] = $this->normalizeObject($line, $format, $context);

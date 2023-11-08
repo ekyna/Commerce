@@ -21,7 +21,7 @@ class CustomerGroupNormalizer extends ResourceNormalizer
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        if ($format === 'csv' && $this->contextHasGroup('TableExport', $context)) {
+        if ($format === 'csv' && self::contextHasGroup('TableExport', $context)) {
             return (string)$object;
         }
 

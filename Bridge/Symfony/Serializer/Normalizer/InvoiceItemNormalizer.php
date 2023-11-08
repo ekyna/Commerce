@@ -23,7 +23,7 @@ class InvoiceItemNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if ($this->contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup('Summary', $context)) {
             $data = array_replace($data, [
                 'designation' => $object->getDesignation(),
                 'reference'   => $object->getReference(),
