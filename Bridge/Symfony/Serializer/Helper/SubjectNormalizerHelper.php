@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Helper;
 use Decimal\Decimal;
 use Ekyna\Bundle\CommerceBundle\Service\ConstantsHelper;
 use Ekyna\Bundle\ResourceBundle\Helper\ResourceHelper;
+use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -47,7 +48,7 @@ class SubjectNormalizerHelper
     {
         $data = [];
 
-        if (ResourceNormalizer::contextHasGroup('StockView', $context)) {
+        if (ResourceNormalizer::contextHasGroup(Group::STOCK_VIEW, $context)) {
             $translator = $this->constantHelper->getTranslator();
             $formatter = $this->getFormatter();
 
@@ -97,7 +98,7 @@ class SubjectNormalizerHelper
             ];
         }
 
-        if (ResourceNormalizer::contextHasGroup('StockUnit', $context)) {
+        if (ResourceNormalizer::contextHasGroup(Group::STOCK_UNIT, $context)) {
             $stockUnits = $this->findStockUnits($subject);
 
             $data['stock_units'] = $this->normalizer->normalize($stockUnits, $format, $context);

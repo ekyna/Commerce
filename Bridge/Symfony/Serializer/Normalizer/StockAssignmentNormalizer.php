@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
@@ -28,7 +29,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if (self::contextHasGroup(['StockView', 'StockAssignment'], $context)) {
+        if (self::contextHasGroup([Group::STOCK_UNIT, Group::STOCK_ASSIGNMENT], $context)) {
             $formatter = $this->getFormatter();
 
             $data = array_replace($data, [
@@ -38,7 +39,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
                 'ready'   => $object->isFullyShipped() || $object->isFullyShippable(),
             ]);
 
-            if (self::contextHasGroup('StockView', $context)) {
+            if (self::contextHasGroup(Group::STOCK_UNIT, $context)) {
                 $sale = $object->getSaleItem()->getRootSale();
                 $data['order_id'] = $sale->getId();
                 $data['preparation'] =
@@ -46,7 +47,7 @@ class StockAssignmentNormalizer extends ResourceNormalizer
                     && $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
             }
 
-            if (self::contextHasGroup('StockAssignment', $context)) {
+            if (self::contextHasGroup(Group::STOCK_ASSIGNMENT, $context)) {
                 $data['unit'] = $this->normalizeObject($object->getStockUnit(), $format, $context);
             }
         }

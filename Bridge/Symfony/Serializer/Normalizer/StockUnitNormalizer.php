@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
@@ -21,7 +22,6 @@ class StockUnitNormalizer extends ResourceNormalizer
 
     protected CurrencyConverterInterface $currencyConverter;
 
-
     /**
      * Constructor.
      *
@@ -29,7 +29,7 @@ class StockUnitNormalizer extends ResourceNormalizer
      * @param CurrencyConverterInterface $currencyConverter
      */
     public function __construct(
-        FormatterFactory $formatterFactory,
+        FormatterFactory           $formatterFactory,
         CurrencyConverterInterface $currencyConverter
     ) {
         $this->formatterFactory = $formatterFactory;
@@ -45,7 +45,7 @@ class StockUnitNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if (self::contextHasGroup(['StockUnit', 'StockAssignment'], $context)) {
+        if (self::contextHasGroup([Group::STOCK_UNIT, Group::STOCK_ASSIGNMENT], $context)) {
             $formatter = $this->getFormatter();
 
             if (null !== $eda = $object->getEstimatedDateOfArrival()) {
@@ -55,7 +55,7 @@ class StockUnitNormalizer extends ResourceNormalizer
             $adjustments = [];
             $assignments = [];
 
-            if (self::contextHasGroup('StockView', $context)) {
+            if (self::contextHasGroup(Group::STOCK_UNIT, $context)) {
                 foreach ($object->getStockAdjustments() as $adjustment) {
                     $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
                 }
