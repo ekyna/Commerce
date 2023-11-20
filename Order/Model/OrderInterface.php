@@ -34,6 +34,16 @@ interface OrderInterface
     public function setReleased(bool $released): OrderInterface;
 
     /**
+     * Returns whether this order is about customer support.
+     */
+    public function isSupport(): bool;
+
+    /**
+     * Sets whether this order is about customer support.
+     */
+    public function setSupport(bool $support): OrderInterface;
+
+    /**
      * Returns whether the order is the customer's first.
      */
     public function isFirst(): bool;

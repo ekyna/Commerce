@@ -29,6 +29,7 @@ class Order extends AbstractSale implements Model\OrderInterface
 
     protected bool               $sample         = false;
     protected bool               $released       = false;
+    protected bool               $support        = false;
     protected bool               $first          = false;
     protected ?CustomerInterface $originCustomer = null;
     protected ?DateTimeInterface $completedAt    = null;
@@ -67,6 +68,18 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function setReleased(bool $released): Model\OrderInterface
     {
         $this->released = $released;
+
+        return $this;
+    }
+
+    public function isSupport(): bool
+    {
+        return $this->support;
+    }
+
+    public function setSupport(bool $support): Model\OrderInterface
+    {
+        $this->support = $support;
 
         return $this;
     }
