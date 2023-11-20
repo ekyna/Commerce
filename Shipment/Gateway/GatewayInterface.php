@@ -98,6 +98,13 @@ interface GatewayInterface extends
     public function printLabel(Shipment\ShipmentDataInterface $shipment, array $types = null): array;
 
     /**
+     * Initializes the shipment gateway data (before building form).
+     *
+     * @param Shipment\ShipmentInterface $shipment
+     */
+    public function initData(Shipment\ShipmentInterface $shipment): void;
+
+    /**
      * Builds the gateway data form.
      *
      * @param FormInterface $form

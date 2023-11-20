@@ -141,6 +141,13 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @inheritDoc
      */
+    public function initData(Shipment\ShipmentInterface $shipment): void
+    {
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function buildForm(FormInterface $form): void
     {
     }
