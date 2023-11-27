@@ -69,7 +69,7 @@ class OrdersSection implements SectionInterface
     {
         $sheet = $writer->createSheet('Orders'); // TODO trans
 
-        $writer->writeMarginHeaders('Month', 23, $this->years); // TODO Trans
+        $writer->writeMarginHeaders(['Month' => 23], $this->years); // TODO Trans
 
         // Values
         $row = 3;

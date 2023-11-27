@@ -27,7 +27,7 @@ class CustomersSection implements SectionInterface
 
     /** @var array<int, array<string, Margin> */
     private array $data;
-    /** @var array<int, string> */
+    /** @var array<int, array<int, string>> */
     private array $names;
     /** @var array<int, string> */
     private array $years;
@@ -46,21 +46,25 @@ class CustomersSection implements SectionInterface
         }
 
         if (null === $customer = $resource->getOrder()->getCustomer()) {
-            $customer = new class(0, 'Unknown') {
-                public function __construct(
-                    private readonly int    $id,
-                    private readonly string $name,
-                ) {
-                }
-
+            $customer = new class() {
                 public function getId(): int
                 {
-                    return $this->id;
+                    return 0;
                 }
 
                 public function __toString(): string
                 {
-                    return $this->name;
+                    return 'Unknown';
+                }
+
+                public function getCustomerGroup(): object
+                {
+                    return new class() {
+                        public function __toString(): string
+                        {
+                            return 'Unknown';
+                        }
+                    };
                 }
             };
         }
@@ -69,7 +73,10 @@ class CustomersSection implements SectionInterface
         $year = $resource->getCreatedAt()->format('Y');
 
         if (!isset($this->names[$id])) {
-            $this->names[$id] = (string)$customer;
+            $this->names[$id] = [
+                (string)$customer,
+                (string)$customer->getCustomerGroup(),
+            ];
         }
 
         if (!isset($this->data[$id][$year])) {
@@ -94,7 +101,7 @@ class CustomersSection implements SectionInterface
     {
         $sheet = $writer->createSheet('Customers'); // TODO trans
 
-        $writer->writeMarginHeaders('Customer', 23, $this->years); // TODO trans
+        $writer->writeMarginHeaders(['Customer' => 80, 'Group' => 80], $this->years); // TODO trans
 
         // Values
         $row = 3;
@@ -102,7 +109,8 @@ class CustomersSection implements SectionInterface
             $row++;
 
             // Row header
-            $sheet->getCell([1, $row])->setValue($name);
+            $sheet->getCell([1, $row])->setValue($name[0]);
+            $sheet->getCell([2, $row])->setValue($name[1]);
 
             // Values
             foreach ($this->years as $yearIndex => $year) {

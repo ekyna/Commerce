@@ -103,7 +103,7 @@ class CustomerGroupsSection implements SectionInterface
     {
         $sheet = $writer->createSheet('Customer groups'); // TODO trans
 
-        $writer->writeMarginHeaders('Group', 23, $this->years); // TODO trans
+        $writer->writeMarginHeaders(['Group' => 80], $this->years); // TODO trans
 
         // Values
         $row = 3;

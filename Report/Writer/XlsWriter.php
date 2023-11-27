@@ -65,40 +65,44 @@ class XlsWriter implements WriterInterface
         ],
     ];
 
-    private readonly Spreadsheet $spreadsheet;
-    private int                  $index;
+    private Spreadsheet $spreadsheet;
+    private int         $sheetIndex;
+    private int         $columnBase;
 
     public function createSheet(string $title): Worksheet
     {
-        if (0 === $this->index) {
+        if (0 === $this->sheetIndex) {
             $sheet = $this->spreadsheet->getActiveSheet();
         } else {
             $sheet = $this->spreadsheet->createSheet();
 
-            $this->spreadsheet->setActiveSheetIndex($this->index);
+            $this->spreadsheet->setActiveSheetIndex($this->sheetIndex);
         }
 
-        $this->index++;
+        $this->sheetIndex++;
 
         $sheet->setTitle($title);
 
         return $sheet;
     }
 
-    public function writeMarginHeaders(string $header, int $width, array $years): void
+    public function writeMarginHeaders(array $headers, array $years): void
     {
         $sheet = $this->spreadsheet->getActiveSheet();
 
         // Columns headers
-        $sheet->getColumnDimension('A')->setWidth($width, 'mm');
-
         $headerStyle = XlsWriter::STYLE_BOLD + XlsWriter::STYLE_BACKGROUND;
 
-        $sheet->mergeCells([1, 1, 1, 3]);
-        $sheet->getCell([1, 1])->getStyle()->applyFromArray($headerStyle);
-        $headerStyle += XlsWriter::STYLE_BORDER_BOTTOM;
-        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle);
-        $sheet->getCell([1, 1])->setValue($header);
+        $col = 1;
+        foreach ($headers as $header => $width) {
+            $sheet->getColumnDimensionByColumn($col)->setWidth($width, 'mm');
+
+            $sheet->mergeCells([$col, 1, $col, 3]);
+            $sheet->getCell([$col, 1])->getStyle()->applyFromArray($headerStyle);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col, 1])->setValue($header);
+            $col++;
+        }
 
         $yearStyle =
             XlsWriter::STYLE_BOLD
@@ -106,8 +110,9 @@ class XlsWriter implements WriterInterface
             + XlsWriter::STYLE_BACKGROUND
             + XlsWriter::STYLE_BORDER_LEFT;
 
+        $this->columnBase = $col;
         foreach ($years as $index => $year) {
-            $col = 2 + $index * 9;
+            $col = $this->columnBase + $index * 9;
 
             // Year
             $sheet->mergeCells([$col, 1, $col + 8, 1]);
@@ -175,7 +180,7 @@ class XlsWriter implements WriterInterface
     {
         $sheet = $this->spreadsheet->getActiveSheet();
 
-        $col = 2 + $yearIndex * 9;
+        $col = $this->columnBase + $yearIndex * 9;
 
         // Left border
         $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
@@ -198,7 +203,7 @@ class XlsWriter implements WriterInterface
     public function initialize(): void
     {
         $this->spreadsheet = new Spreadsheet();
-        $this->index = 0;
+        $this->sheetIndex = 0;
     }
 
     /**
