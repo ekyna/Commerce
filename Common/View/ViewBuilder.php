@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Calculator\MarginCalculatorInterface;
+use Ekyna\Component\Commerce\Common\Calculator\WeightCalculatorInterface;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Helper\SaleItemHelper;
 use Ekyna\Component\Commerce\Common\Helper\ViewHelper;
@@ -46,6 +47,7 @@ class ViewBuilder
         private readonly AmountCalculatorFactory    $amountCalculatorFactory,
         private readonly MarginCalculatorFactory    $marginCalculatorFactory,
         private readonly CurrencyConverterInterface $currencyConverter,
+        private readonly WeightCalculatorInterface  $weightCalculator,
         private readonly FormatterFactory           $formatterFactory,
         private readonly SaleItemHelper             $saleItemHelper,
         private readonly string                     $defaultTemplate = '@Commerce/Sale/view.html.twig',
@@ -303,8 +305,10 @@ class ViewBuilder
                 $this->number($item->getQuantity()),
                 $this->number($item->getParentsQuantity())
             );
+            $weight = '';
         } else {
             $quantity = $this->number($item->getTotalQuantity());
+            $weight = $this->number($this->weightCalculator->calculateSaleItem($item));
         }
 
         if (
@@ -327,6 +331,7 @@ class ViewBuilder
         $view->taxAmount = $taxAmount;
         $view->total = $total;
         $view->source = $item;
+        $view->weight = $weight;
 
         if ($view->private = $item->isPrivate()) {
             $view->addClass('private');

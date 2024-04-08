@@ -26,6 +26,10 @@ class LineView extends AbstractView
     public ?string $taxAmount      = null;
     public ?string $total          = null; // Total price after applying discounts and taxes.
     public ?string $margin         = null; // The margin in percentage.
+    public ?string $weight         = null; // The weight
+    public ?string $hsCode         = null; // The HS code.
+    public ?string $ean13          = null; // The EAN13 code.
+    public ?string $mpn            = null; // The manufacturer product number.
     public bool    $private        = false;
     public bool    $batchable      = false;
     public bool    $gift           = false; // TODO To get rid of 'Offert' value...

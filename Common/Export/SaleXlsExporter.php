@@ -229,10 +229,21 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->sheet->mergeCells("J$this->row:K$this->row");
         $this->cell($this->translator->trans('field.vat', [], 'EkynaCommerce'));
         $this->col = 11;
-        // L - Ati Total
-        //$this->cell($trans['ati_total']);
+        // L - Ati total
+        $this->cell('');
+        // M - Spacer
+        $this->cell('');
+        // N - Weight
+        $this->cell($this->translator->trans('field.weight', [], 'EkynaUi'));
+        // O - HS Code
+        $this->cell($this->translator->trans('stock_subject.field.hs_code', [], 'EkynaCommerce'));
+        // P - EAN13
+        $this->cell('EAN13');
+        // Q - MPN
+        $this->cell('MPN');
 
         $this->sheet->getStyle("B$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("N$this->row:Q$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
     }
 
     /**
@@ -348,8 +359,18 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell($line->taxRates);
         // K - Tax amount
         $this->cell("=I$this->row*J$this->row");
-        // I - Ati total
-        //$this->cell("=I$this->row+K$this->row");
+        // L - Ati total
+        $this->cell(''); //$this->cell("=I$this->row+K$this->row");
+        // M - Spacer
+        $this->cell('');
+        // N - Weight
+        $this->cell($line->weight);
+        // O - HS Code
+        $this->cell($line->hsCode);
+        // P - EAN13
+        $this->cell($line->ean13);
+        // Q - MPN
+        $this->cell($line->mpn);
 
         $row = $this->row;
         foreach ($line->getLines() as $child) {
@@ -568,7 +589,7 @@ class SaleXlsExporter implements SaleExporterInterface
      */
     private function cell(string $value = null): void
     {
-        $this->sheet->setCellValueByColumnAndRow($this->col(), $this->row, $value);
+        $this->sheet->setCellValue([$this->col(), $this->row], $value);
     }
 
     /**
@@ -576,7 +597,7 @@ class SaleXlsExporter implements SaleExporterInterface
      */
     private function getCell(): ?Cell
     {
-        return $this->sheet->getCellByColumnAndRow($this->col, $this->row);
+        return $this->sheet->getCell([$this->col, $this->row]);
     }
 
     /**
@@ -585,7 +606,7 @@ class SaleXlsExporter implements SaleExporterInterface
     private function spacer(): void
     {
         $this->row();
-        $this->sheet->mergeCellsByColumnAndRow(1, $this->row, 12, $this->row);
+        $this->sheet->mergeCells([1, $this->row, 12, $this->row]);
     }
 
     /**
