@@ -26,6 +26,10 @@ interface ShipmentDataInterface
 
     public function setTrackingNumber(?string $number): ShipmentDataInterface;
 
+    public function getResultData(): ?array;
+
+    public function setResultData(?array $resultData): ShipmentDataInterface;
+
     /**
      * @return Collection<int, ShipmentLabelInterface>
      */

@@ -16,6 +16,7 @@
         <field name="valorization" column="valorization" type="php_decimal" precision="13" scale="3" nullable="true"/>
         <field name="trackingNumber" column="tracking_number" type="string" length="32" nullable="true"/>
         <field name="gatewayData" column="gateway_data" type="json" nullable="true"/>
+        <field name="resultData" column="result_data" type="json" nullable="true"/>
         <field name="senderAddress" column="sender_address" type="json" nullable="true"/>
         <field name="receiverAddress" column="receiver_address" type="json" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>

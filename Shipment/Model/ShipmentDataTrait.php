@@ -18,6 +18,7 @@ trait ShipmentDataTrait
     protected ?Decimal $weight         = null;
     protected ?Decimal $valorization   = null;
     protected ?string  $trackingNumber = null;
+    protected ?array   $resultData     = [];
     /** @var Collection<int, ShipmentLabelInterface> */
     protected Collection $labels;
 
@@ -25,7 +26,7 @@ trait ShipmentDataTrait
     /**
      * Initializes the shipment data.
      */
-    protected function initializeShipmentData()
+    protected function initializeShipmentData(): void
     {
         $this->labels = new ArrayCollection();
     }
@@ -62,6 +63,18 @@ trait ShipmentDataTrait
     public function setTrackingNumber(?string $number): ShipmentDataInterface
     {
         $this->trackingNumber = $number;
+
+        return $this;
+    }
+
+    public function getResultData(): ?array
+    {
+        return $this->resultData;
+    }
+
+    public function setResultData(?array $resultData): ShipmentDataInterface
+    {
+        $this->resultData = $resultData;
 
         return $this;
     }
