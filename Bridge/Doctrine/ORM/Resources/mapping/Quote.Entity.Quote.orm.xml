@@ -24,6 +24,7 @@
         </id>
 
         <field name="expiresAt" column="expires_at" type="datetime"/>
+        <field name="completionDate" column="completion_date" type="datetime" nullable="true"/>
         <field name="editable" column="editable" type="boolean" nullable="false"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"

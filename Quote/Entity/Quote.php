@@ -23,8 +23,9 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 {
     use Common\InitiatorSubjectTrait;
 
-    protected bool               $editable  = false;
-    protected ?DateTimeInterface $expiresAt = null;
+    protected bool               $editable       = false;
+    protected ?DateTimeInterface $expiresAt      = null;
+    protected ?DateTimeInterface $completionDate = null;
 
 
     public function __construct()
@@ -315,6 +316,18 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         $diff = $this->expiresAt->diff((new DateTime())->setTime(0, 0));
 
         return 0 < $diff->days && !$diff->invert;
+    }
+
+    public function getCompletionDate(): ?DateTimeInterface
+    {
+        return $this->completionDate;
+    }
+
+    public function setCompletionDate(?DateTimeInterface $completionDate): Model\QuoteInterface
+    {
+        $this->completionDate = $completionDate;
+
+        return $this;
     }
 
     public function requiresVoucher(): bool

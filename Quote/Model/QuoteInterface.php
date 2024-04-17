@@ -30,6 +30,10 @@ interface QuoteInterface extends Common\SaleInterface, Common\InitiatorSubjectIn
 
     public function isExpired(): bool;
 
+    public function getCompletionDate(): ?DateTimeInterface;
+
+    public function setCompletionDate(?DateTimeInterface $completionDate): QuoteInterface;
+
     public function requiresVoucher(): bool;
 
     public function hasVoucher(): bool;
