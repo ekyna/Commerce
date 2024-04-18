@@ -23,9 +23,10 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <field name="expiresAt" column="expires_at" type="datetime"/>
-        <field name="completionDate" column="completion_date" type="datetime" nullable="true"/>
         <field name="editable" column="editable" type="boolean" nullable="false"/>
+        <field name="expiresAt" column="expires_at" type="datetime"/>
+        <field name="projectDate" column="project_date" type="datetime" nullable="true"/>
+        <field name="projectTrust" column="project_trust" type="smallint" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceQuote" orphan-removal="true">
@@ -96,6 +97,12 @@
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Customer\Model\CustomerInterface" field="initiatorCustomer">
             <join-column name="initiator_customer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+        </many-to-one>
+
+        <many-to-one field="project"
+                     target-entity="Ekyna\Component\Commerce\Common\Model\ProjectInterface"
+                     inversed-by="quotes">
+            <join-column name="project_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </many-to-one>
 
     </mapped-superclass>

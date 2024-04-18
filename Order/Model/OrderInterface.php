@@ -53,6 +53,10 @@ interface OrderInterface
      */
     public function setFirst(bool $first): OrderInterface;
 
+    public function getProject(): ?Common\ProjectInterface;
+
+    public function setProject(?Common\ProjectInterface $project): OrderInterface;
+
     public function getOriginCustomer(): ?CustomerInterface;
 
     public function setOriginCustomer(?CustomerInterface $customer): OrderInterface;

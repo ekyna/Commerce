@@ -14,6 +14,10 @@ use Ekyna\Component\Commerce\Common\Model as Common;
  */
 interface QuoteInterface extends Common\SaleInterface, Common\InitiatorSubjectInterface
 {
+    public function getProject(): ?Common\ProjectInterface;
+
+    public function setProject(?Common\ProjectInterface $project): QuoteInterface;
+
     /**
      * Returns whether this quote can be modified by the customer.
      */
@@ -30,9 +34,13 @@ interface QuoteInterface extends Common\SaleInterface, Common\InitiatorSubjectIn
 
     public function isExpired(): bool;
 
-    public function getCompletionDate(): ?DateTimeInterface;
+    public function getProjectDate(): ?DateTimeInterface;
 
-    public function setCompletionDate(?DateTimeInterface $completionDate): QuoteInterface;
+    public function setProjectDate(?DateTimeInterface $date): QuoteInterface;
+
+    public function getProjectTrust(): ?int;
+
+    public function setProjectTrust(?int $trust): QuoteInterface;
 
     public function requiresVoucher(): bool;
 

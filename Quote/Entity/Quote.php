@@ -23,9 +23,11 @@ class Quote extends AbstractSale implements Model\QuoteInterface
 {
     use Common\InitiatorSubjectTrait;
 
-    protected bool               $editable       = false;
-    protected ?DateTimeInterface $expiresAt      = null;
-    protected ?DateTimeInterface $completionDate = null;
+    protected bool                     $editable     = false;
+    protected ?Common\ProjectInterface $project      = null;
+    protected ?DateTimeInterface       $expiresAt    = null;
+    protected ?DateTimeInterface       $projectDate  = null;
+    protected ?int                     $projectTrust = null;
 
 
     public function __construct()
@@ -283,6 +285,29 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
+    public function getProject(): ?Common\ProjectInterface
+    {
+        return $this->project;
+    }
+
+    public function setProject(?Common\ProjectInterface $project): Model\QuoteInterface
+    {
+        if ($this->project === $project) {
+            return $this;
+        }
+
+        if ($previous = $this->project) {
+            $this->project = null;
+            $previous->removeQuote($this);
+        }
+
+        if ($this->project = $project) {
+            $this->project->addQuote($this);
+        }
+
+        return $this;
+    }
+
     public function isEditable(): bool
     {
         return $this->editable;
@@ -318,14 +343,26 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return 0 < $diff->days && !$diff->invert;
     }
 
-    public function getCompletionDate(): ?DateTimeInterface
+    public function getProjectDate(): ?DateTimeInterface
     {
-        return $this->completionDate;
+        return $this->projectDate;
     }
 
-    public function setCompletionDate(?DateTimeInterface $completionDate): Model\QuoteInterface
+    public function setProjectDate(?DateTimeInterface $date): Model\QuoteInterface
     {
-        $this->completionDate = $completionDate;
+        $this->projectDate = $date;
+
+        return $this;
+    }
+
+    public function getProjectTrust(): ?int
+    {
+        return $this->projectTrust;
+    }
+
+    public function setProjectTrust(?int $trust): Model\QuoteInterface
+    {
+        $this->projectTrust = $trust;
 
         return $this;
     }

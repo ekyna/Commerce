@@ -27,13 +27,14 @@ class Order extends AbstractSale implements Model\OrderInterface
     use Shipment\ShipmentSubjectTrait;
     use Invoice\InvoiceSubjectTrait;
 
-    protected bool               $sample         = false;
-    protected bool               $released       = false;
-    protected bool               $support        = false;
-    protected bool               $first          = false;
-    protected ?CustomerInterface $originCustomer = null;
-    protected ?DateTimeInterface $completedAt    = null;
-    protected int                $itemsCount     = 0;
+    protected bool                     $sample         = false;
+    protected bool                     $released       = false;
+    protected bool                     $support        = false;
+    protected bool                     $first          = false;
+    protected ?Common\ProjectInterface $project        = null;
+    protected ?CustomerInterface       $originCustomer = null;
+    protected ?DateTimeInterface       $completedAt    = null;
+    protected int                      $itemsCount     = 0;
 
 
     public function __construct()
@@ -92,6 +93,29 @@ class Order extends AbstractSale implements Model\OrderInterface
     public function setFirst(bool $first): Model\OrderInterface
     {
         $this->first = $first;
+
+        return $this;
+    }
+
+    public function getProject(): ?Common\ProjectInterface
+    {
+        return $this->project;
+    }
+
+    public function setProject(?Common\ProjectInterface $project): Model\OrderInterface
+    {
+        if ($this->project === $project) {
+            return $this;
+        }
+
+        if ($previous = $this->project) {
+            $this->project = null;
+            $previous->removeOrder($this);
+        }
+
+        if ($this->project = $project) {
+            $this->project->addOrder($this);
+        }
 
         return $this;
     }
