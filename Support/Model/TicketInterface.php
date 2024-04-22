@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Support\Model;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
@@ -33,6 +34,10 @@ interface TicketInterface extends ResourceInterface, StateSubjectInterface, Numb
      * Sets whether this ticket is internal.
      */
     public function setInternal(bool $internal): TicketInterface;
+
+    public function getClosedAt(): ?DateTimeInterface;
+
+    public function setClosedAt(?DateTimeInterface $closedAt): TicketInterface;
 
     public function getCustomer(): ?CustomerInterface;
 
@@ -64,4 +69,13 @@ interface TicketInterface extends ResourceInterface, StateSubjectInterface, Numb
     public function addMessage(TicketMessageInterface $message): TicketInterface;
 
     public function removeMessage(TicketMessageInterface $message): TicketInterface;
+
+    /**
+     * @return Collection<int, TicketTagInterface>
+     */
+    public function getTags(): Collection;
+
+    public function addTag(TicketTagInterface $tag): TicketInterface;
+
+    public function removeTag(TicketTagInterface $tag): TicketInterface;
 }

@@ -38,9 +38,12 @@ class TicketNormalizer extends ResourceNormalizer
                 'f_created_at' => ($date = $object->getCreatedAt()) ? $formatter->dateTime($date) : null,
                 'updated_at'   => ($date = $object->getUpdatedAt()) ? $date->format('Y-m-d H:i:s') : null,
                 'f_updated_at' => ($date = $object->getUpdatedAt()) ? $formatter->dateTime($date) : null,
+                'closed_at'    => ($date = $object->getClosedAt()) ? $date->format('Y-m-d H:i:s') : null,
+                'f_closed_at'  => ($date = $object->getClosedAt()) ? $formatter->dateTime($date) : null,
                 'customer'     => null,
                 'orders'       => [],
                 'quotes'       => [],
+                'tags'         => [],
             ];
 
             if ($customer = $object->getCustomer()) {
@@ -64,6 +67,10 @@ class TicketNormalizer extends ResourceNormalizer
                     'id'     => $order->getId(),
                     'number' => $order->getNumber(),
                 ];
+            }
+
+            foreach ($object->getTags() as $tag) {
+                $data['tags'][] = $tag->getName();
             }
 
             if (self::contextHasGroup('Ticket', $context)) {

@@ -22,6 +22,7 @@
                 <option name="default">0</option>
             </options>
         </field>
+        <field name="closedAt" type="datetime" column="closed_at" nullable="true"/>
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>
         </field>
@@ -54,7 +55,7 @@
                 </inverse-join-columns>
             </join-table>
         </many-to-many>
-        
+
         <many-to-many target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface" field="quotes">
             <join-table name="commerce_tickets_quotes">
                 <join-columns>
@@ -65,7 +66,18 @@
                 </inverse-join-columns>
             </join-table>
         </many-to-many>
-        
+
+        <many-to-many target-entity="Ekyna\Component\Commerce\Support\Model\TicketTagInterface" field="tags">
+            <join-table name="commerce_tickets_tags">
+                <join-columns>
+                    <join-column name="ticket_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="tag_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
     </mapped-superclass>
 
 </doctrine-mapping>

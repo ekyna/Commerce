@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Support\EventListener;
 
+use DateTime;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Support\Model\TicketInterface;
+use Ekyna\Component\Commerce\Support\Model\TicketStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -84,7 +86,18 @@ class TicketEventListener
 
     protected function updateState(TicketInterface $ticket): bool
     {
-        return $this->stateResolver->resolve($ticket);
+        $changed = $this->stateResolver->resolve($ticket);
+
+        $closed = $ticket->getState() === TicketStates::STATE_CLOSED;
+        $set = null !== $ticket->getClosedAt();
+
+        if ($closed && !$set) {
+            $ticket->setClosedAt(new DateTime());
+        } elseif (!$closed && $set) {
+            $ticket->setClosedAt(null);
+        }
+
+        return $changed;
     }
 
     protected function updateNumber(TicketInterface $ticket): bool
