@@ -42,6 +42,10 @@ interface QuoteInterface extends Common\SaleInterface, Common\InitiatorSubjectIn
 
     public function setProjectTrust(?int $trust): QuoteInterface;
 
+    public function getProjectAlive(): ?bool;
+
+    public function setProjectAlive(?bool $projectAlive): QuoteInterface;
+
     public function requiresVoucher(): bool;
 
     public function hasVoucher(): bool;

@@ -28,6 +28,7 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     protected ?DateTimeInterface       $expiresAt    = null;
     protected ?DateTimeInterface       $projectDate  = null;
     protected ?int                     $projectTrust = null;
+    protected ?bool                    $projectAlive = null;
 
 
     public function __construct()
@@ -363,6 +364,18 @@ class Quote extends AbstractSale implements Model\QuoteInterface
     public function setProjectTrust(?int $trust): Model\QuoteInterface
     {
         $this->projectTrust = $trust;
+
+        return $this;
+    }
+
+    public function getProjectAlive(): ?bool
+    {
+        return $this->projectAlive;
+    }
+
+    public function setProjectAlive(?bool $projectAlive): Model\QuoteInterface
+    {
+        $this->projectAlive = $projectAlive;
 
         return $this;
     }

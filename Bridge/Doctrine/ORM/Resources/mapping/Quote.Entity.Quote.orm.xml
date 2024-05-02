@@ -27,6 +27,7 @@
         <field name="expiresAt" column="expires_at" type="datetime"/>
         <field name="projectDate" column="project_date" type="datetime" nullable="true"/>
         <field name="projectTrust" column="project_trust" type="smallint" nullable="true"/>
+        <field name="projectAlive" column="project_alive" type="boolean" nullable="true"/>
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteAddressInterface"
                     field="invoiceAddress" inversed-by="invoiceQuote" orphan-removal="true">
