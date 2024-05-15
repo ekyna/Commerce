@@ -343,7 +343,8 @@ class AccountingExporter implements AccountingExporterInterface
                         $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
                         $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale);
-                        $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
+                        $temp = $this->round($base->mul($adjustment->getAmount())->div($gross->getGross()));
+                        $amount -= $temp;
                     }
                 }
             }
@@ -407,7 +408,8 @@ class AccountingExporter implements AccountingExporterInterface
                         $amount -= $this->round($amount->mul($adjustment->getAmount())->div(100));
                     } else {
                         $gross = $this->calculatorFactory->create($this->currency)->calculateSale($sale);
-                        $amount -= $this->round($base->mul($adjustment->getAmount())->div($gross->getBase()));
+                        $temp = $this->round($base->mul($adjustment->getAmount())->div($gross->getGross()));
+                        $amount -= $temp;
                     }
                 }
             }
