@@ -1,13 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Order\Export;
 
+use DateInterval;
+use DatePeriod;
+use DateTime;
 use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Export\RegionProvider;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
+
+use function sprintf;
 
 /**
  * Class InvoiceExporter
@@ -17,28 +24,16 @@ use Ekyna\Component\Commerce\Stat\Calculator\StatFilter;
 class OrderInvoiceExporter extends AbstractExporter
 {
     /**
-     * @var OrderInvoiceRepositoryInterface
-     */
-    protected $repository;
-
-    /**
-     * @var RegionProvider
-     */
-    protected $regionProvider;
-
-
-    /**
      * Constructor.
      *
      * @param OrderInvoiceRepositoryInterface $repository
      * @param RegionProvider $regionProvider
      */
-    public function __construct(OrderInvoiceRepositoryInterface $repository, RegionProvider $regionProvider)
-    {
+    public function __construct(
+        private readonly OrderInvoiceRepositoryInterface $repository,
+        private readonly RegionProvider $regionProvider
+    ) {
         parent::__construct();
-
-        $this->repository = $repository;
-        $this->regionProvider = $regionProvider;
     }
 
     /**
@@ -62,16 +57,16 @@ class OrderInvoiceExporter extends AbstractExporter
     }
 
     /**
-     * @param \DateTime $from
-     * @param \DateTime $to
+     * @param DateTime $from
+     * @param DateTime $to
      *
      * @return string
      */
-    public function exportRegionsInvoices(\DateTime $from, \DateTime $to): string
+    public function exportRegionsInvoicesStats(DateTime $from, DateTime $to): string
     {
-        $period = new \DatePeriod(
-            (clone $from)->setTime(0, 0, 0, 0),
-            new \DateInterval('P1M'),
+        $period = new DatePeriod(
+            (clone $from)->setTime(0, 0),
+            new DateInterval('P1M'),
             (clone $to)->setTime(23, 59, 59, 999999)
         );
 
@@ -83,7 +78,7 @@ class OrderInvoiceExporter extends AbstractExporter
 
         $filter = $filter ?? new StatFilter();
 
-        /** @var \DateTime $date */
+        /** @var DateTime $date */
         foreach ($period as $date) {
             foreach ($regions as $region => $countries) {
                 $filter->setCountries($countries);

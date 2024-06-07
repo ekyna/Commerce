@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Exception\RuntimeException;
-use Ekyna\Component\Commerce\Exception\UnexpectedValueException;
 use Ekyna\Component\Resource\Exception\UnexpectedTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -17,7 +16,8 @@ use function is_null;
  * @package Ekyna\Component\Commerce\Common\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  *
- * @TODO Move into Resource component
+ * @TODO    Move into Resource component
+ * @TODO    Use CSV Helper
  */
 abstract class AbstractExporter
 {
@@ -99,10 +99,8 @@ abstract class AbstractExporter
 
     /**
      * Builds the row.
-     *
-     * @param mixed $object
      */
-    protected function buildRow($object, array $map): array
+    protected function buildRow(array|object $object, array $map): array
     {
         $row = [];
 
@@ -128,7 +126,7 @@ abstract class AbstractExporter
     /**
      * Transforms the value.
      *
-     * @deprecated Transform values using closures in map
+     * @deprecated Transform values using closures from map
      */
     protected function transform(string $name, string $value): ?string
     {
