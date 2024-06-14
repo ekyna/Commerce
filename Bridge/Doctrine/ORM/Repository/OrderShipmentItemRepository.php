@@ -7,21 +7,26 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
+use Ekyna\Component\Commerce\Order\Model\OrderShipmentItemInterface;
+use Ekyna\Component\Commerce\Order\Repository\OrderShipmentItemRepositoryInterface;
+use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
-use Ekyna\Component\Commerce\Supplier\Repository\SupplierDeliveryItemRepositoryInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
 use Ekyna\Component\Resource\Model\DateRange;
 
 /**
- * Class SupplierDeliveryItemRepository
+ * Class OrderShipmentItemRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
- * @author  Etienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
-class SupplierDeliveryItemRepository extends ResourceRepository implements SupplierDeliveryItemRepositoryInterface
+class OrderShipmentItemRepository extends ResourceRepository implements OrderShipmentItemRepositoryInterface
 {
     private ?Query $findBySubject             = null;
     private ?Query $findBySubjectAndDateRange = null;
 
+    /**
+     * @return array<int, OrderShipmentItemInterface>
+     */
     public function findBySubjectAndDateRange(SubjectInterface $subject, ?DateRange $range): array
     {
         if ($range) {
@@ -65,8 +70,7 @@ class SupplierDeliveryItemRepository extends ResourceRepository implements Suppl
         $qb = $this->createFindBySubjectQueryBuilder();
 
         return $this->findBySubjectAndDateRange = $qb
-            ->join('i.delivery', 'd')
-            ->andWhere($qb->expr()->between('d.createdAt', ':start', ':end'))
+            ->andWhere($qb->expr()->between('s.shippedAt', ':start', ':end'))
             ->getQuery();
     }
 
@@ -76,7 +80,14 @@ class SupplierDeliveryItemRepository extends ResourceRepository implements Suppl
 
         return $qb
             ->join('i.orderItem', 'oi')
+            ->join('i.shipment', 's')
             ->andWhere($qb->expr()->eq('oi.subjectIdentity.provider', ':provider'))
-            ->andWhere($qb->expr()->eq('oi.subjectIdentity.identifier', ':identifier'));
+            ->andWhere($qb->expr()->eq('oi.subjectIdentity.identifier', ':identifier'))
+            ->andWhere(
+                $qb->expr()->in('s.state', [
+                    ShipmentStates::STATE_SHIPPED,
+                    ShipmentStates::STATE_RETURNED,
+                ])
+            );
     }
 }

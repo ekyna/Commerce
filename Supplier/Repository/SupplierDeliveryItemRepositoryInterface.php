@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Supplier\Repository;
 
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
+use Ekyna\Component\Resource\Model\DateRange;
 use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
@@ -16,5 +18,8 @@ use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
  */
 interface SupplierDeliveryItemRepositoryInterface extends ResourceRepositoryInterface
 {
-
+    /**
+     * @return array<int, SupplierDeliveryItemInterface>
+     */
+    public function findBySubjectAndDateRange(SubjectInterface $subject, ?DateRange $range): array;
 }

@@ -37,8 +37,10 @@ final class StockAdjustmentReasons
     /**
      * Returns whether the given reason is valid or not.
      */
-    public static function isValidReason(string $reason, bool $throw = true): bool
+    public static function isValidReason(StockAdjustmentInterface|string $reason, bool $throw = true): bool
     {
+        $reason = self::getReason($reason);
+
         if (in_array($reason, self::getReasons(), true)) {
             return true;
         }
@@ -65,11 +67,22 @@ final class StockAdjustmentReasons
     /**
      * Returns whether the given reason is debit or not.
      */
-    public static function isDebitReason(string $reason): bool
+    public static function isDebitReason(StockAdjustmentInterface|string $reason): bool
     {
+        $reason = self::getReason($reason);
+
         self::isValidReason($reason);
 
         return in_array($reason, self::getDebitReasons(), true);
+    }
+
+    private static function getReason(StockAdjustmentInterface|string $value): string
+    {
+        if ($value instanceof StockAdjustmentInterface) {
+            return $value->getReason();
+        }
+
+        return $value;
     }
 
     /**

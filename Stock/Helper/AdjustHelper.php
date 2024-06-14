@@ -199,6 +199,7 @@ class AdjustHelper
             return $this->unitRepositories[$class];
         }
 
+        // TODO use \Ekyna\Component\Commerce\Stock\Helper\StockUnitHelper::getRepository
         $repository = $this->repositoryFactory->getRepository($subject::getStockUnitClass());
 
         if (!$repository instanceof StockUnitRepositoryInterface) {

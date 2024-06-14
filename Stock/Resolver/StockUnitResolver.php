@@ -298,6 +298,7 @@ class StockUnitResolver implements StockUnitResolverInterface
      */
     protected function getRepositoryBySubject(StockSubjectInterface $subject): StockUnitRepositoryInterface
     {
+        // TODO use \Ekyna\Component\Commerce\Stock\Helper\StockUnitHelper::getRepository
         $class = $subject::getStockUnitClass();
 
         $repository = $this->repositoryFactory->getRepository($class);

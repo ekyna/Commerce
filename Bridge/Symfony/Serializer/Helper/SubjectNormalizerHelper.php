@@ -140,6 +140,7 @@ class SubjectNormalizerHelper
      */
     private function findStockUnits(StockSubjectInterface $subject): array
     {
+        // TODO use \Ekyna\Component\Commerce\Stock\Helper\StockUnitHelper::getRepository
         $repository = $this->repositoryFactory->getRepository($subject::getStockUnitClass());
 
         if (!$repository instanceof StockUnitRepositoryInterface) {

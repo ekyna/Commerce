@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Stock\Repository;
 
+use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitFinderInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
+use Ekyna\Component\Resource\Model\DateRange;
 use Ekyna\Component\Resource\Repository\ResourceRepositoryInterface;
 
 /**
@@ -38,4 +41,9 @@ interface StockUnitRepositoryInterface extends StockUnitFinderInterface, Resourc
      * @return array<StockUnitInterface>
      */
     public function findLatestClosedBySubject(StockSubjectInterface $subject, int $limit = 3): array;
+
+    /**
+     * @return array<int, StockAdjustmentInterface>
+     */
+    public function findAdjustmentsBySubjectAndDateRange(SubjectInterface $subject, ?DateRange $range): array;
 }

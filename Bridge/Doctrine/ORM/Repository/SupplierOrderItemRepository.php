@@ -48,10 +48,9 @@ class SupplierOrderItemRepository extends ResourceRepository implements Supplier
 
         return $qb
             ->join('i.order', 'o')
-            ->join('i.product', 'p')
             ->andWhere($qb->expr()->isNotNull('i.netPrice'))
-            ->andWhere($qb->expr()->eq('p.subjectIdentity.provider', ':provider'))
-            ->andWhere($qb->expr()->eq('p.subjectIdentity.identifier', ':identifier'))
+            ->andWhere($qb->expr()->eq('i.subjectIdentity.provider', ':provider'))
+            ->andWhere($qb->expr()->eq('i.subjectIdentity.identifier', ':identifier'))
             ->orderBy('o.createdAt', 'DESC')
             ->getQuery()
             ->setMaxResults(1)

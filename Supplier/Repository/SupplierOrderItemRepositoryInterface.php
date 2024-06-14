@@ -31,7 +31,7 @@ interface SupplierOrderItemRepositoryInterface extends ResourceRepositoryInterfa
     /**
      * Finds items from paid but not delivered orders.
      *
-     * @return array<SupplierOrderItemInterface>
+     * @return array<int, SupplierOrderItemInterface>
      */
     public function findPaidAndNotDelivered(): array;
 }

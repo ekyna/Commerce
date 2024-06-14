@@ -314,7 +314,12 @@ abstract class AbstractShipmentListener
         $shippedAt = $shipment->getShippedAt();
         $completedAt = $shipment->getCompletedAt();
 
-        $shippedStates = [ShipmentStates::STATE_READY, ShipmentStates::STATE_SHIPPED, ShipmentStates::STATE_COMPLETED];
+        $shippedStates = [
+            ShipmentStates::STATE_READY,
+            ShipmentStates::STATE_SHIPPED,
+            ShipmentStates::STATE_RETURNED,
+            ShipmentStates::STATE_COMPLETED
+        ];
 
         if (in_array($state, $shippedStates, true)) {
             if (null === $shippedAt) {
