@@ -13,6 +13,8 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteStates;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
+use function is_null;
+
 /**
  * Class QuoteEventSubscriber
  * @package Ekyna\Component\Commerce\Quote\EventListener
@@ -25,6 +27,9 @@ class QuoteListener extends AbstractSaleListener
         $changed = parent::handleInsert($sale);
 
         /** @var QuoteInterface $sale */
+
+        $changed = $this->handleProject($sale) || $changed;
+
         return $this->handleEditable($sale) || $changed;
     }
 
@@ -33,7 +38,29 @@ class QuoteListener extends AbstractSaleListener
         $changed = parent::handleUpdate($sale);
 
         /** @var QuoteInterface $sale */
+
+        $changed = $this->handleProject($sale) || $changed;
+
         return $this->handleEditable($sale) || $changed;
+    }
+
+    protected function handleProject(QuoteInterface $quote): bool
+    {
+        if (!is_null($quote->getProjectDate())) {
+            return false;
+        }
+
+        if (!is_null($quote->getProjectTrust())) {
+            return false;
+        }
+
+        if (is_null($quote->getProjectAlive())) {
+            return false;
+        }
+
+        $quote->setProjectAlive(null);
+
+        return true;
     }
 
     protected function handleEditable(QuoteInterface $quote): bool

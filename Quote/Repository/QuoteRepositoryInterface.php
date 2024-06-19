@@ -23,4 +23,11 @@ interface QuoteRepositoryInterface extends SaleRepositoryInterface
      * @return array<QuoteInterface>
      */
     public function findByInitiatorCustomer(CustomerInterface $initiator): array;
+
+    /**
+     * Finds quotes having obsolete project.
+     *
+     * @return array<QuoteInterface>
+     */
+    public function findObsoleteProjects(): array;
 }

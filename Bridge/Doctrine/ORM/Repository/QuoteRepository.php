@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
+use DateTime;
+use Doctrine\DBAL\Types\Types;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Quote\Repository\QuoteRepositoryInterface;
@@ -37,6 +39,36 @@ class QuoteRepository extends AbstractSaleRepository implements QuoteRepositoryI
             ->setParameters([
                 'initiator' => $initiator,
             ])
+            ->getResult();
+    }
+
+    public function findObsoleteProjects(): array
+    {
+        $qb = $this->createQueryBuilder('q');
+        $ex = $qb->expr();
+
+        return $qb
+            ->andWhere(
+                $ex->orX(
+                    // Projects with date or trust note having 'alive' not set
+                    $ex->andX(
+                        $ex->isNull('q.projectAlive'),
+                        $ex->orX(
+                            $ex->isNotNull('q.projectDate'),
+                            $ex->isNotNull('q.projectTrust'),
+                        )
+                    ),
+                    // Living projects with past date.
+                    $ex->andX(
+                        $ex->eq('q.projectAlive', ':alive'),
+                        $ex->isNotNull('q.projectDate'),
+                        $ex->lte('q.projectDate', ':today')
+                    )
+                )
+            )
+            ->getQuery()
+            ->setParameter('alive', true)
+            ->setParameter('today', new DateTime(), Types::DATE_MUTABLE)
             ->getResult();
     }
 
