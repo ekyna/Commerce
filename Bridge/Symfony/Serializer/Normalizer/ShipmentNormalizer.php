@@ -9,6 +9,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Resolver\ShipmentAddressResolverInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
+use function array_replace;
+
 /**
  * Class ShipmentNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
@@ -49,6 +51,14 @@ class ShipmentNormalizer extends ResourceNormalizer
                 'method'          => $object->getMethod()->getName(),
                 'tracking_number' => $object->getTrackingNumber(),
                 'description'     => $object->getDescription(),
+            ]);
+        } elseif (self::contextHasGroup('Search', $context)) {
+            $sale = $object->getSale();
+
+            $data = array_replace($data, [
+                'number'      => $object->getNumber(),
+                'sale_number' => $sale->getNumber(),
+                'sale_id'     => $sale->getId(),
             ]);
         } elseif (self::contextHasGroup('Summary', $context)) {
             $items = [];

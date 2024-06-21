@@ -160,15 +160,13 @@ class SaleNormalizer extends ResourceNormalizer
      */
     protected function normalizePayment(PaymentInterface $payment): array
     {
-        $completedAt = $payment->getCompletedAt();
-
         return [
             'number'       => $payment->getNumber(),
             'method'       => $payment->getMethod()->getName(),
             'state'        => $payment->getState(),
             'currency'     => $currency = $payment->getCurrency()->getCode(),
             'amount'       => $payment->getAmount()->toFixed(Money::getPrecision($currency)),
-            'completed_at' => $completedAt ? $completedAt->format('Y-m-d') : null,
+            'completed_at' => $payment->getCompletedAt()?->format('Y-m-d'),
         ];
     }
 
@@ -177,13 +175,11 @@ class SaleNormalizer extends ResourceNormalizer
      */
     protected function normalizeShipment(ShipmentInterface $shipment): array
     {
-        $shippedAt = $shipment->getShippedAt();
-
         return [
             'number'     => $shipment->getNumber(),
             'method'     => $shipment->getMethod()->getName(),
             'state'      => $shipment->getState(),
-            'shipped_at' => $shippedAt ? $shippedAt->format('Y-m-d') : null,
+            'shipped_at' => $shipment->getShippedAt()?->format('Y-m-d'),
         ];
     }
 
