@@ -123,7 +123,7 @@ abstract class AbstractSaleFactory extends ResourceFactory implements SaleFactor
             $sale
                 ->setSameAddress(false)
                 ->setDeliveryAddress(
-                    $this->factoryHelper->createAddressForSale($sale, $invoiceDefault)
+                    $this->factoryHelper->createAddressForSale($sale, $deliveryDefault)
                 );
         }
     }
