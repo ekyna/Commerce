@@ -4,17 +4,35 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Export;
 
-use Symfony\Component\Intl\Countries;
-
 /**
  * Class RegionProvider
  * @package Ekyna\Component\Commerce\Common\Export
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class RegionProvider
+final class RegionProvider
 {
+    // ----- France « Département et région d'outre-mer » ------
+    public const FRANCE_DROM = [
+        'GF', // French Guiana
+        'GP', // Guadeloupe
+        'MQ', // Martinique
+        'YT', // Mayotte
+        'RE', // Réunion
+        'MF', // Saint Martin
+    ];
+
+    // ----- French « Collectivité d'outre-mer » -----
+    public const FRANCE_COM = [
+        'PM', // Saint Pierre and Miquelon
+        'BL', // Saint Bartelemey
+        'WF', // Wallis and Futuna
+        'PF', // French Polynesia
+        'NC', // New Caledonia
+        'TF', // French Southern Territories
+    ];
+
     /** @see https://gist.github.com/henrik/1688572 */
-    private const EUROPE = [
+    public const EUROPE = [
         // -----[ EU 28 ]-----
         'AT', // Austria
         'BE', // Belgium
@@ -25,7 +43,7 @@ class RegionProvider
         'DK', // Denmark
         'EE', // Estonia
         'FI', // Finland
-        //'FR', // France
+        'FR', // France
         'DE', // Germany
         'GR', // Greece
         'HU', // Hungary
@@ -49,7 +67,6 @@ class RegionProvider
         'GF', // French Guiana
         'GP', // Guadeloupe
         'MQ', // Martinique
-        'ME', // Montenegro
         'YT', // Mayotte
         'RE', // Réunion
         'MF', // Saint Martin
@@ -92,24 +109,4 @@ class RegionProvider
         'JE', // Jersey
         'GG', // Guernsey
     ];
-
-    /**
-     * Returns the regions.
-     *
-     * @return array
-     */
-    public function getRegions(): array
-    {
-        $all = array_keys(Countries::getNames());
-
-        $world = array_filter($all, function ($code) {
-            return ($code !== 'FR') && !in_array($code, self::EUROPE);
-        });
-
-        return [
-            'France' => ['FR'],
-            'Europe' => self::EUROPE,
-            'World'  => $world,
-        ];
-    }
 }

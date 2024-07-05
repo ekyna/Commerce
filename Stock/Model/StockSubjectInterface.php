@@ -12,6 +12,11 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  * Interface StockSubjectInterface
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * Dimensions may be used like:
+ *     Width  -> Length
+ *     Height -> Width
+ *     Depth  -> Height
  */
 interface StockSubjectInterface extends SubjectInterface
 {
