@@ -205,7 +205,7 @@ class SubjectCostGuesser implements SubjectCostGuesserInterface
         $cost = new Decimal(0);
         $count = 0;
         foreach ($products as $product) {
-            $price = $product->getNetPrice();
+            $price = $product->getNetPrice()->div($product->getPacking());
 
             if ($price->isZero()) {
                 continue;
