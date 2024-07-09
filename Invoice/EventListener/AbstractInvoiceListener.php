@@ -247,9 +247,7 @@ abstract class AbstractInvoiceListener
             );
         }
 
-        // Only comment, description, paid total and real paid total can change for locked invoices
-        $allowed = ['comment', 'description', 'paidTotal', 'realPaidTotal'];
-        if (empty(array_diff(array_keys($cs), $allowed))) {
+        if (empty(array_diff(array_keys($cs), $this->getAllowedToChangeProperties()))) {
             return;
         }
 
@@ -265,6 +263,16 @@ abstract class AbstractInvoiceListener
             'Invoice %s is locked.',
             $invoice->getNumber()
         ));
+    }
+
+    /**
+     * Only comment, description, paid total and real paid total can change for locked invoices.
+     *
+     * @return array<int, string>
+     */
+    protected function getAllowedToChangeProperties(): array
+    {
+        return ['comment', 'description', 'paidTotal', 'realPaidTotal'];
     }
 
     /**
