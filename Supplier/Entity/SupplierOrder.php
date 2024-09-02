@@ -27,6 +27,7 @@ use Ekyna\Component\Resource\Model\TimestampableTrait;
 class SupplierOrder extends AbstractResource implements Model\SupplierOrderInterface
 {
     use Common\ExchangeSubjectTrait;
+
     // TODO (Remove ExchangeSubjectTrait) use Common\CurrencySubjectTrait;
     use Common\NumberSubjectTrait;
     use Common\StateSubjectTrait;
@@ -53,6 +54,7 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     protected ?DateTimeInterface $paymentDate    = null; // TODO Remove
     protected ?DateTimeInterface $paymentDueDate = null;
 
+    protected bool               $reverseCharge    = false;
     protected Decimal            $customsTax;
     protected Decimal            $customsVat;
     protected Decimal            $forwarderFee;
@@ -384,6 +386,18 @@ class SupplierOrder extends AbstractResource implements Model\SupplierOrderInter
     public function setPaymentDueDate(?DateTimeInterface $date): Model\SupplierOrderInterface
     {
         $this->paymentDueDate = $date;
+
+        return $this;
+    }
+
+    public function isReverseCharge(): bool
+    {
+        return $this->reverseCharge;
+    }
+
+    public function setReverseCharge(bool $reverseCharge): Model\SupplierOrderInterface
+    {
+        $this->reverseCharge = $reverseCharge;
 
         return $this;
     }

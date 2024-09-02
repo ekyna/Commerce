@@ -41,6 +41,12 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
      */
     public function calculatePaymentTax(SupplierOrderInterface $order): Decimal
     {
+        $total = new Decimal(0);
+
+        if ($order->isReverseCharge()) {
+            return $total;
+        }
+
         $currency = $order->getCurrency()->getCode();
 
         $bases = [];
@@ -75,7 +81,6 @@ class SupplierOrderCalculator implements SupplierOrderCalculatorInterface
         }
 
         // Calculation
-        $total = new Decimal(0);
         foreach ($bases as $rate => $base) {
             $total += Money::round($base * $rate / 100, $currency);
         }

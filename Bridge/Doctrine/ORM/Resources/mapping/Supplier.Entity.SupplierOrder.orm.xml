@@ -34,6 +34,11 @@
         <field name="paymentDueDate" column="payment_due_date" type="date" nullable="true"/>
 
         <field name="forwarderFee" column="forwarder_fee" type="php_decimal" precision="15" scale="5"/>
+        <field name="reverseCharge" column="reverseCharge" type="boolean" nullable="false">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
         <field name="customsTax" column="customs_tax" type="php_decimal" precision="15" scale="5"/>
         <field name="customsVat" column="customs_vat" type="php_decimal" precision="15" scale="5"/>
         <field name="forwarderTotal" column="forwarder_total" type="php_decimal" precision="15" scale="5"/>

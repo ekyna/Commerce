@@ -145,6 +145,10 @@ interface SupplierOrderInterface extends
 
     public function setPaymentDueDate(?DateTimeInterface $date): SupplierOrderInterface;
 
+    public function isReverseCharge(): bool;
+
+    public function setReverseCharge(bool $reverseCharge): SupplierOrderInterface;
+
     public function getCustomsTax(): Decimal;
 
     public function setCustomsTax(Decimal $amount): SupplierOrderInterface;
