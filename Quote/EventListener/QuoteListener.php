@@ -46,11 +46,13 @@ class QuoteListener extends AbstractSaleListener
 
     protected function handleProject(QuoteInterface $quote): bool
     {
-        if (!is_null($quote->getProjectDate())) {
-            return false;
-        }
+        if (!is_null($quote->getProjectDate()) || !is_null($quote->getProjectTrust())) {
+            if (is_null($quote->getProjectAlive())) {
+                $quote->setProjectAlive(true);
 
-        if (!is_null($quote->getProjectTrust())) {
+                return true;
+            }
+
             return false;
         }
 

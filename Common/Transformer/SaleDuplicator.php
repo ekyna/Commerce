@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Decimal\Decimal;
-use Ekyna\Bundle\CommerceBundle\Model\InChargeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvent;
 use Ekyna\Component\Commerce\Common\Event\SaleTransformEvents;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -60,10 +59,6 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
             ->setSameAddress(true)
             ->setInvoiceAddress(null)
             ->setDeliveryAddress(null);
-
-        if ($this->target instanceof InChargeSubjectInterface) {
-            $this->target->setInCharge(null);
-        }
 
         return $event;
     }
