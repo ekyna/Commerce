@@ -192,7 +192,7 @@ class SupplierOrdersSection implements SectionInterface
         $sheet->getCell([1, 1])->setValue('Fournisseur');
 
         foreach ($groups as $index => $header) {
-            $col = 2 + $index * 4;
+            $col = 2 + $index * 5;
 
             // |--------------------------------------------------|
             // |                       YYYY                       |
@@ -207,6 +207,7 @@ class SupplierOrdersSection implements SectionInterface
                 $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
             );
             $sheet->getCell([$col, 1])->setValue($header); // Year
+
 
             $sheet->mergeCells([$col, 2, $col + 2, 2]);
             $sheet->getCell([$col, 2])->getStyle()->applyFromArray(
@@ -226,6 +227,7 @@ class SupplierOrdersSection implements SectionInterface
             $sheet->getColumnDimensionByColumn($col + 2)->setWidth(20, 'mm');
             $sheet->getCell([$col + 2, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col + 2, 3])->setValue('Ventes');
+
 
             $sheet->mergeCells([$col + 3, 2, $col + 4, 2]);
             $sheet->getCell([$col + 3, 2])->getStyle()->applyFromArray(

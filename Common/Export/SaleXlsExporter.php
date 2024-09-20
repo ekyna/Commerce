@@ -81,14 +81,14 @@ class SaleXlsExporter implements SaleExporterInterface
         ],
     ];
 
-    private const FORMAT_CURRENCY = [
-        'EUR' => NumberFormat::FORMAT_CURRENCY_EUR_SIMPLE,
-        'USD' => NumberFormat::FORMAT_CURRENCY_USD_SIMPLE,
-    ];
-
     private ?Worksheet $sheet = null;
     private int        $col   = 0;
     private int        $row   = 0;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $currenciesFormats = [];
 
     public function __construct(
         private readonly View\ViewBuilder    $viewBuilder,
@@ -105,7 +105,6 @@ class SaleXlsExporter implements SaleExporterInterface
         try {
             $spreadsheet = new Spreadsheet();
             $this->sheet = $spreadsheet->getActiveSheet();
-            $this->sheet->getColumnDimension('B')->setWidth(50);
 
             $view = $this->viewBuilder->buildSaleView($sale, [
                 'private'  => false,
@@ -209,38 +208,48 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell('');
         // B - Designation
         $this->cell($trans['designation']);
+        $this->sheet->getColumnDimension('B')->setWidth(50);
         // C - Reference
         $this->cell($trans['reference']);
         // D - Unit price
         $this->cell($trans['unit_net_price']);
+        $this->sheet->getColumnDimension('D')->setWidth(12);
         // E - Quantity
         $this->cell($trans['quantity']);
         // F - Gross
         $this->cell($trans['net_gross']);
+        $this->sheet->getColumnDimension('F')->setWidth(12);
         // G - Discount rate
         // H - Discount amount
         $this->sheet->mergeCells("G$this->row:H$this->row");
         $this->cell($this->translator->trans('sale.field.discount', [], 'EkynaCommerce'));
+        $this->sheet->getColumnDimension('H')->setWidth(12);
         // I - Total
         $this->col = 8;
         $this->cell($trans['net_total']);
+        $this->sheet->getColumnDimension('I')->setWidth(12);
         // J - Tax rate
         // K - Tax amount
         $this->sheet->mergeCells("J$this->row:K$this->row");
         $this->cell($this->translator->trans('field.vat', [], 'EkynaCommerce'));
+        $this->sheet->getColumnDimension('K')->setWidth(12);
         $this->col = 11;
         // L - Ati total
         $this->cell('');
+        $this->sheet->getColumnDimension('L')->setWidth(12);
         // M - Spacer
         $this->cell('');
         // N - Weight
         $this->cell($this->translator->trans('field.weight', [], 'EkynaUi'));
         // O - HS Code
         $this->cell($this->translator->trans('stock_subject.field.hs_code', [], 'EkynaCommerce'));
+        $this->sheet->getColumnDimension('O')->setWidth(12);
         // P - EAN13
         $this->cell('EAN13');
+        $this->sheet->getColumnDimension('P')->setWidth(16);
         // Q - MPN
         $this->cell('MPN');
+        $this->sheet->getColumnDimension('Q')->setWidth(16);
 
         $this->sheet->getStyle("B$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
         $this->sheet->getStyle("N$this->row:Q$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
@@ -614,12 +623,15 @@ class SaleXlsExporter implements SaleExporterInterface
      */
     private function getCurrencyFormat(string $currency): string
     {
-        if (isset(self::FORMAT_CURRENCY[$currency])) {
-            return self::FORMAT_CURRENCY[$currency];
+        if (isset($this->currenciesFormats[$currency])) {
+            return $this->currenciesFormats[$currency];
         }
 
-        $symbol = Currencies::getSymbol($currency);
+        $mask = new NumberFormat\Wizard\Currency(
+            Currencies::getSymbol($currency),
+            locale: 'fr'
+        );
 
-        return str_replace('$', $symbol, NumberFormat::FORMAT_CURRENCY_USD);
+        return $this->currenciesFormats[$currency] = $mask->format();
     }
 }
