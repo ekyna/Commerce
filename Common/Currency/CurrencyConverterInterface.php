@@ -80,6 +80,8 @@ interface CurrencyConverterInterface
 
     /**
      * Returns the default currency.
+     *
+     * @TODO Rename with 'getSystemCurrency()'
      */
     public function getDefaultCurrency(): string;
 }

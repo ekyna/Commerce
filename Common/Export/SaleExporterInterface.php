@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Common\Export;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
@@ -14,9 +16,7 @@ interface SaleExporterInterface
     /**
      * Exports the given sale.
      *
-     * @param SaleInterface $sale
-     *
-     * @return string THe exported file path.
+     * @return string The exported file path.
      */
-    public function export(SaleInterface $sale): string;
+    public function export(SaleInterface $sale, bool $internal = false): string;
 }

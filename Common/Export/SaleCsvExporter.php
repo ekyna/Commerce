@@ -23,8 +23,10 @@ class SaleCsvExporter implements SaleExporterInterface
     /**
      * @inheritDoc
      */
-    public function export(SaleInterface $sale): string
+    public function export(SaleInterface $sale, bool $internal = false): string
     {
+        // TODO Internal: costs and margins
+
         $view = $this->viewBuilder->buildSaleView($sale, [
             'private'  => false,
             'editable' => false,

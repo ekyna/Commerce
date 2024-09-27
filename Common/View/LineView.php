@@ -26,6 +26,7 @@ class LineView extends AbstractView
     public ?string $taxAmount      = null;
     public ?string $total          = null; // Total price after applying discounts and taxes.
     public ?string $margin         = null; // The margin in percentage.
+    public ?string $cost           = null; // The unit cost.
     public ?string $weight         = null; // The weight
     public ?string $hsCode         = null; // The HS code.
     public ?string $ean13          = null; // The EAN13 code.

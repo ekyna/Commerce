@@ -83,10 +83,11 @@ class ViewBuilder
             $this->currency($finalResult->getTotal())
         );
 
-        if ($this->options['private']) {
+        $this->view->vars['show_margin'] = $this->options['margin'] || $this->options['private'];
+
+        if ($this->view->vars['show_margin']) {
             // TODO if ($sale instanceof MarginSubjectInterface) $margin = $sale->getMargin()
             $margin = $this->marginCalculator->calculateSale($sale);
-            $this->view->vars['show_margin'] = true;
 
             // Gross margin
             $prefix = $margin->isAverage() ? '~' : '';
@@ -308,7 +309,8 @@ class ViewBuilder
             $weight = '';
         } else {
             $quantity = $this->number($item->getTotalQuantity());
-            $weight = $this->number($this->weightCalculator->calculateSaleItem($item));
+            $weight = $this->weightCalculator->calculateSaleItem($item);
+            $weight = $this->number($weight->div($item->getTotalQuantity()));
         }
 
         if (
@@ -349,7 +351,9 @@ class ViewBuilder
 
         if ($this->view->vars['show_margin'] && !($item->isCompound() && !$item->hasPrivateChildren())) {
             $margin = $this->marginCalculator->calculateSaleItem($item, $item->isPrivate());
-            $view->margin = $this->percent($margin->getPercent(false), $margin->isAverage() ? '~' : '');
+            $view->margin = $this->percent($margin->getPercent(true), $margin->isAverage() ? '~' : '');
+            // TODO Use formatter with default currency
+            $view->cost = $margin->getCostTotal(true)->div($item->getTotalQuantity())->toFixed(2);
         }
 
         if (!$item->hasParent()) {
@@ -456,7 +460,8 @@ class ViewBuilder
 
         if ($this->view->vars['show_margin']) {
             $margin = $this->marginCalculator->calculateSaleShipment($sale);
-            $view->margin = $this->percent($margin->getPercent(false), $margin->isAverage() ? '~' : '');
+            $view->margin = $this->percent($margin->getPercent(true), $margin->isAverage() ? '~' : '');
+            $view->cost = $margin->getCostTotal(true)->toFixed(2); // TODO Use formatter with default currency
         }
 
         $this->view->shipment = $view;
@@ -492,7 +497,7 @@ class ViewBuilder
     private function number(Decimal $value): string
     {
         if ($this->options['export']) {
-            return $value->toFixed(2);
+            return $value->toFixed(5);
         }
 
         return $this->formatter->number($value);
@@ -533,6 +538,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
+                'margin'     => true,
                 'locale'     => Locale::getDefault(),
                 'currency'   => $this->currencyConverter->getDefaultCurrency(),
                 'ati'        => false,
@@ -550,6 +556,7 @@ class ViewBuilder
             ->setAllowedTypes('private', 'bool')
             ->setAllowedTypes('editable', 'bool')
             ->setAllowedTypes('taxes_view', 'bool')
+            ->setAllowedTypes('margin', 'bool')
             ->setAllowedTypes('locale', 'string')
             ->setAllowedTypes('currency', 'string')
             ->setAllowedTypes('ati', 'bool')

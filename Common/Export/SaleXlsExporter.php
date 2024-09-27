@@ -18,8 +18,10 @@ use Ekyna\Component\Commerce\Quote\Model\QuoteInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Component\Intl\Currencies;
@@ -27,13 +29,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 use function array_fill;
+use function array_map;
+use function explode;
 use function implode;
 use function is_null;
 use function preg_replace;
 use function sprintf;
-use function str_replace;
 use function strip_tags;
 use function sys_get_temp_dir;
+use function trim;
 
 /**
  * Class SaleXlsExporter
@@ -89,6 +93,7 @@ class SaleXlsExporter implements SaleExporterInterface
      * @var array<string, string>
      */
     private array $currenciesFormats = [];
+    private bool  $internal          = false;
 
     public function __construct(
         private readonly View\ViewBuilder    $viewBuilder,
@@ -100,17 +105,22 @@ class SaleXlsExporter implements SaleExporterInterface
     /**
      * @inheritDoc
      */
-    public function export(SaleInterface $sale): string
+    public function export(SaleInterface $sale, bool $internal = false): string
     {
         try {
             $spreadsheet = new Spreadsheet();
             $this->sheet = $spreadsheet->getActiveSheet();
 
-            $view = $this->viewBuilder->buildSaleView($sale, [
+            $viewOptions = [
                 'private'  => false,
                 'editable' => false,
                 'export'   => true,
-            ]);
+            ];
+            if ($this->internal = $internal) {
+                $viewOptions['margin'] = true;
+            }
+
+            $view = $this->viewBuilder->buildSaleView($sale, $viewOptions);
 
             $this->buildHeader($sale);
             $this->buildRowHeaders($view);
@@ -149,6 +159,7 @@ class SaleXlsExporter implements SaleExporterInterface
             $type = $this->translator->trans('order.label.singular', [], 'EkynaCommerce');
         }
 
+        // B2(-K2): Title
         $this->sheet->mergeCells("B$this->row:K$this->row");
         $this->col = 1;
         $this->cell($type . ' ' . $sale->getNumber());
@@ -157,38 +168,63 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->spacer();
         $this->row();
 
+        // B4(-C4): Invoice address header
         $this->sheet->mergeCells("B$this->row:C$this->row");
         $this->col = 1;
         $this->cell($this->translator->trans('sale.field.invoice_address', [], 'EkynaCommerce'));
-        $this->sheet->getStyle("B$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("B$this->row:C$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
 
+        // D4(-E4): Addresses spacer
         $this->sheet->mergeCells("D$this->row:E$this->row");
 
+        // F4(-K4): Delivery address header
         $this->sheet->mergeCells("F$this->row:K$this->row");
         $this->col = 5;
         $this->cell($this->translator->trans('sale.field.delivery_address', [], 'EkynaCommerce'));
-        $this->sheet->getStyle("F$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+        $this->sheet->getStyle("F$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
 
         $this->row();
 
-        $address = $this->commonRenderer->renderAddress($sale->getInvoiceAddress());
-        $address = strip_tags(str_replace('<br>', "\n", $address));
-        $address = preg_replace("~\n+~", "\n", $address);
+        $this->sheet->getRowDimension($this->row)->setRowHeight(120);
+
+        $formatAddress = static function (string $input): string {
+            $input = implode(
+                "\n",
+                array_map(
+                    static fn(string $string): string => trim($string),
+                    explode('<br>', $input)
+                )
+            );
+
+            return preg_replace("~\n+~", "\n", strip_tags($input));
+        };
+
+        // B5(-C5): Invoice address
+        $address = $formatAddress(
+            $this->commonRenderer->renderAddress($sale->getInvoiceAddress())
+        );
 
         $this->sheet->mergeCells("B$this->row:C$this->row");
         $this->col = 1;
         $this->cell($address);
+        $this->getStyle()->getAlignment()->setWrapText(true);
+        $this->getStyle()->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
 
+        // D5(-E5): Addresses spacer
+        $this->sheet->mergeCells("D$this->row:E$this->row");
+
+        // F5(-K5): Delivery address
         if (!$sale->isSameAddress()) {
-            $address = $this->commonRenderer->renderAddress($sale->getDeliveryAddress());
-            $address = strip_tags(str_replace('<br>', "\n", $address));
-            $address = preg_replace("~\n+~", "\n", $address);
+            $address = $formatAddress(
+                $this->commonRenderer->renderAddress($sale->getDeliveryAddress())
+            );
         }
 
-        $this->sheet->mergeCells("D$this->row:E$this->row");
         $this->sheet->mergeCells("F$this->row:K$this->row");
         $this->col = 5;
         $this->cell($address);
+        $this->getStyle()->getAlignment()->setWrapText(true);
+        $this->getStyle()->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
 
         $this->spacer();
     }
@@ -211,11 +247,13 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->sheet->getColumnDimension('B')->setWidth(50);
         // C - Reference
         $this->cell($trans['reference']);
+        $this->sheet->getColumnDimension('C')->setWidth(10);
         // D - Unit price
         $this->cell($trans['unit_net_price']);
         $this->sheet->getColumnDimension('D')->setWidth(12);
         // E - Quantity
         $this->cell($trans['quantity']);
+        $this->sheet->getColumnDimension('E')->setWidth(9);
         // F - Gross
         $this->cell($trans['net_gross']);
         $this->sheet->getColumnDimension('F')->setWidth(12);
@@ -237,22 +275,37 @@ class SaleXlsExporter implements SaleExporterInterface
         // L - Ati total
         $this->cell('');
         $this->sheet->getColumnDimension('L')->setWidth(12);
+        $this->sheet->getStyle("B$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+
         // M - Spacer
         $this->cell('');
-        // N - Weight
-        $this->cell($this->translator->trans('field.weight', [], 'EkynaUi'));
-        // O - HS Code
-        $this->cell($this->translator->trans('stock_subject.field.hs_code', [], 'EkynaCommerce'));
-        $this->sheet->getColumnDimension('O')->setWidth(12);
-        // P - EAN13
-        $this->cell('EAN13');
-        $this->sheet->getColumnDimension('P')->setWidth(16);
-        // Q - MPN
-        $this->cell('MPN');
-        $this->sheet->getColumnDimension('Q')->setWidth(16);
 
-        $this->sheet->getStyle("B$this->row:K$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
-        $this->sheet->getStyle("N$this->row:Q$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+        if ($this->internal) {
+            // N - Cost
+            $this->cell('Coût');
+            // O - Margin
+            $this->cell('Marge');
+            $this->sheet->getStyle("N$this->row:O$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
+        } else {
+            $this->col += 2;
+        }
+
+        // P - Spacer
+        $this->cell('');
+
+        // Q - Weight
+        $this->cell($this->translator->trans('field.weight', [], 'EkynaUi'));
+        // R - HS Code
+        $this->cell($this->translator->trans('stock_subject.field.hs_code', [], 'EkynaCommerce'));
+        $this->sheet->getColumnDimension('R')->setWidth(12);
+        // S - EAN13
+        $this->cell('EAN13');
+        $this->sheet->getColumnDimension('S')->setWidth(16);
+        // T - MPN
+        $this->cell('MPN');
+        $this->sheet->getColumnDimension('T')->setWidth(16);
+
+        $this->sheet->getStyle("Q$this->row:T$this->row")->applyFromArray(self::STYLE_ROW_HEADERS);
     }
 
     /**
@@ -276,35 +329,67 @@ class SaleXlsExporter implements SaleExporterInterface
     {
         $currency = $this->getCurrencyFormat($view->currency);
 
+        // D - Unit price
         $this->sheet
             ->getStyle("D$from:D$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
+        // F - Base total
         $this->sheet
             ->getStyle("F$from:F$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
+        // G - Discount percent
         $this->sheet
             ->getStyle("G$from:G$to")
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
 
+        // H - Discount total, I - Gross total
         $this->sheet
             ->getStyle("H$from:I$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
 
+        // J - VAT percent
         $this->sheet
             ->getStyle("J$from:J$to")
             ->getNumberFormat()
             ->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
 
+        // K - VAT total
         $this->sheet
             ->getStyle("K$from:K$to")
             ->getNumberFormat()
             ->setFormatCode($currency);
+
+        if ($this->internal) {
+            // N - Cost
+            $this->sheet
+                ->getStyle("N$from:N$to")
+                ->getNumberFormat()
+                ->setFormatCode($currency);
+
+            // O - Marge
+            $this->sheet
+                ->getStyle("O$from:O$to")
+                ->getNumberFormat()
+                ->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
+        }
+
+        // Q - Weight
+        $this->sheet
+            ->getStyle("Q$from:Q$to")
+            ->getNumberFormat()
+            ->setFormatCode('0.000k\g');
+
+        // R - HS Code, S - EAN13, T - MPN
+        $this->sheet
+            ->getStyle("R$from:T$to")
+            ->getNumberFormat()
+            ->setFormatCode(NumberFormat::FORMAT_NUMBER);
     }
 
     /**
@@ -372,13 +457,24 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell(''); //$this->cell("=I$this->row+K$this->row");
         // M - Spacer
         $this->cell('');
-        // N - Weight
-        $this->cell($line->weight);
-        // O - HS Code
+        if ($this->internal) {
+            // N - Cost
+            $this->cell($line->cost ? "=$line->cost*E$this->row" : '0');
+            // O - Margin
+            $this->cell("=1-(N$this->row/I$this->row)");
+        } else {
+            $this->col += 2;
+        }
+
+        // P - Spacer
+        $this->cell(''); // (1 - (cost / revenue) ) * 100
+        // Q - Weight
+        $this->cell($line->weight ? "=$line->weight*E$this->row" : '0');
+        // R - HS Code
         $this->cell($line->hsCode);
-        // P - EAN13
+        // S - EAN13
         $this->cell($line->ean13);
-        // Q - MPN
+        // T - MPN
         $this->cell($line->mpn);
 
         $row = $this->row;
@@ -417,8 +513,20 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell('');
         // K - Tax amount
         $this->cell(sprintf('=SUM(K2:K%d)', $this->row - 2));
-        // I - Ati total
+        // L - Ati total
         //$this->cell(sprintf('=SUM(L2:L%d)', $this->row - 2));
+
+        if ($this->internal) {
+            $this->col = 13;
+            // N - Cost
+            $this->cell(sprintf('=SUM(N2:N%d)', $this->row - 2));
+            // O - Margin
+            $this->cell("=1-(N$this->row/I$this->row)");
+        }
+
+        $this->col = 16;
+        // Q - Weight
+        $this->cell(sprintf('=SUM(Q2:Q%d)', $this->row - 2));
 
         return $this->row;
     }
@@ -529,6 +637,7 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->cell($line ? $line->taxRates : '0');
         // K - Tax amount
         $this->cell("=I$this->row*J$this->row");
+        // TODO cost/margin
     }
 
     /**
@@ -610,6 +719,14 @@ class SaleXlsExporter implements SaleExporterInterface
     }
 
     /**
+     * Returns the latest written cell's style.
+     */
+    private function getStyle(): ?Style
+    {
+        return $this->sheet->getStyle([$this->col, $this->row]);
+    }
+
+    /**
      * Adds a spacer blank line with merged cells.
      */
     private function spacer(): void
@@ -629,7 +746,7 @@ class SaleXlsExporter implements SaleExporterInterface
 
         $mask = new NumberFormat\Wizard\Currency(
             Currencies::getSymbol($currency),
-            locale: 'fr'
+            locale: 'fr' // TODO From sale
         );
 
         return $this->currenciesFormats[$currency] = $mask->format();
