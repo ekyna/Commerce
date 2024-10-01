@@ -27,6 +27,13 @@ interface InvoiceSubjectInterface
 
     public function setInvoiceState(string $state): InvoiceSubjectInterface;
 
+    public function isAutoInvoice(): bool;
+
+    /**
+     * @return $this|InvoiceSubjectInterface
+     */
+    public function setAutoInvoice(bool $autoInvoice): InvoiceSubjectInterface;
+
     public function hasInvoices(): bool;
 
     /**

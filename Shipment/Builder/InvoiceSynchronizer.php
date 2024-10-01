@@ -46,6 +46,11 @@ class InvoiceSynchronizer implements InvoiceSynchronizerInterface
             throw new LogicException("Shipment's sale must be set at this point.");
         }
 
+        // Abort if auto invoicing is disabled
+        if (!$sale->isAutoInvoice()) {
+            return;
+        }
+
         $invoice = $shipment->getInvoice();
 
         // Abort if invoice has an id.

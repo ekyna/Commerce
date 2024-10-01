@@ -20,14 +20,16 @@ trait InvoiceSubjectTrait
     protected Decimal    $invoiceTotal;
     protected Decimal    $creditTotal;
     protected string     $invoiceState;
+    protected bool       $autoInvoice;
     protected Collection $invoices;
 
 
-    protected function initializeInvoiceSubject()
+    protected function initializeInvoiceSubject(): void
     {
         $this->invoiceTotal = new Decimal(0);
         $this->creditTotal = new Decimal(0);
         $this->invoiceState = InvoiceStates::STATE_NEW;
+        $this->autoInvoice = true;
         $this->invoices = new ArrayCollection();
     }
 
@@ -72,6 +74,21 @@ trait InvoiceSubjectTrait
     public function setInvoiceState(string $state): InvoiceSubjectInterface
     {
         $this->invoiceState = $state;
+
+        return $this;
+    }
+
+    public function isAutoInvoice(): bool
+    {
+        return $this->autoInvoice;
+    }
+
+    /**
+     * @return $this|InvoiceSubjectInterface
+     */
+    public function setAutoInvoice(bool $autoInvoice): InvoiceSubjectInterface
+    {
+        $this->autoInvoice = $autoInvoice;
 
         return $this;
     }

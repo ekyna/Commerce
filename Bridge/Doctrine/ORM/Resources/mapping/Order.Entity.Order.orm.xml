@@ -33,6 +33,11 @@
         <field name="invoiceTotal" column="invoice_total" type="php_decimal" precision="15" scale="5"/>
         <field name="creditTotal" column="credit_total" type="php_decimal" precision="15" scale="5"/>
         <field name="invoiceState" column="invoice_state" type="string" length="16"/>
+        <field name="autoInvoice" column="auto_invoice" type="boolean">
+            <options>
+                <option name="default">1</option>
+            </options>
+        </field>
         <field name="sample" column="is_sample" type="boolean"/>
         <field name="released" column="is_released" type="boolean"/>
         <field name="support" column="is_support" type="boolean"/>
