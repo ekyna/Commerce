@@ -538,7 +538,7 @@ class ViewBuilder
                 'private'    => false,
                 'editable'   => false,
                 'taxes_view' => true,
-                'margin'     => true,
+                'margin'     => false,
                 'locale'     => Locale::getDefault(),
                 'currency'   => $this->currencyConverter->getDefaultCurrency(),
                 'ati'        => false,
