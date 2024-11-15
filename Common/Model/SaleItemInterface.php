@@ -49,9 +49,21 @@ interface SaleItemInterface extends SubjectRelativeInterface, SortableInterface,
      */
     public function getChildren(): Collection;
 
-    public function getDescription(): ?string;
+    public function getDescriptions(): array;
 
-    public function setDescription(?string $description): SaleItemInterface;
+    public function hasDescription(string $key): bool;
+
+    public function getDescription(string $key): ?string;
+
+    public function setDescription(string $key, string $value): SaleItemInterface;
+
+    public function clearDescription(string $key): SaleItemInterface;
+
+    /**
+     * @deprecated Use setDescription() instead
+     * @TODO Remove
+     */
+    public function setDescriptions(array $descriptions): SaleItemInterface;
 
     public function getQuantity(): Decimal;
 

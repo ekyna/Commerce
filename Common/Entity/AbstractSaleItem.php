@@ -8,7 +8,6 @@ use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
 use Ekyna\Component\Resource\Model\SortableTrait;
 
@@ -29,8 +28,8 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
     protected ?Model\SaleItemInterface $parent = null;
     /** @var Collection<int, Model\SaleItemInterface> */
     protected Collection $children;
-    protected ?string    $description  = null;
     protected Decimal    $quantity;
+    protected array      $descriptions = [];
     protected bool       $compound     = false;
     protected bool       $immutable    = false;
     protected bool       $configurable = false;
@@ -182,14 +181,38 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescriptions(): array
     {
-        return $this->description;
+        return $this->descriptions;
     }
 
-    public function setDescription(?string $description): Model\SaleItemInterface
+    public function hasDescription(string $key): bool
     {
-        $this->description = $description;
+        return isset($this->descriptions[$key]);
+    }
+
+    public function getDescription(string $key): ?string
+    {
+        return $this->descriptions[$key] ?? null;
+    }
+
+    public function setDescription(string $key, string $value): Model\SaleItemInterface
+    {
+        $this->descriptions[$key] = $value;
+
+        return $this;
+    }
+
+    public function clearDescription(string $key): Model\SaleItemInterface
+    {
+        unset($this->descriptions[$key]);
+
+        return $this;
+    }
+
+    public function setDescriptions(array $descriptions): Model\SaleItemInterface
+    {
+        $this->descriptions = $descriptions;
 
         return $this;
     }
@@ -281,7 +304,7 @@ abstract class AbstractSaleItem implements Model\SaleItemInterface
         return $this->data;
     }
 
-    public function setData(array $data): SaleItemInterface
+    public function setData(array $data): Model\SaleItemInterface
     {
         $this->data = $data;
 

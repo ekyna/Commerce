@@ -8,6 +8,8 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Pricing\Model\TaxableInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
+use function in_array;
+
 /**
  * Interface SubjectInterface
  * @package Ekyna\Component\Commerce\Subject\Model
@@ -45,4 +47,11 @@ interface SubjectInterface extends ResourceInterface, TaxableInterface
      * @return $this|SubjectInterface
      */
     public function setNetPrice(Decimal $netPrice): SubjectInterface;
+
+    public function getReferenceAliases(): array;
+
+    /**
+     * @return $this|SubjectInterface
+     */
+    public function addReferenceAlias(string $reference): SubjectInterface;
 }

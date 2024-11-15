@@ -830,6 +830,12 @@ class LoadMetadataListener
                 'nullable'   => true,
                 'default'    => 0,
             ],
+            [
+                'fieldName'  => 'referenceAliases',
+                'columnName' => 'reference_aliases',
+                'type'       => Types::SIMPLE_ARRAY,
+                'nullable'   => true,
+            ],
         ];
     }
 }

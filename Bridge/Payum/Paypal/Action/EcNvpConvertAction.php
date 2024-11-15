@@ -17,6 +17,8 @@ use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Convert;
 
+use function implode;
+
 /**
  * Class EcNvpConvertAction
  * @package Ekyna\Component\Commerce\Bridge\Payum\Paypal\Action
@@ -125,7 +127,7 @@ class EcNvpConvertAction implements ActionInterface, GatewayAwareInterface
             $details['L_PAYMENTREQUEST_0_NAME' . $this->line] = $item->getTotalQuantity() . 'x '
                 . $item->getDesignation();
             $details['L_PAYMENTREQUEST_0_NUMBER' . $this->line] = $item->getReference();
-            if (!empty($description = $item->getDescription())) {
+            if (!empty($description = implode('. ', $item->getDescriptions()))) {
                 $details['L_PAYMENTREQUEST_0_DESC' . $this->line] = $description;
             }
             $details['L_PAYMENTREQUEST_0_AMT' . $this->line] = $this->format($itemResult->getTotal());

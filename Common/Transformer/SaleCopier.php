@@ -252,7 +252,7 @@ class SaleCopier implements SaleCopierInterface
     {
         $this->copy($source, $target, [
             'designation',
-            'description',
+            'descriptions',
             'reference',
             'taxGroup',
             'netPrice',

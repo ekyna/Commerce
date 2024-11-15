@@ -16,9 +16,10 @@ trait SubjectTrait
 {
     use TaxableTrait;
 
-    protected ?string $designation = null;
-    protected ?string $reference = null;
+    protected ?string $designation        = null;
+    protected ?string $reference          = null;
     protected Decimal $netPrice;
+    protected array   $referenceAliases = [];
 
     public function __clone()
     {
@@ -62,6 +63,20 @@ trait SubjectTrait
     public function setNetPrice(Decimal $price): SubjectInterface
     {
         $this->netPrice = $price;
+
+        return $this;
+    }
+
+    public function getReferenceAliases(): array
+    {
+        return $this->referenceAliases;
+    }
+
+    public function addReferenceAlias(string $reference): SubjectInterface
+    {
+        if (!in_array($reference, $this->referenceAliases, true)) {
+            $this->referenceAliases[] = $reference;
+        }
 
         return $this;
     }

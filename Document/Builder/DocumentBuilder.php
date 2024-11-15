@@ -16,6 +16,7 @@ use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 
 use function array_filter;
+use function implode;
 
 /**
  * Class DocumentBuilder
@@ -159,7 +160,7 @@ class DocumentBuilder implements DocumentBuilderInterface
                     ->setType(Document\DocumentLineTypes::TYPE_GOOD)
                     ->setSaleItem($item)
                     ->setDesignation($item->getDesignation())
-                    ->setDescription($item->getDescription())
+                    ->setDescription(implode('. ', $item->getDescriptions()))
                     ->setReference($item->getReference())
                     ->setQuantity($item->getTotalQuantity());
             }

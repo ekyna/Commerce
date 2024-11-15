@@ -22,6 +22,7 @@ use Locale;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function implode;
 use function sprintf;
 
 /**
@@ -321,7 +322,7 @@ class ViewBuilder
         }
 
         $view->designation = $item->getDesignation();
-        $view->description = $item->getDescription();
+        $view->description = implode('. ', $item->getDescriptions());
         $view->unit = $unit;
         $view->quantity = $quantity;
         $view->gross = $gross;

@@ -171,7 +171,7 @@ class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
             ->setType(Document\DocumentLineTypes::TYPE_GOOD)
             ->setSaleItem($item)
             ->setDesignation($item->getDesignation())
-            ->setDescription($item->getDescription())
+            ->setDescription(implode('. ', $item->getDescriptions()))
             ->setReference($item->getReference());
     }
 

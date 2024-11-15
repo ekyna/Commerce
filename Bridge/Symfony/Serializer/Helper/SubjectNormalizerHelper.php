@@ -26,6 +26,8 @@ use function sprintf;
  * Class SubjectNormalizerHelper
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Helper
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO Move to bundle (as there are bundle dependencies)
  */
 class SubjectNormalizerHelper
 {

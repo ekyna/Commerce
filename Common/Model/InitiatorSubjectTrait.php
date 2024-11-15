@@ -13,7 +13,7 @@ use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
  */
 trait InitiatorSubjectTrait
 {
-    protected ?CustomerInterface $initiatorCustomer = null;
+    protected ?CustomerInterface $initiatorCustomer = null; // TODO Rename to 'business introducer'
 
     public function getInitiatorCustomer(): ?CustomerInterface
     {

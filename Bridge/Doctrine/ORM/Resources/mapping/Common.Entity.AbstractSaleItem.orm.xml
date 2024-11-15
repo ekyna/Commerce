@@ -7,7 +7,7 @@
 
     <mapped-superclass name="Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem">
 
-        <field name="description" column="description" type="string" length="255" nullable="true"/>
+        <field name="descriptions" column="descriptions" type="json"/>
         <field name="quantity" column="quantity" type="php_decimal" precision="10" scale="3"/>
         <field name="compound" column="compound" type="boolean"/>
         <field name="immutable" column="immutable" type="boolean"/>

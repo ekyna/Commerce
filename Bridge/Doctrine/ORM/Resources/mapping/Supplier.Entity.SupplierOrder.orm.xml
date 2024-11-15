@@ -34,7 +34,7 @@
         <field name="paymentDueDate" column="payment_due_date" type="date" nullable="true"/>
 
         <field name="forwarderFee" column="forwarder_fee" type="php_decimal" precision="15" scale="5"/>
-        <field name="reverseCharge" column="reverseCharge" type="boolean" nullable="false">
+        <field name="reverseCharge" column="reverse_charge" type="boolean" nullable="false">
             <options>
                 <option name="default">0</option>
             </options>
