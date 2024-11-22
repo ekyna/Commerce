@@ -232,27 +232,15 @@ class DocumentBuilder implements DocumentBuilderInterface
      */
     protected function buildCustomerData(Common\SaleInterface $sale): array
     {
-        if ($customer = $sale->getCustomer()) {
-            $data = [
-                'number'     => $customer->getNumber(),
-                'company'    => $customer->getCompany(),
-                'first_name' => $customer->getFirstName(),
-                'last_name'  => $customer->getLastName(),
-                'email'      => $customer->getEmail(),
-                'phone'      => $this->formatPhoneNumber($customer->getPhone()),
-                'mobile'     => $this->formatPhoneNumber($customer->getMobile()),
-            ];
-        } else {
-            $data = [
-                'number'     => null,
-                'company'    => $sale->getCompany(),
-                'first_name' => $sale->getFirstName(),
-                'last_name'  => $sale->getLastName(),
-                'email'      => $sale->getEmail(),
-                'phone'      => null,
-                'mobile'     => null,
-            ];
-        }
+        $data = [
+            'number'     => $sale->getCustomer()?->getNumber(),
+            'company'    => $sale->getCompany(),
+            'first_name' => $sale->getFirstName(),
+            'last_name'  => $sale->getLastName(),
+            'email'      => $sale->getEmail(),
+            'phone'      => null,
+            'mobile'     => null,
+        ];
 
         return array_filter($data, fn($v) => !empty($v));
     }
