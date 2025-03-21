@@ -30,6 +30,9 @@ class VirtualGateway extends AbstractGateway
 
     public function getCapabilities(): int
     {
-        return static::CAPABILITY_SHIPMENT | static::CAPABILITY_VIRTUAL | static::CAPABILITY_SYSTEM;
+        return static::CAPABILITY_SHIPMENT
+            | static::CAPABILITY_RETURN
+            | static::CAPABILITY_VIRTUAL
+            | static::CAPABILITY_SYSTEM;
     }
 }
