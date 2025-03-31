@@ -7,7 +7,6 @@ namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 use DateInterval;
 use DatePeriod;
 use DateTime;
-use Decimal\Decimal;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Ekyna\Component\Commerce\Common\Model\SaleSources;
@@ -100,10 +99,11 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         $result = $qb
             ->select(['o.date', 'o.revenue', 'o.details'])
             ->andWhere($expr->eq('o.type', ':type'))
+            ->andWhere($expr->gte('o.date', ':from'))
             ->addOrderBy('o.date')
             ->getQuery()
             ->setParameter('type', OrderStat::TYPE_YEAR)
-            ->setMaxResults(8)
+            ->setParameter('from', date('Y') - ($limit - 1))
             ->getScalarResult();
 
         return $this->buildRevenueData($result, $detailed);
