@@ -91,7 +91,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         return $this->findRevenues(OrderStat::TYPE_MONTH, $date, null, $detailed);
     }
 
-    public function findYearRevenues(int $limit = 8, bool $detailed = false): array
+    public function findYearRevenues(int $limit = 7, bool $detailed = false): array
     {
         $qb = $this->createQueryBuilder('o');
         $expr = $qb->expr();
