@@ -6,6 +6,7 @@ namespace Ekyna\Component\Commerce\Stat\Repository;
 
 use DateTime;
 use Ekyna\Component\Commerce\Stat\Entity\OrderStat;
+use Ekyna\Component\Resource\Model\DateRange;
 use Exception;
 
 /**
@@ -28,14 +29,14 @@ interface OrderStatRepositoryInterface
     /**
      * Finds the order stat by year.
      */
-    public function findOneByYear(DateTime $date): ?OrderStat;
+    public function findOneByYear(string $year): ?OrderStat;
 
     /**
-     * Returns the daily stats sums of the given year (between the january, 1st and the given date).
+     * Returns the daily stats sums of the given date range.
      *
      * @throws Exception
      */
-    public function findSumByYear(DateTime $date): OrderStat;
+    public function findSumByDateRange(DateRange $range): array;
 
     /**
      * Finds the day revenues by month.

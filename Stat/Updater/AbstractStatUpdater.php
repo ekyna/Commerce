@@ -9,6 +9,7 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stat\Calculator\StatCalculatorInterface;
 use Ekyna\Component\Commerce\Stat\Entity;
 use Ekyna\Component\Commerce\Stat\Repository;
+use Ekyna\Component\Commerce\Stat\StatHelperInterface;
 
 /**
  * Class StatUpdater
@@ -17,11 +18,10 @@ use Ekyna\Component\Commerce\Stat\Repository;
  */
 abstract class AbstractStatUpdater implements StatUpdaterInterface
 {
-    private StatCalculatorInterface $calculator;
-
-    public function __construct(StatCalculatorInterface $calculator)
-    {
-        $this->calculator = $calculator;
+    public function __construct(
+        protected readonly StatCalculatorInterface $calculator,
+        protected readonly StatHelperInterface $helper,
+    ) {
     }
 
     public function updateStockStat(): bool
@@ -89,16 +89,16 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
         return false;
     }
 
-    public function updateYearOrderStat(DateTime $date, bool $force = false): bool
+    public function updateYearOrderStat(string $year, bool $force = false): bool
     {
-        if (null === $stat = $this->getOrderStatRepository()->findOneByYear($date)) {
+        if (null === $stat = $this->getOrderStatRepository()->findOneByYear($year)) {
             $stat = $this->createOrderStat();
             $stat
                 ->setType(Entity\OrderStat::TYPE_YEAR)
-                ->setDate($date->format('Y'));
+                ->setDate($year);
         }
 
-        $result = $this->calculator->calculateYearOrderStats($date);
+        $result = $this->calculator->calculateYearOrderStats($year);
 
         if ($stat->loadResult($result) || $force) {
             $stat->setUpdatedAt(new DateTime());

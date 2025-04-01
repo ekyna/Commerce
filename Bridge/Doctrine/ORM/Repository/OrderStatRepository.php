@@ -14,6 +14,8 @@ use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stat\Entity\OrderStat;
 use Ekyna\Component\Commerce\Stat\Repository\OrderStatRepositoryInterface;
 
+use Ekyna\Component\Resource\Model\DateRange;
+
 use function json_decode;
 
 /**
@@ -41,19 +43,20 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
         ]);
     }
 
-    public function findOneByYear(DateTime $date): ?OrderStat
+    public function findOneByYear(string $year): ?OrderStat
     {
         return $this->findOneBy([
             'type' => OrderStat::TYPE_YEAR,
-            'date' => $date->format('Y'),
+            'date' => $year,
         ]);
     }
 
-    public function findSumByYear(DateTime $date): OrderStat
+    public function findSumByDateRange(DateRange $range): array
     {
         $qb = $this->createQueryBuilder('o');
         $ex = $qb->expr();
-        $data = $qb
+
+        return $qb
             ->select([
                 'SUM(o.revenue - o.shipping) as revenue',
                 'SUM(o.shipping) as shipping',
@@ -66,19 +69,11 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             ->andWhere($ex->between('o.date', ':from', ':to'))
             ->setParameters([
                 'type' => OrderStat::TYPE_DAY,
-                'from' => new DateTime('first day of january ' . $date->format('Y')),
-                'to'   => $date,
+                'from' => $range->getStart(),
+                'to'   => $range->getEnd(),
             ])
             ->getQuery()
             ->getScalarResult();
-
-        $result = new OrderStat();
-        $result
-            ->setDate($date->format('Y'))
-            ->setType(OrderStat::TYPE_YEAR)
-            ->loadResult(current($data));
-
-        return $result;
     }
 
     public function findDayRevenuesByMonth(DateTime $date, bool $detailed = false): array
@@ -122,6 +117,7 @@ class OrderStatRepository extends EntityRepository implements OrderStatRepositor
             $interval = new DateInterval('P1D');
             $format = 'Y-m-d';
         } elseif ($type === OrderStat::TYPE_MONTH) {
+            // TODO start month
             if (null === $to) {
                 $from = (clone $from)->modify('first day of january ' . $from->format('Y'));
                 $to = (clone $from)->modify('last day of december ' . $from->format('Y'));

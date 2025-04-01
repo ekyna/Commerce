@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stat\Updater;
+
+use DateTime;
 
 /**
  * Interface StatUpdaterInterface
@@ -12,37 +16,28 @@ interface StatUpdaterInterface
     /**
      * Updates the stock stats for today.
      *
-     * @return bool Whether or not the stat has been created.
+     * @return bool Whether the stat has been created.
      */
     public function updateStockStat(): bool;
 
     /**
      * Updates the order stats for the given day.
      *
-     * @param \DateTime $date
-     * @param bool      $force
-     *
-     * @return bool
+     * @return bool Whether the stat has been created.
      */
-    public function updateDayOrderStat(\DateTime $date, bool $force = false): bool;
+    public function updateDayOrderStat(DateTime $date, bool $force = false): bool;
 
     /**
      * Updates the order stats for the given month.
      *
-     * @param \DateTime $date
-     * @param bool      $force
-     *
-     * @return bool
+     * @return bool Whether the stat has been created.
      */
-    public function updateMonthOrderStat(\DateTime $date, bool $force = false): bool;
+    public function updateMonthOrderStat(DateTime $date, bool $force = false): bool;
 
     /**
      * Updates the order stats for the given year.
      *
-     * @param \DateTime $date
-     * @param bool      $force
-     *
-     * @return bool
+     * @return bool Whether the stat has been created.
      */
-    public function updateYearOrderStat(\DateTime $date, bool $force = false): bool;
+    public function updateYearOrderStat(string $year, bool $force = false): bool;
 }

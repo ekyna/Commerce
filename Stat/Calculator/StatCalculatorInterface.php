@@ -46,7 +46,7 @@ interface StatCalculatorInterface
     /**
      * Calculates the in order stats for the given year.
      */
-    public function calculateYearOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
+    public function calculateYearOrderStats(string $year, StatFilter $filter = null): array;
 
     /**
      * Creates an empty result.
