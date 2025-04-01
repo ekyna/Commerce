@@ -13,7 +13,6 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
-
 use Ekyna\Component\Resource\Model\DateRange;
 
 use function array_push;

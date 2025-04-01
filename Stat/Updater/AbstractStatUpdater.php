@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stat\Updater;
 
 use DateTime;
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stat\Calculator\StatCalculatorInterface;
-use Ekyna\Component\Commerce\Stat\Entity;
-use Ekyna\Component\Commerce\Stat\Repository;
+use Ekyna\Component\Commerce\Stat\Model\StatInterface;
+use Ekyna\Component\Commerce\Stat\Repository\StatRepositoryInterface;
 use Ekyna\Component\Commerce\Stat\StatHelperInterface;
 
 /**
@@ -18,89 +17,92 @@ use Ekyna\Component\Commerce\Stat\StatHelperInterface;
  */
 abstract class AbstractStatUpdater implements StatUpdaterInterface
 {
+    private array $cache = [];
+
     public function __construct(
         protected readonly StatCalculatorInterface $calculator,
         protected readonly StatHelperInterface $helper,
     ) {
     }
 
-    public function updateStockStat(): bool
-    {
-        $date = new DateTime();
-
-        if (null !== $this->getStockStatRepository()->findOneByDay($date)) {
-            return false;
-        }
-
-        $result = $this->calculator->calculateStockStats();
-
-        $stat = $this->createStockStat();
-        $stat
-            ->setInValue(new Decimal($result['in_value'] ?? 0))
-            ->setSoldValue(new Decimal($result['sold_value'] ?? 0))
-            ->setDate($date->format('Y-m-d'));
-
-        $this->persist($stat);
-
-        return true;
-    }
-
     public function updateDayOrderStat(DateTime $date, bool $force = false): bool
     {
-        if (null === $stat = $this->getOrderStatRepository()->findOneByDay($date)) {
-            $stat = $this->createOrderStat();
-            $stat
-                ->setType(Entity\OrderStat::TYPE_DAY)
-                ->setDate($date->format('Y-m-d'));
-        }
+        $stat = $this->findDayStat($date);
 
-        $result = $this->calculator->calculateDayOrderStats($date);
+        $result = $this->calculator->calculateDayStats($date);
 
-        if ($stat->loadResult($result) || $force) {
-            $stat->setUpdatedAt(new DateTime());
-
-            $this->persist($stat);
-
-            return true;
-        }
-
-        return false;
+        return $this->updateAndPersist($stat, $result, $force);
     }
 
     public function updateMonthOrderStat(DateTime $date, bool $force = false): bool
     {
-        if (null === $stat = $this->getOrderStatRepository()->findOneByMonth($date)) {
-            $stat = $this->createOrderStat();
-            $stat
-                ->setType(Entity\OrderStat::TYPE_MONTH)
-                ->setDate($date->format('Y-m'));
-        }
+        $stat = $this->findMonthStat($date);
 
-        $result = $this->calculator->calculateMonthOrderStats($date);
+        $result = $this->calculator->calculateMonthStats($date);
 
-        if ($stat->loadResult($result) || $force) {
-            $stat->setUpdatedAt(new DateTime());
-
-            $this->persist($stat);
-
-            return true;
-        }
-
-        return false;
+        return $this->updateAndPersist($stat, $result, $force);
     }
 
     public function updateYearOrderStat(string $year, bool $force = false): bool
     {
-        if (null === $stat = $this->getOrderStatRepository()->findOneByYear($year)) {
-            $stat = $this->createOrderStat();
+        $stat = $this->findYearStat($year);
+
+        $result = $this->calculator->calculateYearStats($year);
+
+        return $this->updateAndPersist($stat, $result, $force);
+    }
+
+    private function findDayStat(DateTime $date): StatInterface
+    {
+        if (isset($this->cache[$key = $date->format('Y-m-d')])) {
+            return $this->cache[$key];
+        }
+
+        if (null === $stat = $this->getRepository()->findOneByDay($date)) {
+            $stat = $this->createNewStat();
             $stat
-                ->setType(Entity\OrderStat::TYPE_YEAR)
+                ->setType(StatInterface::TYPE_DAY)
+                ->setDate($key);
+        }
+
+        return $this->cache[$key] = $stat;
+    }
+
+    private function findMonthStat(DateTime $date): StatInterface
+    {
+        if (isset($this->cache[$key = $date->format('Y-m')])) {
+            return $this->cache[$key];
+        }
+
+        if (null === $stat = $this->getRepository()->findOneByMonth($date)) {
+            $stat = $this->createNewStat();
+            $stat
+                ->setType(StatInterface::TYPE_MONTH)
+                ->setDate($key);
+        }
+
+        return $this->cache[$key] = $stat;
+    }
+
+    private function findYearStat(string $year): StatInterface
+    {
+        if (isset($this->cache[$year])) {
+            return $this->cache[$year];
+        }
+
+        if (null === $stat = $this->getRepository()->findOneByYear($year)) {
+            $stat = $this->createNewStat();
+            $stat
+                ->setType(StatInterface::TYPE_YEAR)
                 ->setDate($year);
         }
 
-        $result = $this->calculator->calculateYearOrderStats($year);
+        return $this->cache[$year] = $stat;
+    }
 
-        if ($stat->loadResult($result) || $force) {
+    private function updateAndPersist(StatInterface $stat, array $data, bool $force): bool
+    {
+        if ($stat->loadResult($data) || $force) {
             $stat->setUpdatedAt(new DateTime());
 
             $this->persist($stat);
@@ -117,28 +119,12 @@ abstract class AbstractStatUpdater implements StatUpdaterInterface
     abstract protected function persist(object $object): void;
 
     /**
-     * Returns the stock stat repository.
-     */
-    abstract protected function getStockStatRepository(): Repository\StockStatRepositoryInterface;
-
-    /**
      * Returns the order stat repository.
      */
-    abstract protected function getOrderStatRepository(): Repository\OrderStatRepositoryInterface;
-
-    /**
-     * Returns a new stock stat entity.
-     */
-    protected function createStockStat(): Entity\StockStat
-    {
-        return new Entity\StockStat();
-    }
+    abstract protected function getRepository(): StatRepositoryInterface;
 
     /**
      * Returns a new order stat entity.
      */
-    protected function createOrderStat(): Entity\OrderStat
-    {
-        return new Entity\OrderStat();
-    }
+    abstract protected function createNewStat(): StatInterface;
 }

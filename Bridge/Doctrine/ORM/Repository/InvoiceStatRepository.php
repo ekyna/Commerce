@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository;
 
 use Ekyna\Component\Commerce\Stat\Model\StatInterface;
-use Ekyna\Component\Commerce\Stat\Repository\OrderStatRepositoryInterface;
+use Ekyna\Component\Commerce\Stat\Repository\InvoiceStatRepositoryInterface;
 use Ekyna\Component\Resource\Model\DateRange;
 
 /**
- * Class OrderStatRepository
+ * Class InvoiceStatRepository
  * @package Ekyna\Component\Commerce\Bridge\Doctrine\ORM\Repository
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderStatRepository extends AbstractStatRepository implements OrderStatRepositoryInterface
+class InvoiceStatRepository extends AbstractStatRepository implements InvoiceStatRepositoryInterface
 {
     public function findSumByDateRange(DateRange $range): array
     {
@@ -26,7 +26,6 @@ class OrderStatRepository extends AbstractStatRepository implements OrderStatRep
                 'SUM(o.shipping) as shipping',
                 'SUM(o.cost) as cost',
                 'SUM(o.count) as count',
-                'AVG(o.average) as average',
             ])
             ->andWhere($ex->eq('o.type', ':type'))
             ->andWhere($ex->between('o.date', ':from', ':to'))

@@ -14,13 +14,6 @@ use DateTime;
 interface StatUpdaterInterface
 {
     /**
-     * Updates the stock stats for today.
-     *
-     * @return bool Whether the stat has been created.
-     */
-    public function updateStockStat(): bool;
-
-    /**
      * Updates the order stats for the given day.
      *
      * @return bool Whether the stat has been created.

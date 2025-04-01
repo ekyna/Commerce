@@ -14,39 +14,19 @@ use DateTimeInterface;
 interface StatCalculatorInterface
 {
     /**
-     * Sets whether to skip order containing filtered subject.
-     *
-     * If skip mode is true :
-     *   - If filter excludes subjects : ignore orders containing items assigned to these subjects.
-     *   - If filter does NOT exclude subjects : ignore orders containing items NOT assigned to these subjects.
-     *
-     * If skip mode is false :
-     *   - If filter excludes subjects : calculate all orders by ignoring items assigned to these subjects.
-     *   - If filter does NOT exclude subjects : calculate all orders by ignoring items NOT assigned to these subjects.
-     *
-     * @param bool $skip
+     * Calculates the stats for the given day.
      */
-    public function setSkipMode(bool $skip): void;
+    public function calculateDayStats(DateTimeInterface $date): array;
 
     /**
-     * Calculates the in stock statistics.
+     * Calculates the stats for the given month.
      */
-    public function calculateStockStats(): array;
+    public function calculateMonthStats(DateTimeInterface $date): array;
 
     /**
-     * Calculates the in order stats for the given day.
+     * Calculates the stats for the given year.
      */
-    public function calculateDayOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
-
-    /**
-     * Calculates the in order stats for the given month.
-     */
-    public function calculateMonthOrderStats(DateTimeInterface $date, StatFilter $filter = null): array;
-
-    /**
-     * Calculates the in order stats for the given year.
-     */
-    public function calculateYearOrderStats(string $year, StatFilter $filter = null): array;
+    public function calculateYearStats(string $year): array;
 
     /**
      * Creates an empty result.
