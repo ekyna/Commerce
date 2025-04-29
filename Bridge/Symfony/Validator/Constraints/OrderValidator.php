@@ -36,7 +36,14 @@ class OrderValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        if (null === $originCustomer = $value->getOriginCustomer()) {
+        $this->validateOriginCustomer($value, $constraint);
+
+        $this->validateCompanyNumber($value, $constraint);
+    }
+
+    private function validateOriginCustomer(OrderInterface $order, Order $constraint): void
+    {
+        if (null === $originCustomer = $order->getOriginCustomer()) {
             return;
         }
 
@@ -50,12 +57,35 @@ class OrderValidator extends ConstraintValidator
             return;
         }
 
-        if ($originCustomer->getParent() !== $value->getCustomer()) {
-            $this
-                ->context
-                ->buildViolation($constraint->customers_integrity)
-                ->atPath('originCustomer')
-                ->addViolation();
+        if ($originCustomer->getParent() === $order->getCustomer()) {
+            return;
         }
+
+        $this
+            ->context
+            ->buildViolation($constraint->customers_integrity)
+            ->atPath('originCustomer')
+            ->addViolation();
+    }
+
+    private function validateCompanyNumber(OrderInterface $order, Order $constraint): void
+    {
+        if (null === $group = $order->getCustomerGroup()) {
+            return;
+        }
+
+        if (!$group->isBusiness()) {
+            return;
+        }
+
+        if (!empty($order->getCompanyNumber())) {
+            return;
+        }
+
+        $this
+            ->context
+            ->buildViolation($constraint->required_company_number)
+            ->atPath('companyNumber')
+            ->addViolation();
     }
 }

@@ -99,6 +99,14 @@ abstract class AbstractSaleFactory extends ResourceFactory implements SaleFactor
             $sale->setCurrency($customer->getCurrency());
         }
 
+        if (empty($sale->getVatNumber()) && !empty($customer->getVatNumber())) {
+            $sale->setVatNumber($customer->getVatNumber());
+        }
+
+        if (empty($sale->getCompanyNumber()) && !empty($customer->getCompanyNumber())) {
+            $sale->setCompanyNumber($customer->getCompanyNumber());
+        }
+
         if (!is_null($sale->getInvoiceAddress())) {
             // Addresses are already defined
             return;

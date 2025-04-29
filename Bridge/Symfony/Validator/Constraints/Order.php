@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraint;
 class Order extends Constraint
 {
     public $sample_with_payments_or_invoices = 'ekyna_commerce.order.sample_with_payments_or_invoices';
+    public $required_company_number          = 'ekyna_commerce.order.required_company_number';
     public $unexpected_origin_customer       = 'ekyna_commerce.order.unexpected_origin_customer'; // TODO REmove
     public $customers_integrity              = 'ekyna_commerce.order.customers_integrity'; // TODO REmove
 
