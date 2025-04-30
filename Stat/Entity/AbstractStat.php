@@ -198,6 +198,7 @@ class AbstractStat implements StatInterface
             'revenue'  => 'decimal',
             'shipping' => 'decimal',
             'cost'     => 'decimal',
+            'count'    => 'int',
         ];
     }
 }
