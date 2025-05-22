@@ -70,6 +70,10 @@ class OrderValidator extends ConstraintValidator
 
     private function validateCompanyNumber(OrderInterface $order, Order $constraint): void
     {
+        if ($order->isSample() || $order->isSupport()) {
+            return;
+        }
+
         if (null === $group = $order->getCustomerGroup()) {
             return;
         }
