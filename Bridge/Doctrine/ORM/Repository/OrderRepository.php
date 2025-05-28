@@ -403,9 +403,11 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
 
         return $this->findByAcceptedAtQuery = $qb
             ->andWhere($ex->eq('o.sample', ':sample'))
+            ->andWhere($ex->eq('o.support', ':support'))
             ->andWhere($ex->in('o.state', ':state'))
             ->andWhere($ex->between('o.acceptedAt', ':from', ':to'))
             ->setParameter('sample', false)
+            ->setParameter('support', false)
             ->setParameter('state', [
                 OrderStates::STATE_COMPLETED,
                 OrderStates::STATE_ACCEPTED,
