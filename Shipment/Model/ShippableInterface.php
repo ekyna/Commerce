@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Incoterm;
 
 /**
  * Interface ShippableInterface
@@ -60,6 +61,13 @@ interface ShippableInterface
      * @return $this|ShippableInterface
      */
     public function setShipmentLabel(?string $label): ShippableInterface;
+
+    public function getIncoterm(): ?Incoterm;
+
+    /**
+     * @return $this|ShippableInterface
+     */
+    public function setIncoterm(?Incoterm $incoterm): ShippableInterface;
 
     /**
      * Returns whether auto shipping is enabled.

@@ -17,6 +17,8 @@
         <field name="customInvoiceAddress" column="custom_invoice_address" type="json" nullable="true"/>
         <field name="deliveryAddress" column="delivery_address" type="json" nullable="true"/>
         <field name="customDeliveryAddress" column="custom_delivery_address" type="json" nullable="true"/>
+        <field name="destinationAddress" column="destination_address" type="json" nullable="true"/>
+        <field name="customDestinationAddress" column="custom_destination_address" type="json" nullable="true"/>
         <field name="relayPoint" column="relay_point" type="json" nullable="true"/>
 
         <field name="goodsBase" column="goods_base" type="php_decimal" precision="15" scale="5"/>
@@ -51,6 +53,7 @@
             <join-column name="tax_rule_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
+        <field name="incoterm" column="incoterm" type="string" length="3" nullable="true"/>
         <field name="comment" column="comment" type="text" nullable="true"/>
         <field name="description" column="description" type="text" nullable="true"/>
         <field name="ignoreStock" column="ignore_stock" type="boolean">

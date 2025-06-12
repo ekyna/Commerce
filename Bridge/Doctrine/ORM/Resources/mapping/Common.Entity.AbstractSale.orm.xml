@@ -26,6 +26,7 @@
         <field name="shipmentAmount" column="shipment_amount" type="php_decimal" precision="15" scale="5"/>
         <field name="shipmentWeight" column="shipment_weight" type="php_decimal" precision="10" scale="3" nullable="true"/>
         <field name="shipmentLabel" column="shipment_label" type="string" length="64" nullable="true"/>
+        <field name="incoterm"  column="incoterm" type="string" length="3" enum-type="Ekyna\Component\Commerce\Common\Model\Incoterm" nullable="true"/>
 
         <field name="autoShipping" column="auto_shipping" type="boolean">
             <options>

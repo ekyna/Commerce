@@ -68,6 +68,10 @@ interface SaleInterface extends
 
     public function setDeliveryAddress(?SaleAddressInterface $address): SaleInterface;
 
+    public function getDestinationAddress(): ?SaleAddressInterface;
+
+    public function setDestinationAddress(?SaleAddressInterface $address): SaleInterface;
+
     /**
      * Returns whether the invoice address is used as delivery address or not.
      */

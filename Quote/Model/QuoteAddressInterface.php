@@ -34,6 +34,16 @@ interface QuoteAddressInterface extends SaleAddressInterface
     public function setDeliveryQuote(?QuoteInterface $quote): QuoteAddressInterface;
 
     /**
+     * Returns the quote this address is the final one.
+     */
+    public function getDestinationQuote(): ?QuoteInterface;
+
+    /**
+     * Sets the quote this address is the final one.
+     */
+    public function setDestinationQuote(?QuoteInterface $quote): QuoteAddressInterface;
+
+    /**
      * Returns the related quote.
      */
     public function getQuote(): ?QuoteInterface;

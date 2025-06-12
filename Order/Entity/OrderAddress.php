@@ -17,6 +17,7 @@ class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInte
 {
     protected ?Model\OrderInterface $invoiceOrder  = null;
     protected ?Model\OrderInterface $deliveryOrder = null;
+    protected ?Model\OrderInterface $destinationOrder = null;
 
     public function getInvoiceOrder(): ?Model\OrderInterface
     {
@@ -59,6 +60,29 @@ class OrderAddress extends AbstractSaleAddress implements Model\OrderAddressInte
 
         if ($this->deliveryOrder = $order) {
             $this->deliveryOrder->setDeliveryAddress($this);
+        }
+
+        return $this;
+    }
+
+    public function getDestinationOrder(): ?Model\OrderInterface
+    {
+        return $this->destinationOrder;
+    }
+
+    public function setDestinationOrder(?Model\OrderInterface $order): Model\OrderAddressInterface
+    {
+        if ($order === $this->destinationOrder) {
+            return $this;
+        }
+
+        if ($previous = $this->destinationOrder) {
+            $this->destinationOrder = null;
+            $previous->setDestinationAddress(null);
+        }
+
+        if ($this->destinationOrder = $order) {
+            $this->destinationOrder->setDestinationAddress($this);
         }
 
         return $this;

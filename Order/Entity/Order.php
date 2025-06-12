@@ -194,6 +194,37 @@ class Order extends AbstractSale implements Model\OrderInterface
         return $this;
     }
 
+    /**
+     * @return Model\OrderAddressInterface|null
+     */
+    public function getDestinationAddress(): ?Common\SaleAddressInterface
+    {
+        return $this->destinationAddress;
+    }
+
+    public function setDestinationAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
+    {
+        if ($address && !$address instanceof Model\OrderAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\OrderAddressInterface::class);
+        }
+
+        if ($address === $this->destinationAddress) {
+            return $this;
+        }
+
+        if ($previous = $this->destinationAddress) {
+            $this->destinationAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setDestinationOrder(null);
+        }
+
+        if ($this->destinationAddress = $address) {
+            $address->setDestinationOrder($this);
+        }
+
+        return $this;
+    }
+
     public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool
     {
         if (!$attachment instanceof Model\OrderAttachmentInterface) {

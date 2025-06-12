@@ -33,5 +33,15 @@ interface OrderAddressInterface extends SaleAddressInterface
      */
     public function setDeliveryOrder(?OrderInterface $order): OrderAddressInterface;
 
+    /**
+     * Returns the order this address is the final one.
+     */
+    public function getDestinationOrder(): ?OrderInterface;
+
+    /**
+     * Sets the order this address is the final one.
+     */
+    public function setDestinationOrder(?OrderInterface $order): OrderAddressInterface;
+
     public function getOrder(): ?OrderInterface;
 }

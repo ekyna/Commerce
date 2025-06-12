@@ -19,6 +19,9 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
                     field="deliveryQuote" mapped-by="deliveryAddress"/>
 
+        <one-to-one target-entity="Ekyna\Component\Commerce\Quote\Model\QuoteInterface"
+                    field="destinationQuote" mapped-by="destinationAddress"/>
+
     </mapped-superclass>
 
 </doctrine-mapping>

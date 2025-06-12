@@ -58,17 +58,19 @@ class InvoiceNormalizer extends ResourceNormalizer
             }
 
             $invoiceAddress = $object->getCustomInvoiceAddress() ?: $object->getInvoiceAddress();
-            $deliveryAddress = $object->getCustomDeliveryAddress() ?: $object->getDeliveryAddress();
+            $deliveryAddress = $object->getCustomDeliveryAddress() ?: $object->getDeliveryAddress();;
+            $destinationAddress = $object->getCustomDestinationAddress() ?: $object->getDestinationAddress();
 
             $data = array_replace($data, [
-                'number'           => $object->getNumber(),
-                'lines'            => $lines,
-                'items'            => $items,
-                'description'      => $object->getDescription(),
-                'comment'          => $object->getComment(),
-                'invoice_address'  => $invoiceAddress,
-                'delivery_address' => $deliveryAddress,
-                'margin'           => [
+                'number'              => $object->getNumber(),
+                'lines'               => $lines,
+                'items'               => $items,
+                'description'         => $object->getDescription(),
+                'comment'             => $object->getComment(),
+                'invoice_address'     => $invoiceAddress,
+                'delivery_address'    => $deliveryAddress,
+                'destination_address' => $destinationAddress,
+                'margin'              => [
                     'net'   => [
                         'total'   => $object->getMargin()->getTotal(false)->toFixed(2),
                         'percent' => $object->getMargin()->getPercent(false)->toFixed(2),

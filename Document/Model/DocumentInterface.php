@@ -43,9 +43,17 @@ interface DocumentInterface extends LocalizedInterface
 
     public function setDeliveryAddress(?array $data): DocumentInterface;
 
+    public function getDestinationAddress(): ?array;
+
+    public function setDestinationAddress(?array $data): DocumentInterface;
+
     public function getRelayPoint(): ?array;
 
     public function setRelayPoint(?array $data): DocumentInterface;
+
+    public function getIncoterm(): ?string;
+
+    public function setIncoterm(?string $incoterm): DocumentInterface;
 
     /**
      * Returns whether the invoice has at least one line or not.
@@ -176,7 +184,7 @@ interface DocumentInterface extends LocalizedInterface
     /**
      * @return $this|DocumentInterface
      */
-    public function setIncludedDetails(array $includes): DocumentInterface;
+    public function setIncludedDetails(array $details): DocumentInterface;
 
     /**
      * Returns the grand total (document currency).

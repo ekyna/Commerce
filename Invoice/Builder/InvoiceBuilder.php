@@ -29,23 +29,15 @@ use function min;
  */
 class InvoiceBuilder extends DocumentBuilder implements InvoiceBuilderInterface
 {
-    private FactoryHelperInterface            $factoryHelper;
-    private AvailabilityResolverFactory       $availabilityResolverFactory;
-    private InvoiceSubjectCalculatorInterface $invoiceCalculator;
-
     public function __construct(
-        FactoryHelperInterface            $factoryHelper,
-        AvailabilityResolverFactory       $availabilityResolverFactory,
-        InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        private readonly FactoryHelperInterface            $factoryHelper,
+        private readonly AvailabilityResolverFactory       $availabilityResolverFactory,
+        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator,
         LocaleProviderInterface           $localeProvider,
         ArrayToAddressTransformer         $addressTransformer,
         PhoneNumberUtil                   $phoneNumberUtil = null
     ) {
         parent::__construct($localeProvider, $addressTransformer, $phoneNumberUtil);
-
-        $this->factoryHelper = $factoryHelper;
-        $this->availabilityResolverFactory = $availabilityResolverFactory;
-        $this->invoiceCalculator = $invoiceCalculator;
     }
 
     public function getFactoryHelper(): FactoryHelperInterface

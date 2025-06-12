@@ -8,6 +8,7 @@ use DateTimeInterface;
 use Ekyna\Component\Commerce\Cart\Model;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSale;
 use Ekyna\Component\Commerce\Common\Model as Common;
+use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 
@@ -88,6 +89,16 @@ class Cart extends AbstractSale implements Model\CartInterface
         }
 
         return $this;
+    }
+
+    public function getDestinationAddress(): ?Common\SaleAddressInterface
+    {
+        return null;
+    }
+
+    public function setDestinationAddress(?Common\SaleAddressInterface $address): Common\SaleInterface
+    {
+        throw new RuntimeException('Final address is not supported for carts');
     }
 
     public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool

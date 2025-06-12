@@ -19,15 +19,17 @@ use Ekyna\Component\Commerce\Pricing\Model\TaxRuleInterface;
  */
 class Document implements DocumentInterface
 {
-    protected ?string $type            = null;
-    protected ?string $currency        = null;
-    protected ?string $locale          = null;
-    protected ?array  $customer        = null;
-    protected ?array  $invoiceAddress  = null;
-    protected ?array  $deliveryAddress = null;
-    protected ?array  $relayPoint      = null;
-    protected ?string $comment         = null;
-    protected ?string $description     = null;
+    protected ?string $type               = null;
+    protected ?string $currency           = null;
+    protected ?string $locale             = null;
+    protected ?array  $customer           = null;
+    protected ?array  $invoiceAddress     = null;
+    protected ?array  $deliveryAddress    = null;
+    protected ?array  $destinationAddress = null;
+    protected ?array  $relayPoint         = null;
+    protected ?string $incoterm           = null;
+    protected ?string $comment            = null;
+    protected ?string $description        = null;
     protected Decimal $goodsBase;
     protected Decimal $discountBase;
     protected Decimal $shipmentBase;
@@ -140,6 +142,18 @@ class Document implements DocumentInterface
         return $this;
     }
 
+    public function getDestinationAddress(): ?array
+    {
+        return $this->destinationAddress;
+    }
+
+    public function setDestinationAddress(?array $data): DocumentInterface
+    {
+        $this->destinationAddress = $data;
+
+        return $this;
+    }
+
     public function getRelayPoint(): ?array
     {
         return $this->relayPoint;
@@ -148,6 +162,18 @@ class Document implements DocumentInterface
     public function setRelayPoint(?array $data): DocumentInterface
     {
         $this->relayPoint = $data;
+
+        return $this;
+    }
+
+    public function getIncoterm(): ?string
+    {
+        return $this->incoterm;
+    }
+
+    public function setIncoterm(?string $incoterm): DocumentInterface
+    {
+        $this->incoterm = $incoterm;
 
         return $this;
     }

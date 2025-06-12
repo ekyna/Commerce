@@ -101,6 +101,37 @@ class Quote extends AbstractSale implements Model\QuoteInterface
         return $this;
     }
 
+    /**
+     * @return Model\QuoteAddressInterface|null
+     */
+    public function getDestinationAddress(): ?Common\SaleAddressInterface
+    {
+        return $this->destinationAddress;
+    }
+
+    public function setDestinationAddress(Common\SaleAddressInterface $address = null): Common\SaleInterface
+    {
+        if ($address && !$address instanceof Model\QuoteAddressInterface) {
+            throw new UnexpectedTypeException($address, Model\QuoteAddressInterface::class);
+        }
+
+        if ($address === $this->destinationAddress) {
+            return $this;
+        }
+
+        if ($previous = $this->destinationAddress) {
+            $this->destinationAddress = null;
+            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            $previous->setDestinationQuote(null);
+        }
+
+        if ($this->destinationAddress = $address) {
+            $address->setDestinationQuote($this);
+        }
+
+        return $this;
+    }
+
     public function hasAttachment(Common\SaleAttachmentInterface $attachment): bool
     {
         if (!$attachment instanceof Model\QuoteAttachmentInterface) {

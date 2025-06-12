@@ -100,10 +100,24 @@ class DocumentBuilder implements DocumentBuilderInterface
             $changed = true;
         }
 
+        // Destination address
+        $data = $this->buildDestinationAddress($document);
+        if ($document->getDestinationAddress() !== $data) {
+            $document->setDestinationAddress($data);
+            $changed = true;
+        }
+
         // RelayPoint
         $data = $this->buildRelayPointAddress($document);
         if ($document->getRelayPoint() !== $data) {
             $document->setRelayPoint($data);
+            $changed = true;
+        }
+
+        // Incoterm
+        $incoterm = $this->buildIncoterm($document);
+        if ($document->getIncoterm() !== $incoterm) {
+            $document->setIncoterm($incoterm);
             $changed = true;
         }
 
@@ -130,6 +144,15 @@ class DocumentBuilder implements DocumentBuilderInterface
         return $this->buildAddressData($address);
     }
 
+    protected function buildDestinationAddress(Document\DocumentInterface $document): ?array
+    {
+        if (null === $address = $document->getSale()->getDestinationAddress()) {
+            return null;
+        }
+
+        return $this->buildAddressData($address);
+    }
+
     protected function buildRelayPointAddress(Document\DocumentInterface $document): ?array
     {
         if (null === $address = $document->getSale()->getRelayPoint()) {
@@ -137,6 +160,18 @@ class DocumentBuilder implements DocumentBuilderInterface
         }
 
         return $this->buildAddressData($address);
+    }
+
+    protected function buildIncoterm(Document\DocumentInterface $document): ?string
+    {
+        $sale = $document->getSale();
+        $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+
+        if ($address->getCountry() === $this->addressTransformer->getCountryRepository()->findDefault()) {
+            return null;
+        }
+
+        return $sale->getIncoterm()?->code();
     }
 
     public function buildGoodLine(

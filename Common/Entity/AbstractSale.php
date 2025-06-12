@@ -44,29 +44,30 @@ abstract class AbstractSale extends AbstractResource implements Common\SaleInter
     use VatNumberSubjectTrait;
 
 
-    protected ?CustomerInterface           $customer        = null;
-    protected ?CustomerGroupInterface      $customerGroup   = null;
-    protected ?string                      $company         = null;
-    protected ?string                      $companyNumber   = null;
-    protected ?string                      $email           = null;
-    protected ?Common\SaleAddressInterface $invoiceAddress  = null;
-    protected ?Common\SaleAddressInterface $deliveryAddress = null;
-    protected bool                         $sameAddress     = true;
-    protected ?Common\CouponInterface      $coupon          = null;
-    protected ?array                       $couponData      = null;
-    protected bool                         $autoDiscount    = true;
-    protected bool                         $taxExempt       = false;
-    protected ?string                      $vatDisplayMode  = null;
+    protected ?CustomerInterface           $customer           = null;
+    protected ?CustomerGroupInterface      $customerGroup      = null;
+    protected ?string                      $company            = null;
+    protected ?string                      $companyNumber      = null;
+    protected ?string                      $email              = null;
+    protected ?Common\SaleAddressInterface $invoiceAddress     = null;
+    protected ?Common\SaleAddressInterface $deliveryAddress    = null;
+    protected ?Common\SaleAddressInterface $destinationAddress = null;
+    protected bool                         $sameAddress        = true;
+    protected ?Common\CouponInterface      $coupon             = null;
+    protected ?array                       $couponData         = null;
+    protected bool                         $autoDiscount       = true;
+    protected bool                         $taxExempt          = false;
+    protected ?string                      $vatDisplayMode     = null;
     protected Decimal                      $netTotal;
-    protected ?string                      $title           = null;
-    protected ?string                      $voucherNumber   = null;
-    protected ?string                      $originNumber    = null;
-    protected ?string                      $description     = null;
-    protected ?string                      $preparationNote = null;
-    protected ?string                      $comment         = null;
-    protected ?string                      $documentComment = null;
-    protected ?DateTimeInterface           $acceptedAt      = null;
-    protected string                       $source          = Common\SaleSources::SOURCE_WEBSITE;
+    protected ?string                      $title              = null;
+    protected ?string                      $voucherNumber      = null;
+    protected ?string                      $originNumber       = null;
+    protected ?string                      $description        = null;
+    protected ?string                      $preparationNote    = null;
+    protected ?string                      $comment            = null;
+    protected ?string                      $documentComment    = null;
+    protected ?DateTimeInterface           $acceptedAt         = null;
+    protected string                       $source             = Common\SaleSources::SOURCE_WEBSITE;
     /** @var Collection<int, Common\SaleAttachmentInterface> */
     protected Collection $attachments;
     /** @var Collection<int, Common\SaleItemInterface> */

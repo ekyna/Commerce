@@ -17,6 +17,7 @@ class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInte
 {
     protected ?Model\QuoteInterface $invoiceQuote  = null;
     protected ?Model\QuoteInterface $deliveryQuote = null;
+    protected ?Model\QuoteInterface $destinationQuote = null;
 
     public function getInvoiceQuote(): ?Model\QuoteInterface
     {
@@ -59,6 +60,29 @@ class QuoteAddress extends AbstractSaleAddress implements Model\QuoteAddressInte
 
         if ($this->deliveryQuote = $quote) {
             $this->deliveryQuote->setDeliveryAddress($this);
+        }
+
+        return $this;
+    }
+
+    public function getDestinationQuote(): ?Model\QuoteInterface
+    {
+        return $this->destinationQuote;
+    }
+
+    public function setDestinationQuote(?Model\QuoteInterface $quote): Model\QuoteAddressInterface
+    {
+        if ($quote === $this->destinationQuote) {
+            return $this;
+        }
+
+        if ($previous = $this->destinationQuote) {
+            $this->destinationQuote = null;
+            $previous->setDestinationAddress(null);
+        }
+
+        if ($this->destinationQuote = $quote) {
+            $this->destinationQuote->setDestinationAddress($this);
         }
 
         return $this;

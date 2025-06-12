@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Shipment\Model;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\Incoterm;
 
 /**
  * Trait ShippableTrait
@@ -18,6 +19,7 @@ trait ShippableTrait
     protected Decimal                  $shipmentAmount;
     protected ?Decimal                 $shipmentWeight = null;
     protected ?string                  $shipmentLabel  = null;
+    protected ?Incoterm                $incoterm       = null;
     protected bool                     $autoShipping;
     protected ?RelayPointInterface     $relayPoint     = null;
 
@@ -30,6 +32,7 @@ trait ShippableTrait
         $this->weightTotal = new Decimal(0);
         $this->shipmentAmount = new Decimal(0);
         $this->autoShipping = true;
+        $this->incoterm = Incoterm::DAP;
     }
 
     public function getWeightTotal(): Decimal
@@ -88,6 +91,18 @@ trait ShippableTrait
     public function setShipmentLabel(?string $label): ShippableInterface
     {
         $this->shipmentLabel = $label;
+
+        return $this;
+    }
+
+    public function getIncoterm(): ?Incoterm
+    {
+        return $this->incoterm;
+    }
+
+    public function setIncoterm(?Incoterm $incoterm): ShippableInterface
+    {
+        $this->incoterm = $incoterm;
 
         return $this;
     }

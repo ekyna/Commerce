@@ -27,8 +27,9 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     use TimestampableTrait;
     use RuntimeUidTrait;
 
-    protected ?array $customInvoiceAddress  = null;
-    protected ?array $customDeliveryAddress = null;
+    protected ?array $customInvoiceAddress     = null;
+    protected ?array $customDeliveryAddress    = null;
+    protected ?array $customDestinationAddress = null;
     protected bool   $credit;
     /** The paid total (document currency).*/
     protected Decimal $paidTotal;
@@ -101,6 +102,18 @@ abstract class AbstractInvoice extends Document\Document implements Invoice\Invo
     public function setCustomDeliveryAddress(?array $customDeliveryAddress): Invoice\InvoiceInterface
     {
         $this->customDeliveryAddress = $customDeliveryAddress;
+
+        return $this;
+    }
+
+    public function getCustomDestinationAddress(): ?array
+    {
+        return $this->customDestinationAddress;
+    }
+
+    public function setCustomDestinationAddress(?array $customDestinationAddress): Invoice\InvoiceInterface
+    {
+        $this->customDestinationAddress = $customDestinationAddress;
 
         return $this;
     }

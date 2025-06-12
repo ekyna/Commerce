@@ -60,6 +60,14 @@
             <join-column name="delivery_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </one-to-one>
 
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderAddressInterface"
+                    field="destinationAddress" inversed-by="destinationOrder" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+            <join-column name="destination_address_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
+        </one-to-one>
+
         <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderAttachment"
                      field="attachments" mapped-by="order" orphan-removal="true">
             <cascade>

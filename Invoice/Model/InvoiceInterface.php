@@ -37,6 +37,10 @@ interface InvoiceInterface extends
 
     public function setCustomDeliveryAddress(?array $customDeliveryAddress): InvoiceInterface;
 
+    public function getCustomDestinationAddress(): ?array;
+
+    public function setCustomDestinationAddress(?array $customDestinationAddress): InvoiceInterface;
+
     /**
      * Returns whether this invoice is a credit.
      */

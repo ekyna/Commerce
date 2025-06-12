@@ -280,6 +280,9 @@
         <property name="deliveryAddress">
             <constraint name="Valid"/>
         </property>
+        <property name="destinationAddress">
+            <constraint name="Valid"/>
+        </property>
         <property name="currency">
             <constraint name="NotNull"/>
         </property>

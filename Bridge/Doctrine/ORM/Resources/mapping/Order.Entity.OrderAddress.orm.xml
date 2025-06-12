@@ -19,6 +19,9 @@
         <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
                     field="deliveryOrder" mapped-by="deliveryAddress"/>
 
+        <one-to-one target-entity="Ekyna\Component\Commerce\Order\Model\OrderInterface"
+                    field="destinationOrder" mapped-by="destinationAddress"/>
+
     </mapped-superclass>
 
 </doctrine-mapping>

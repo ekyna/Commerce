@@ -61,6 +61,7 @@ class SaleCopier implements SaleCopierInterface
             'coupon',
             'couponData',
             'relayPoint',
+            'incoterm',
             'shipmentMethod',
             'shipmentAmount',
             'shipmentWeight',
@@ -116,15 +117,21 @@ class SaleCopier implements SaleCopierInterface
     public function copyAddresses(): SaleCopierInterface
     {
         // Invoice address
-        if ($sourceInvoiceAddress = $this->source->getInvoiceAddress()) {
-            $targetInvoiceAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceInvoiceAddress);
-            $this->target->setInvoiceAddress($targetInvoiceAddress);
+        if ($sourceAddress = $this->source->getInvoiceAddress()) {
+            $targetAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceAddress);
+            $this->target->setInvoiceAddress($targetAddress);
         }
 
         // Delivery address
-        if ($sourceDeliveryAddress = $this->source->getDeliveryAddress()) {
-            $targetDeliveryAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceDeliveryAddress);
-            $this->target->setDeliveryAddress($targetDeliveryAddress);
+        if ($sourceAddress = $this->source->getDeliveryAddress()) {
+            $targetAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceAddress);
+            $this->target->setDeliveryAddress($targetAddress);
+        }
+
+        // Destination address
+        if ($sourceAddress = $this->source->getDestinationAddress()) {
+            $targetAddress = $this->factoryHelper->createAddressForSale($this->target, $sourceAddress);
+            $this->target->setDestinationAddress($targetAddress);
         }
 
         return $this;

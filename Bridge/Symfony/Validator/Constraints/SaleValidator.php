@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
+use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
 use Ekyna\Component\Commerce\Shipment\Gateway;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -17,17 +18,17 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class SaleValidator extends ConstraintValidator
 {
-    private Gateway\GatewayRegistryInterface $gatewayRegistry;
+    public function __construct(
+        private readonly CountryRepositoryInterface $countryRepository,
+        private readonly Gateway\GatewayRegistryInterface $gatewayRegistry,
+    ) {
 
-    public function __construct(Gateway\GatewayRegistryInterface $gatewayRegistry)
-    {
-        $this->gatewayRegistry = $gatewayRegistry;
     }
 
     /**
      * @inheritDoc
      */
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (null === $value) {
             return;
@@ -43,6 +44,7 @@ class SaleValidator extends ConstraintValidator
         $this->validateIdentity($value, $constraint);
         $this->validateDeliveryAddress($value, $constraint);
         $this->validateShipmentMethodRequirements($value, $constraint);
+        $this->validateIncoterm($value, $constraint);
         $this->validatePaymentMethod($value, $constraint);
         $this->validatePaymentTermAndOutstandingLimit($value, $constraint);
 
@@ -87,26 +89,52 @@ class SaleValidator extends ConstraintValidator
         }
     }
 
+    protected function validateIncoterm(SaleInterface $sale, Sale $constraint): void
+    {
+        $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+
+        if (null === $address) {
+            return;
+        }
+
+        if ($address->getCountry() === $this->countryRepository->findDefault()) {
+            return;
+        }
+
+        if (!empty($sale->getIncoterm())) {
+            return;
+        }
+
+        $this->context
+            ->buildViolation($constraint->incoterm_is_required)
+            ->atPath('incoterm')
+            ->addViolation();
+    }
+
     /**
      * Validates the delivery address.
      */
     protected function validateDeliveryAddress(SaleInterface $sale, Sale $constraint): void
     {
-        if (!$sale->isSameAddress() && null === $sale->getDeliveryAddress()) {
-            $this->context
-                ->buildViolation($constraint->delivery_address_is_required)
-                ->atPath('deliveryAddress')
-                ->addViolation();
+        if ($sale->isSameAddress()) {
+            if (null !== $sale->getDeliveryAddress()) {
+                $this->context
+                    ->buildViolation($constraint->delivery_address_should_be_null)
+                    ->atPath('deliveryAddress')
+                    ->addViolation();
+            }
 
             return;
         }
 
-        if ($sale->isSameAddress() && null !== $sale->getDeliveryAddress()) {
-            $this->context
-                ->buildViolation($constraint->delivery_address_should_be_null)
-                ->atPath('deliveryAddress')
-                ->addViolation();
+        if (null !== $sale->getDeliveryAddress()) {
+            return;
         }
+
+        $this->context
+            ->buildViolation($constraint->delivery_address_is_required)
+            ->atPath('deliveryAddress')
+            ->addViolation();
     }
 
     /**
