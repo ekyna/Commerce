@@ -21,6 +21,7 @@ interface OrderInterface
             ShipmentSubjectInterface,
             InvoiceSubjectInterface,
             Common\InitiatorSubjectInterface,
+            Common\FollowerSubjectInterface,
             Common\MarginSubjectInterface
 {
     /**

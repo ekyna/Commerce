@@ -108,6 +108,11 @@ class SaleCopier implements SaleCopierInterface
             $this->target->setInitiatorCustomer($this->source->getInitiatorCustomer());
         }
 
+        if ($this->target instanceof Model\FollowerSubjectInterface
+            && $this->source instanceof Model\FollowerSubjectInterface) {
+            $this->target->setFollowerCustomer($this->source->getFollowerCustomer());
+        }
+
         return $this;
     }
 

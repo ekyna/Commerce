@@ -22,6 +22,7 @@ use Ekyna\Component\Commerce\Quote\Model;
 class Quote extends AbstractSale implements Model\QuoteInterface
 {
     use Common\InitiatorSubjectTrait;
+    use Common\FollowerSubjectTrait;
 
     protected bool                     $editable     = false;
     protected ?Common\ProjectInterface $project      = null;

@@ -23,6 +23,7 @@ use Ekyna\Component\Commerce\Shipment\Model as Shipment;
 class Order extends AbstractSale implements Model\OrderInterface
 {
     use Common\InitiatorSubjectTrait;
+    use Common\FollowerSubjectTrait;
     use Common\MarginSubjectTrait;
     use Shipment\ShipmentSubjectTrait;
     use Invoice\InvoiceSubjectTrait;
