@@ -17,6 +17,7 @@ use Ekyna\Component\Commerce\Report\Writer\WriterInterface;
 use Ekyna\Component\Commerce\Report\Writer\XlsWriter;
 use Ekyna\Component\Commerce\Stock\Helper\StockSubjectQuantityHelper;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Resource\Helper\File\Xls;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
@@ -181,14 +182,14 @@ class SupplierOrdersSection implements SectionInterface
             $groups[] = 'Total';
         }
 
-        $headerStyle = XlsWriter::STYLE_BOLD + XlsWriter::STYLE_BACKGROUND;
+        $headerStyle = Xls::STYLE_BOLD + Xls::STYLE_BACKGROUND;
 
         // Headers
         $sheet->getColumnDimension('A')->setWidth(80, 'mm');
         $sheet->mergeCells([1, 1, 1, 3]);
         $sheet->getCell([1, 1])->getStyle()->applyFromArray($headerStyle);
         $sheet->getCell([1, 2])->getStyle()->applyFromArray($headerStyle);
-        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+        $sheet->getCell([1, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
         $sheet->getCell([1, 1])->setValue('Fournisseur');
 
         foreach ($groups as $index => $header) {
@@ -204,44 +205,44 @@ class SupplierOrdersSection implements SectionInterface
 
             $sheet->mergeCells([$col, 1, $col + 4, 1]);
             $sheet->getCell([$col, 1])->getStyle()->applyFromArray(
-                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+                $headerStyle + Xls::STYLE_CENTER + Xls::STYLE_BORDER_LEFT
             );
             $sheet->getCell([$col, 1])->setValue($header); // Year
 
 
             $sheet->mergeCells([$col, 2, $col + 2, 2]);
             $sheet->getCell([$col, 2])->getStyle()->applyFromArray(
-                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+                $headerStyle + Xls::STYLE_CENTER + Xls::STYLE_BORDER_LEFT
             );
             $sheet->getCell([$col, 2])->setValue('Commandes clients');
 
             $sheet->getColumnDimensionByColumn($col)->setWidth(25, 'mm');
-            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
-            $sheet->getCell([$col, 3])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray(Xls::STYLE_BORDER_LEFT);
             $sheet->getCell([$col, 3])->setValue('Marchandise');
 
             $sheet->getColumnDimensionByColumn($col + 1)->setWidth(18, 'mm');
-            $sheet->getCell([$col + 1, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 1, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col + 1, 3])->setValue('Port');
 
             $sheet->getColumnDimensionByColumn($col + 2)->setWidth(20, 'mm');
-            $sheet->getCell([$col + 2, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 2, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col + 2, 3])->setValue('Ventes');
 
 
             $sheet->mergeCells([$col + 3, 2, $col + 4, 2]);
             $sheet->getCell([$col + 3, 2])->getStyle()->applyFromArray(
-                $headerStyle + XlsWriter::STYLE_CENTER + XlsWriter::STYLE_BORDER_LEFT
+                $headerStyle + Xls::STYLE_CENTER + Xls::STYLE_BORDER_LEFT
             );
             $sheet->getCell([$col + 3, 2])->setValue('Fournisseurs');
 
             $sheet->getColumnDimensionByColumn($col + 3)->setWidth(25, 'mm');
-            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
-            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 3, 3])->getStyle()->applyFromArray(Xls::STYLE_BORDER_LEFT);
             $sheet->getCell([$col + 3, 3])->setValue('Marchandise');
 
             $sheet->getColumnDimensionByColumn($col + 4)->setWidth(18, 'mm');
-            $sheet->getCell([$col + 4, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col + 4, 3])->getStyle()->applyFromArray($headerStyle + Xls::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col + 4, 3])->setValue('Port');
         }
 
@@ -268,7 +269,7 @@ class SupplierOrdersSection implements SectionInterface
 
                 $data = $supplier[$group] ?? new SupplierData();
 
-                $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+                $sheet->getCell([$col, $row])->getStyle()->applyFromArray(Xls::STYLE_BORDER_LEFT);
 
                 $sheet->getCell([$col, $row])->setValue($data->saleGoodCost->toFixed(2));
                 $sheet->getCell([$col + 1, $row])->setValue($data->saleSupplyCost->toFixed(2));

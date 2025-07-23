@@ -10,6 +10,7 @@ use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
+use Ekyna\Component\Resource\Helper\File\Xls;
 use ZipArchive;
 
 /**
@@ -30,10 +31,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportDueOrders(): string
+    public function exportDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->findDueOrders(),
@@ -43,7 +42,7 @@ class OrderListExporter extends AbstractExporter
     }
 
     /**
-     * Export all the due orders (archive with all CSV files).
+     * Export all the due orders (archive with all XLS files).
      *
      * @return string The export file path.
      */
@@ -57,10 +56,10 @@ class OrderListExporter extends AbstractExporter
             throw new RuntimeException("Failed to open '$path' for writing.");
         }
 
-        $zip->addFile($this->exportRegularDueOrders(), 'regular-due-orders.csv');
-        $zip->addFile($this->exportOutstandingExpiredDueOrders(), 'outstanding-expired-due-orders.csv');
-        $zip->addFile($this->exportOutstandingFallDueOrders(), 'outstanding-fall-due-orders.csv');
-        $zip->addFile($this->exportOutstandingPendingDueOrders(), 'outstanding-pending-due-orders.csv');
+        $zip->addFile($this->exportRegularDueOrders()->close(), 'regular-due-orders.xls');
+        $zip->addFile($this->exportOutstandingExpiredDueOrders()->close(), 'outstanding-expired-due-orders.xls');
+        $zip->addFile($this->exportOutstandingFallDueOrders()->close(), 'outstanding-fall-due-orders.xls');
+        $zip->addFile($this->exportOutstandingPendingDueOrders()->close(), 'outstanding-pending-due-orders.xls');
 
         $zip->close();
 
@@ -69,10 +68,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the regular (payment term less) due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportRegularDueOrders(): string
+    public function exportRegularDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->getRegularDueOrders(),
@@ -83,10 +80,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the outstanding expired due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportOutstandingExpiredDueOrders(): string
+    public function exportOutstandingExpiredDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->getOutstandingExpiredDueOrders(),
@@ -97,10 +92,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the outstanding fall due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportOutstandingFallDueOrders(): string
+    public function exportOutstandingFallDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->getOutstandingFallDueOrders(),
@@ -111,10 +104,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the outstanding pending due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportOutstandingPendingDueOrders(): string
+    public function exportOutstandingPendingDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->getOutstandingPendingDueOrders(),
@@ -125,10 +116,8 @@ class OrderListExporter extends AbstractExporter
 
     /**
      * Export the remaining orders (that needs to be invoiced).
-     *
-     * @return string The export file path.
      */
-    public function exportRemainingOrders(): string
+    public function exportRemainingOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->getRemainingOrders(),

@@ -12,8 +12,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Ekyna\Component\Commerce\Stock\Model\StockLogTypeEnum;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierDeliveryItemRepositoryInterface;
-use Ekyna\Component\Resource\Helper\File\Csv;
-use Ekyna\Component\Resource\Helper\File\File;
+use Ekyna\Component\Resource\Helper\File\Xls;
 use Ekyna\Component\Resource\Model\DateRange;
 
 use function sprintf;
@@ -32,25 +31,25 @@ class StockSubjectLogExporter
     ) {
     }
 
-    public function export(StockSubjectInterface $subject, ?DateRange $range): File
+    public function export(StockSubjectInterface $subject, ?DateRange $range): Xls
     {
         $list = $this->list($subject, $range);
 
         if ($range) {
             $filename = sprintf(
-                '%s_%s_%s_log.csv',
+                '%s_%s_%s_log',
                 $subject->getReference(),
                 $range->getStart()->format('Y-m-d'),
                 $range->getEnd()->format('Y-m-d')
             );
         } else {
             $filename = sprintf(
-                '%s_log.csv',
+                '%s_log',
                 $subject->getReference()
             );
         }
 
-        $csv = Csv::create($filename);
+        $csv = new Xls($filename);
 
         foreach ($list as $log) {
             $csv->addRow([

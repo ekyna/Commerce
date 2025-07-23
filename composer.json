@@ -26,7 +26,6 @@
         "ekyna/resource": "0.9.x-dev",
         "giggsey/libphonenumber-for-php": "^8.0",
         "antalaron/vat-number-validator": "^1.2",
-        "phpoffice/phpspreadsheet": "^1.18",
         "ozdemirburak/iris": "^3.0"
     },
     "require-dev": {

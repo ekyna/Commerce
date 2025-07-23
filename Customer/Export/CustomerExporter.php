@@ -6,8 +6,8 @@ namespace Ekyna\Component\Commerce\Customer\Export;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
-use Ekyna\Component\Resource\Helper\File\Csv;
-use Ekyna\Component\Resource\Helper\File\File;
+use Ekyna\Component\Resource\Helper\File\AbstractFile;
+use Ekyna\Component\Resource\Helper\File\Xls;
 
 /**
  * Class CustomerExporter
@@ -28,7 +28,7 @@ class CustomerExporter
     /**
      * Exports customers data.
      */
-    public function export(CustomerExport $config): File
+    public function export(CustomerExport $config): AbstractFile
     {
         $qb = $this->manager->createQueryBuilder();
 
@@ -96,8 +96,9 @@ class CustomerExporter
                 ->setParameter('groups', $config->getGroups()->toArray());
         }
 
-        $file = Csv::create('customer_export.csv');
-        $file->addRow($headers);
+        $file = new Xls('customer_export');
+
+        $file->setHeaders($headers);
 
         $lines = $qb
             ->select($select)

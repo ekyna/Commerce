@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Order\Model\OrderInvoiceInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderInvoiceRepositoryInterface;
+use Ekyna\Component\Resource\Helper\File\Xls;
 
 /**
  * Class InvoiceExporter
@@ -24,20 +25,16 @@ class OrderInvoiceExporter extends AbstractExporter
 
     /**
      * Exports due invoices.
-     *
-     * @return string The export file path.
      */
-    public function exportDueInvoices(): string
+    public function exportDueInvoices(): Xls
     {
         return $this->buildFile($this->repository->findDueInvoices(), 'invoices_due', $this->getDefaultMap());
     }
 
     /**
      * Exports fall invoices.
-     *
-     * @return string The export file path.
      */
-    public function exportFallInvoices(): string
+    public function exportFallInvoices(): Xls
     {
         return $this->buildFile($this->repository->findFallInvoices(), 'invoices_fall', $this->getDefaultMap());
     }

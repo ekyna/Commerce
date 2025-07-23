@@ -8,7 +8,7 @@ use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Customer\Model\CustomerInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Quote\Repository\QuoteRepositoryInterface;
-use Ekyna\Component\Resource\Helper\File\Csv;
+use Ekyna\Component\Resource\Helper\File\Xls;
 
 use function trim;
 
@@ -25,34 +25,34 @@ class InitiatorExporter
     ) {
     }
 
-    public function exportOrders(CustomerInterface $initiator): Csv
+    public function exportOrders(CustomerInterface $initiator): Xls
     {
         $sales = $this->orderRepository->findByInitiatorCustomer($initiator);
 
-        return $this->export($sales, $initiator->getNumber() . '-orders.csv');
+        return $this->export($sales, $initiator->getNumber() . '-orders');
     }
 
-    public function exportQuotes(CustomerInterface $initiator): Csv
+    public function exportQuotes(CustomerInterface $initiator): Xls
     {
         $sales = $this->quoteRepository->findByInitiatorCustomer($initiator);
 
-        return $this->export($sales, $initiator->getNumber() . '-quotes.csv');
+        return $this->export($sales, $initiator->getNumber() . '-quotes');
     }
 
     /**
      * @param array<SaleInterface> $sales
      */
-    protected function export(array $sales, string $name): Csv
+    protected function export(array $sales, string $name): Xls
     {
-        $csv = Csv::create($name);
+        $file = new Xls($name);
 
-        $csv->addRow($this->buildHeaders());
+        $file->setHeaders($this->buildHeaders());
 
         foreach ($sales as $sale) {
-            $csv->addRow($this->buildRow($sale));
+            $file->addRow($this->buildRow($sale));
         }
 
-        return $csv;
+        return $file;
     }
 
     protected function buildHeaders(): array

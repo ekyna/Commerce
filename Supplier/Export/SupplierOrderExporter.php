@@ -8,6 +8,7 @@ use Ekyna\Component\Commerce\Common\Export\AbstractExporter;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterface;
+use Ekyna\Component\Resource\Helper\File\Xls;
 
 /**
  * Class SupplierOrderExporter
@@ -16,11 +17,6 @@ use Ekyna\Component\Commerce\Supplier\Repository\SupplierOrderRepositoryInterfac
  */
 class SupplierOrderExporter extends AbstractExporter
 {
-    /**
-     * Constructor.
-     *
-     * @param SupplierOrderRepositoryInterface $repository
-     */
     public function __construct(
         protected readonly SupplierOrderRepositoryInterface $repository
     ) {
@@ -29,10 +25,8 @@ class SupplierOrderExporter extends AbstractExporter
 
     /**
      * Export the suppliers expired due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportSuppliersExpiredDueOrders(): string
+    public function exportSuppliersExpiredDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->findSuppliersExpiredDue(),
@@ -43,10 +37,8 @@ class SupplierOrderExporter extends AbstractExporter
 
     /**
      * Export the suppliers fall due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportSuppliersFallDueOrders(): string
+    public function exportSuppliersFallDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->findSuppliersFallDue(),
@@ -57,10 +49,8 @@ class SupplierOrderExporter extends AbstractExporter
 
     /**
      * Export the forwarders expired due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportForwardersExpiredDueOrders(): string
+    public function exportForwardersExpiredDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->findForwardersExpiredDue(),
@@ -71,10 +61,8 @@ class SupplierOrderExporter extends AbstractExporter
 
     /**
      * Export the forwarders fall due orders.
-     *
-     * @return string The export file path.
      */
-    public function exportForwardersFallDueOrders(): string
+    public function exportForwardersFallDueOrders(): Xls
     {
         return $this->buildFile(
             $this->repository->findForwardersFallDue(),

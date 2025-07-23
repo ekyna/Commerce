@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Report\Writer;
 
 use Ekyna\Component\Commerce\Common\Model\Margin;
+use Ekyna\Component\Resource\Helper\File\Xls as Style;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Contracts\Translation\TranslatableInterface;
@@ -25,45 +23,6 @@ use function tempnam;
 class XlsWriter implements WriterInterface
 {
     final public const NAME = 'xls';
-
-    private const HEADER_BACKGROUND = 'FFE3E3E3';
-
-    public const STYLE_BOLD = [
-        'font' => [
-            'bold' => true,
-        ],
-    ];
-
-    public const STYLE_CENTER = [
-        'alignment' => [
-            'horizontal' => Alignment::HORIZONTAL_CENTER,
-        ],
-    ];
-
-    public const STYLE_BACKGROUND = [
-        'fill' => [
-            'fillType'   => Fill::FILL_SOLID,
-            'startColor' => [
-                'argb' => self::HEADER_BACKGROUND,
-            ],
-        ],
-    ];
-
-    public const STYLE_BORDER_BOTTOM = [
-        'borders' => [
-            'bottom' => [
-                'borderStyle' => Border::BORDER_THIN,
-            ],
-        ],
-    ];
-
-    public const STYLE_BORDER_LEFT = [
-        'borders' => [
-            'left' => [
-                'borderStyle' => Border::BORDER_THIN,
-            ],
-        ],
-    ];
 
     private Spreadsheet $spreadsheet;
     private int         $sheetIndex;
@@ -91,7 +50,7 @@ class XlsWriter implements WriterInterface
         $sheet = $this->spreadsheet->getActiveSheet();
 
         // Columns headers
-        $headerStyle = XlsWriter::STYLE_BOLD + XlsWriter::STYLE_BACKGROUND;
+        $headerStyle = Style::STYLE_BOLD + Style::STYLE_BACKGROUND;
 
         $col = 1;
         foreach ($headers as $header => $width) {
@@ -99,16 +58,16 @@ class XlsWriter implements WriterInterface
 
             $sheet->mergeCells([$col, 1, $col, 3]);
             $sheet->getCell([$col, 1])->getStyle()->applyFromArray($headerStyle);
-            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + XlsWriter::STYLE_BORDER_BOTTOM);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle + Style::STYLE_BORDER_BOTTOM);
             $sheet->getCell([$col, 1])->setValue($header);
             $col++;
         }
 
         $yearStyle =
-            XlsWriter::STYLE_BOLD
-            + XlsWriter::STYLE_CENTER
-            + XlsWriter::STYLE_BACKGROUND
-            + XlsWriter::STYLE_BORDER_LEFT;
+            Style::STYLE_BOLD
+            + Style::STYLE_CENTER
+            + Style::STYLE_BACKGROUND
+            + Style::STYLE_BORDER_LEFT;
 
         $this->columnBase = $col;
         foreach ($years as $index => $year) {
@@ -139,7 +98,7 @@ class XlsWriter implements WriterInterface
             // Revenue product
             $sheet->getColumnDimensionByColumn($col)->setWidth(20, 'mm');
             $sheet->getCell([$col, 3])->getStyle()->applyFromArray($headerStyle);
-            $sheet->getCell([$col, 3])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+            $sheet->getCell([$col, 3])->getStyle()->applyFromArray(Style::STYLE_BORDER_LEFT);
             $sheet->getCell([$col, 3])->setValue('Product'); // TODO Trans
             // Revenue shipping
             $sheet->getColumnDimensionByColumn($col + 1)->setWidth(20, 'mm');
@@ -183,7 +142,7 @@ class XlsWriter implements WriterInterface
         $col = $this->columnBase + $yearIndex * 9;
 
         // Left border
-        $sheet->getCell([$col, $row])->getStyle()->applyFromArray(XlsWriter::STYLE_BORDER_LEFT);
+        $sheet->getCell([$col, $row])->getStyle()->applyFromArray(Style::STYLE_BORDER_LEFT);
 
         // Cells values
         $sheet->getCell([$col, $row])->setValue($data->getRevenueProduct()->toFixed(2));

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Export;
 
-use Ekyna\Component\Commerce\Exception\RuntimeException;
 use Ekyna\Component\Resource\Exception\UnexpectedTypeException;
+use Ekyna\Component\Resource\Helper\File\Xls;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -36,43 +36,21 @@ abstract class AbstractExporter
     /**
      * Builds the CSV file.
      */
-    protected function buildFile(array $objects, string $name, array $map): string
+    protected function buildFile(array $objects, string $name, array $map): Xls
     {
-        $rows = [];
+        $file = new Xls($name);
 
         if (!empty($headers = $this->buildHeaders(array_keys($map)))) {
-            $rows[] = $headers;
+            $file->setHeaders($headers);
         }
 
         foreach ($objects as $object) {
             if (!empty($row = $this->buildRow($object, $map))) {
-                $rows[] = $row;
+                $file->addRow($row);
             }
         }
 
-        return $this->createFile($rows, $name);
-    }
-
-    /**
-     * Creates the CSV file.
-     */
-    protected function createFile(array $rows, string $name): string
-    {
-        if (false === $path = tempnam(sys_get_temp_dir(), $name)) {
-            throw new RuntimeException('Failed to create temporary file.');
-        }
-
-        if (false === $handle = fopen($path, 'w')) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        foreach ($rows as $row) {
-            fputcsv($handle, $row);
-        }
-
-        fclose($handle);
-
-        return $path;
+        return $file;
     }
 
     /**

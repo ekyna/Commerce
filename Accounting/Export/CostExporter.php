@@ -12,11 +12,9 @@ use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceCostCalculator;
 use Ekyna\Component\Commerce\Invoice\Repository\InvoiceRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Ekyna\Component\Commerce\Stock\Repository\StockAdjustmentRepositoryInterface;
+use Ekyna\Component\Resource\Helper\File\Xls;
 use ZipArchive;
 
-use function fclose;
-use function fopen;
-use function fputcsv;
 use function ini_set;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -68,8 +66,8 @@ class CostExporter
         }
 
         foreach ($months as $month) {
-            $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.csv', $month->format('Y-m')));
-            $zip->addFile($this->exportAdjustment($month), sprintf('%s_adjustments.csv', $month->format('Y-m')));
+            $zip->addFile($this->exportInvoices($month), sprintf('%s_invoices.xls', $month->format('Y-m')));
+            $zip->addFile($this->exportAdjustment($month), sprintf('%s_adjustments.xls', $month->format('Y-m')));
         }
 
         $zip->close();
@@ -79,13 +77,9 @@ class CostExporter
 
     protected function exportInvoices(DateTime $month): string
     {
-        $path = tempnam(sys_get_temp_dir(), 'invoices_costs');
+        $file = new Xls('invoices_costs');
 
-        if (false === $handle = fopen($path, 'w')) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        $data = [
+        $headers = [
             'Number',
             'Ati Total',
             'Goods Cost',
@@ -93,12 +87,10 @@ class CostExporter
         ];
 
         if ($this->debug) {
-            $data[] = 'Order';
+            $headers[] = 'Order';
         }
 
-        if (false === fputcsv($handle, $data, ';')) {
-            throw new RuntimeException('Failed to write line.');
-        }
+        $file->setHeaders($headers);
 
         $currency = $this->currencyConverter->getDefaultCurrency();
 
@@ -136,37 +128,27 @@ class CostExporter
                 $data[] = $invoice->getSale()->getId();
             }
 
-            if (false === fputcsv($handle, $data, ';')) {
-                throw new RuntimeException('Failed to write line.');
-            }
+            $file->addRow($data);
         }
 
-        fclose($handle);
-
-        return $path;
+        return $file->close();
     }
 
     protected function exportAdjustment(DateTime $month): string
     {
-        $path = tempnam(sys_get_temp_dir(), 'adjustments_costs');
+        $file = new Xls('adjustments_costs');
 
-        if (false === $handle = fopen($path, 'w')) {
-            throw new RuntimeException("Failed to open '$path' for writing.");
-        }
-
-        $data = [
+        $headers = [
             'Reference',
             'Goods Cost',
             'Shipping Cost',
         ];
 
         if ($this->debug) {
-            $data[] = 'Subject';
+            $headers[] = 'Subject';
         }
 
-        if (false === fputcsv($handle, $data, ';')) {
-            throw new RuntimeException('Failed to write line.');
-        }
+        $file->setHeaders($headers);
 
         $adjustments = $this->adjustmentRepository->findByMonth($month);
 
@@ -191,13 +173,9 @@ class CostExporter
                 $data[] = $unit->getSubject()->getId();
             }
 
-            if (false === fputcsv($handle, $data, ';')) {
-                throw new RuntimeException('Failed to write line.');
-            }
+            $file->addRow($data);
         }
 
-        fclose($handle);
-
-        return $path;
+        return $file->close();
     }
 }
