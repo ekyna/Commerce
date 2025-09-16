@@ -4,7 +4,7 @@ fr_fr:
     customer: true
     business: true
     sources: [FR]
-    targets: [FR]
+    targets: [FR, MC]
     taxes: [fr_normal, fr_intermediate, fr_reduced, fr_super_reduced]
     mentions: []
 fr_eu_b2b:
