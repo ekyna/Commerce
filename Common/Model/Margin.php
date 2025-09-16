@@ -95,6 +95,12 @@ class Margin
             return (new Decimal(1))->sub(
                 $this->getCostTotal($gross)->div($revenue)
             )->mul(100)->round(2);
+
+//            // (revenue - cost) / revenue * 100
+//            return $revenue
+//                ->sub($this->getCostTotal($gross))
+//                ->div($revenue)
+//                ->mul(100)->round(2);
         }
 
         return new Decimal(0);
