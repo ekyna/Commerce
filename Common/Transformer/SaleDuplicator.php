@@ -40,6 +40,10 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
 
         $this->target
             ->setCustomerGroup(null)
+            ->setCompanyNumber(null)
+            ->setDescription(null)
+            ->setPreparationNote(null)
+            ->setVoucherNumber(null)
             ->setShipmentMethod(null)
             ->setPaymentMethod(null)
             ->setPaymentTerm(null)
