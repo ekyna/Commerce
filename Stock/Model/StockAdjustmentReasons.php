@@ -15,6 +15,7 @@ final class StockAdjustmentReasons
 {
     public const REASON_FAULTY   = 'faulty';
     public const REASON_IMPROPER = 'improper';
+    public const REASON_DISPOSAL = 'disposal';
     public const REASON_DEBIT    = 'debit';
     public const REASON_CREDIT   = 'credit';
     public const REASON_FOUND    = 'found';
@@ -28,6 +29,7 @@ final class StockAdjustmentReasons
         return [
             self::REASON_FAULTY,
             self::REASON_IMPROPER,
+            self::REASON_DISPOSAL,
             self::REASON_FOUND,
             self::REASON_CREDIT,
             self::REASON_DEBIT,
@@ -60,6 +62,7 @@ final class StockAdjustmentReasons
         return [
             self::REASON_FAULTY,
             self::REASON_IMPROPER,
+            self::REASON_DISPOSAL,
             self::REASON_DEBIT,
         ];
     }
