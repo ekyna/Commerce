@@ -15,7 +15,7 @@ use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
  * @package Ekyna\Component\Commerce\Manufacture\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-final class ProductionItemAssignment extends AbstractAssignment
+class ProductionItemAssignment extends AbstractAssignment
 {
     private ?ProductionItemInterface $productionItem = null;
 

@@ -16,7 +16,7 @@ use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
  * @package Ekyna\Component\Commerce\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-final class OrderItemAssignment extends AbstractAssignment
+class OrderItemAssignment extends AbstractAssignment
 {
     protected ?OrderItemInterface $orderItem = null;
 
