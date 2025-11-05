@@ -10,6 +10,8 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
+use function is_null;
+
 /**
  * Class OverflowHandler
  * @package Ekyna\Component\Commerce\Stock\Overflow
@@ -94,7 +96,7 @@ class OverflowHandler implements OverflowHandlerInterface
         }
 
         // Don't move assignment to a non-linked stock unit
-        if (!$stockUnit->getSupplierOrderItem()) {
+        if (is_null($stockUnit->getSupplierOrderItem()) && is_null($stockUnit->getProductionOrder())) {
             return false;
         }
 

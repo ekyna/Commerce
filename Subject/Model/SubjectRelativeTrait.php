@@ -133,9 +133,4 @@ trait SubjectRelativeTrait
 
         return $this;
     }
-
-    public function copy(SubjectRelativeInterface $other): bool
-    {
-        // TODO
-    }
 }
