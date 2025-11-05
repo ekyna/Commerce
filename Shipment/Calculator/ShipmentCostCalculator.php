@@ -46,9 +46,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
         $weight = $sale->getShipmentWeight() ?? $sale->getWeightTotal();
 
         if (!($country && $method)) {
-            $cost->setAverage();
-
-            return $cost;
+            return $cost->setAverage();
         }
 
         $price = $this
@@ -56,9 +54,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
             ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
         if (null === $price) {
-            $cost->setAverage();
-
-            return $cost;
+            return $cost->setAverage();
         }
 
         $base = $this->currencyConverter->getDefaultCurrency();
@@ -69,9 +65,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
             $currency
         );
 
-        $cost->addShipment($amount);
-
-        return $cost;
+        return $cost->addShipment($amount);
     }
 
     public function calculateSubject(ShipmentSubjectInterface $subject, string $currency): Cost
@@ -79,7 +73,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
         $cost = new Cost();
 
         foreach ($subject->getShipments() as $shipment) {
-            $cost->add($this->calculateShipment($shipment, $currency));
+            $cost = $cost->add($this->calculateShipment($shipment, $currency));
         }
 
         return $cost;
@@ -101,9 +95,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
         $method = $shipment->getMethod();
 
         if (!($country && $method)) {
-            $cost->setAverage();
-
-            return $cost;
+            return $cost->setAverage();
         }
 
         // TODO Deal with parcels
@@ -117,9 +109,7 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
             ->getPriceByCountryAndMethodAndWeight($country, $method, $weight);
 
         if (null === $price) {
-            $cost->setAverage();
-
-            return $cost;
+            return $cost->setAverage();
         }
 
         $base = $this->currencyConverter->getDefaultCurrency();
@@ -131,8 +121,6 @@ class ShipmentCostCalculator implements ShipmentCostCalculatorInterface
             $shipment->getShippedAt()
         );
 
-        $cost->addShipment($amount);
-
-        return $cost;
+        return $cost->addShipment($amount);
     }
 }

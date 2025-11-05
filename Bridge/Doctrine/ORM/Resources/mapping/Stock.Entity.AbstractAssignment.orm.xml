@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <entity name="Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment"
+    <entity name="Ekyna\Component\Commerce\Stock\Entity\AbstractAssignment"
             table="commerce_stock_assignment"
             inheritance-type="SINGLE_TABLE">
 
@@ -16,7 +16,8 @@
         <discriminator-column name="type" type="string"/>
 
         <discriminator-map>
-            <discriminator-mapping value="order_item" class="Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment"/>
+            <discriminator-mapping value="order_item" class="Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment"/>
+            <discriminator-mapping value="production_item" class="Ekyna\Component\Commerce\Manufacture\Entity\ProductionItemAssignment"/>
         </discriminator-map>
 
         <id name="id" type="integer" column="id">

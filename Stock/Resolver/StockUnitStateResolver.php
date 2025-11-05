@@ -28,7 +28,7 @@ class StockUnitStateResolver implements StockUnitStateResolverInterface
 
         $adjusted = $stockUnit->getAdjustedQuantity();
 
-        if (null !== $stockUnit->getSupplierOrderItem()) {
+        if ($stockUnit->getSupplierOrderItem() || $stockUnit->getProductionOrder()) {
             $max = $stockUnit->getOrderedQuantity() + $adjusted;
 
             // Assigned to supplier order and pending for delivery

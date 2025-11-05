@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Subject\Guesser;
 
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Model\Cost;
 use Ekyna\Component\Commerce\Common\Model\CountryInterface;
 use Ekyna\Component\Commerce\Common\Repository\CountryRepositoryInterface;
-use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -57,7 +55,7 @@ class SubjectCostGuesser implements SubjectCostGuesserInterface
         }
 
         // By supplier products (avg)
-        return $this->getSupplierProductAverageCost($subject);
+        return $this->getLatestSupplierProductCost($subject);
     }
 
     /**
@@ -190,41 +188,27 @@ class SubjectCostGuesser implements SubjectCostGuesserInterface
     }
 
     /**
-     * Returns the supplier product average cost price.
+     * Returns the latest supplier product cost price.
      *
      * @param SubjectInterface $subject The subject
      */
-    private function getSupplierProductAverageCost(SubjectInterface $subject): ?Cost
+    private function getLatestSupplierProductCost(SubjectInterface $subject): ?Cost
     {
-        $products = $this->getSupplierProductRepository()->findBySubject($subject);
+        $product = $this
+            ->getSupplierProductRepository()
+            ->findLatestWithPriceBySubject($subject);
 
-        if (empty($products)) {
+        if (null === $product) {
             return null;
         }
 
-        $cost = new Decimal(0);
-        $count = 0;
-        foreach ($products as $product) {
-            $price = $product->getNetPrice()->div($product->getPacking());
+        $price = $product->getNetPrice();
 
-            if ($price->isZero()) {
-                continue;
-            }
+        $base = $product->getSupplier()->getCurrency()->getCode();
 
-            $count++;
-
-            $base = $product->getSupplier()->getCurrency()->getCode();
-
-            // Convert with current exchange rate
-            // TODO Use historical exchange rate
-            $cost += $this->currencyConverter->convert($price, $base);
-        }
-
-        if (1 < $count) {
-            $cost = $cost->div($count);
-        }
-
-        $cost = Money::round($cost, $this->currencyConverter->getDefaultCurrency());
+        // Convert with current exchange rate
+        // TODO Use historical exchange rate
+        $cost = $this->currencyConverter->convert($price, $base);
 
         return new Cost($cost, average: true);
     }

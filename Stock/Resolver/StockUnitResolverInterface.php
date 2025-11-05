@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 
 /**
  * Interface StockUnitResolverInterface
@@ -29,63 +31,63 @@ interface StockUnitResolverInterface
     /**
      * Creates a stock unit for the given subject relative.
      *
-     * @param SubjectRelativeInterface $relative
+     * @param SubjectReferenceInterface $relative
      *
      * @return StockUnitInterface
      */
-    public function createBySubjectRelative(SubjectRelativeInterface $relative): StockUnitInterface;
+    public function createBySubjectReference(SubjectReferenceInterface $relative): StockUnitInterface;
 
     /**
      * Finds the pending stock units.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
-     * @return array|StockUnitInterface[]
+     * @return array<int, StockUnitInterface>
      */
-    public function findPending($subjectOrRelative): array;
+    public function findPending(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array;
 
     /**
      * Finds the ready stock units.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
-     * @return array|StockUnitInterface[]
+     * @return array<int, StockUnitInterface>
      */
-    public function findReady($subjectOrRelative): array;
+    public function findReady(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array;
 
     /**
      * Finds the pending or ready stock units.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
-     * @return array|StockUnitInterface[]
+     * @return array<int, StockUnitInterface>
      */
-    public function findPendingOrReady($subjectOrRelative): array;
+    public function findPendingOrReady(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array;
 
     /**
      * Finds the not closed stock units.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
-     * @return array|StockUnitInterface[]
+     * @return array<int, StockUnitInterface>
      */
-    public function findNotClosed($subjectOrRelative): array;
+    public function findNotClosed(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array;
 
     /**
      * Finds the not fully assigned (to sale items) stock units by subject or relative.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
-     * @return array|StockUnitInterface[]
+     * @return array<int, StockUnitInterface>
      */
-    public function findAssignable($subjectOrRelative): array;
+    public function findAssignable(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array;
 
     /**
      * Finds the not linked (to supplier order item) stock unit by subject or relative.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
      * @return StockUnitInterface|null
      */
-    public function findLinkable($subjectOrRelative): ?StockUnitInterface;
+    public function findLinkable(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): ?StockUnitInterface;
 }

@@ -27,7 +27,7 @@ class SupplierOrderItemListener extends AbstractListener
     {
         $item = $this->getSupplierOrderItemFromEvent($event);
 
-        $changed = $this->synchronizeWithProduct($item);
+        $changed = $this->synchronizeProduct($item);
 
         if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item, false);
@@ -59,16 +59,32 @@ class SupplierOrderItemListener extends AbstractListener
             $productCs = $this->persistenceHelper->getChangeSet($item, 'product');
             if ($productCs[0] != $productCs[1]) {
                 // TODO message as translation id
-                throw new IllegalOperationException('Changing supplier order item product is not supported yet.');
+                throw new IllegalOperationException(
+                    'Changing the product of a supplier order item is not supported yet.'
+                );
             }
         }
 
-        if ($changed = $this->synchronizeWithProduct($item)) {
+        // Disallow packing change if item is delivered (even partially)
+        if (
+            $this->persistenceHelper->isChanged($item, 'packing')
+            && !$item->getDeliveryItems()->isEmpty()
+        ) {
+            throw new IllegalOperationException(
+                'Changing the packing of a delivered supplier order item is not supported yet.'
+            );
+        }
+
+        if ($changed = $this->synchronizeProduct($item)) {
             $this->persistenceHelper->persistAndRecompute($item, false);
         }
 
-        if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'netPrice', 'weight'])) {
+        if ($changed || $this->persistenceHelper->isChanged($item, ['quantity', 'packing', 'netPrice', 'weight'])) {
             $this->scheduleSupplierOrderContentChangeEvent($item->getOrder());
+        }
+
+        if (!$this->persistenceHelper->isChanged($item, ['quantity', 'packing'])) {
+            return;
         }
 
         $order = $item->getOrder();
@@ -150,55 +166,46 @@ class SupplierOrderItemListener extends AbstractListener
      * @throws LogicException If breaking synchronization between supplier order item and supplier product.
      * @throws InvalidArgumentException If supplier product subject data is not set.
      */
-    protected function synchronizeWithProduct(SupplierOrderItemInterface $item): bool
+    protected function synchronizeProduct(SupplierOrderItemInterface $item): bool
     {
-        $changed = false;
-
-        // TODO What about stock management if subject change ???
-        if (null !== $product = $item->getProduct()) {
-            // TODO Create an utility class to do this
-            $productSID = $product->getSubjectIdentity();
-            if ($productSID->hasIdentity()) {
-                $itemSID = $item->getSubjectIdentity();
-
-                if ($itemSID->hasIdentity()) {
-                    if (!$itemSID->equals($productSID)) {
-                        throw new LogicException(
-                            'Breaking synchronization between supplier order item and supplier product is not supported.'
-                        );
-                    }
-                } else {
-                    $itemSID->copy($productSID);
-                    $changed = true;
-                }
-            } else {
-                throw new InvalidArgumentException(
-                    'Supplier product subject identity is not set.'
+        if (null === $product = $item->getProduct()) {
+            if ($item->hasSubjectIdentity()) {
+                throw new LogicException(
+                    'Breaking synchronization between supplier order item and supplier product is not supported.'
                 );
             }
 
-            if (empty($item->getDesignation())) {
-                $item->setDesignation($product->getDesignation());
-            }
-            if (empty($item->getReference())) {
-                $item->setReference($product->getReference());
-            }
-            if ($item->getNetPrice()->isZero()) {
-                $item->setNetPrice(clone $product->getNetPrice());
-            }
-            if ($item->getWeight()->isZero()) {
-                $item->setWeight(clone $product->getWeight());
-            }
-            if (is_null($item->getTaxGroup())) {
-                $item->setTaxGroup($product->getTaxGroup());
-            }
-            if (is_null($item->getUnit())) {
-                $item->setUnit($product->getUnit());
-            }
-        } elseif ($item->hasSubjectIdentity()) {
-            throw new LogicException(
-                'Breaking synchronization between supplier order item and supplier product is not supported.'
-            );
+            return false;
+        }
+
+        // TODO What about stock management if subject change ???
+
+        // TODO Use subject helper ?
+        $changed = $item->copySubjectIdentity($product, allowChange: false);
+
+        if (empty($item->getDesignation())) {
+            $item->setDesignation($product->getDesignation());
+            $changed = true;
+        }
+        if (empty($item->getReference())) {
+            $item->setReference($product->getReference());
+            $changed = true;
+        }
+        if ($item->getNetPrice()->isZero()) {
+            $item->setNetPrice(clone $product->getNetPrice());
+            $changed = true;
+        }
+        if ($item->getWeight()->isZero()) {
+            $item->setWeight(clone $product->getWeight());
+            $changed = true;
+        }
+        if (is_null($item->getTaxGroup())) {
+            $item->setTaxGroup($product->getTaxGroup());
+            $changed = true;
+        }
+        if (is_null($item->getUnit())) {
+            $item->setUnit($product->getUnit());
+            $changed = true;
         }
 
         return $changed;

@@ -48,9 +48,11 @@ final class Cost implements Comparable
      */
     public function addProduct(Decimal $amount): Cost
     {
-        $this->product += $amount;
+        $result = clone $this;
 
-        return $this;
+        $result->product += $amount;
+
+        return $result;
     }
 
     /**
@@ -71,9 +73,11 @@ final class Cost implements Comparable
      */
     public function addSupply(Decimal $amount): Cost
     {
-        $this->supply += $amount;
+        $result = clone $this;
 
-        return $this;
+        $result->supply += $amount;
+
+        return $result;
     }
 
     /**
@@ -94,24 +98,11 @@ final class Cost implements Comparable
      */
     public function addShipment(Decimal $amount): Cost
     {
-        $this->shipment += $amount;
+        $result = clone $this;
 
-        return $this;
-    }
+        $result->shipment += $amount;
 
-    /**
-     * Returns this cost total.
-     *
-     * @param bool $gross Whether to include supply and shipment costs.
-     * @return Decimal
-     */
-    public function getTotal(bool $gross): Decimal
-    {
-        if ($gross) {
-            return $this->product;
-        }
-
-        return $this->product->add($this->supply)->add($this->shipment);
+        return $result;
     }
 
     /**
@@ -131,9 +122,26 @@ final class Cost implements Comparable
      */
     public function setAverage(): Cost
     {
-        $this->average = true;
+        $result = clone $this;
 
-        return $this;
+        $result->average = true;
+
+        return $result;
+    }
+
+    /**
+     * Returns this cost total.
+     *
+     * @param bool $gross Whether to include supply and shipment costs.
+     * @return Decimal
+     */
+    public function getTotal(bool $gross): Decimal
+    {
+        if ($gross) {
+            return $this->product;
+        }
+
+        return $this->product->add($this->supply)->add($this->shipment);
     }
 
     /**
@@ -144,15 +152,17 @@ final class Cost implements Comparable
      */
     public function add(Cost $cost): Cost
     {
-        $this->product += $cost->product;
-        $this->supply += $cost->supply;
-        $this->shipment += $cost->shipment;
+        $result = clone $this;
+
+        $result->product += $cost->product;
+        $result->supply += $cost->supply;
+        $result->shipment += $cost->shipment;
 
         if ($cost->isAverage()) {
-            $this->average = true;
+            $result->average = true;
         }
 
-        return $this;
+        return $result;
     }
 
     /**
@@ -163,11 +173,13 @@ final class Cost implements Comparable
      */
     public function multiply(Decimal $quantity): Cost
     {
-        $this->product *= $quantity;
-        $this->supply *= $quantity;
-        $this->shipment *= $quantity;
+        $result = clone $this;
 
-        return $this;
+        $result->product *= $quantity;
+        $result->supply *= $quantity;
+        $result->shipment *= $quantity;
+
+        return $result;
     }
 
     /**
@@ -178,11 +190,13 @@ final class Cost implements Comparable
      */
     public function divide(Decimal $quantity): Cost
     {
-        $this->product /= $quantity;
-        $this->supply /= $quantity;
-        $this->shipment /= $quantity;
+        $result = clone $this;
 
-        return $this;
+        $result->product /= $quantity;
+        $result->supply /= $quantity;
+        $result->shipment /= $quantity;
+
+        return $result;
     }
 
     /**
@@ -192,11 +206,13 @@ final class Cost implements Comparable
      */
     public function negate(): Cost
     {
-        $this->product = $this->product->negate();
-        $this->supply = $this->supply->negate();
-        $this->shipment = $this->shipment->negate();
+        $result = clone $this;
 
-        return $this;
+        $result->product = $this->product->negate();
+        $result->supply = $this->supply->negate();
+        $result->shipment = $this->shipment->negate();
+
+        return $result;
     }
 
     /**

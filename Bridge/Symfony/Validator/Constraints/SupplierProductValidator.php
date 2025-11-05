@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierProductRepositoryInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\Exception\InvalidArgumentException;
 
 /**
  * Class SupplierProductValidator
@@ -16,63 +19,53 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
  */
 class SupplierProductValidator extends ConstraintValidator
 {
-    /**
-     * @var SupplierProductRepositoryInterface
-     */
-    private $repository;
-
-    /**
-     * @var SubjectHelperInterface
-     */
-    private $subjectHelper;
-
-
-    /**
-     * Constructor.
-     *
-     * @param SupplierProductRepositoryInterface $repository
-     * @param SubjectHelperInterface             $subjectHelper
-     */
-    public function __construct(SupplierProductRepositoryInterface $repository, SubjectHelperInterface $subjectHelper)
-    {
-        $this->repository = $repository;
-        $this->subjectHelper = $subjectHelper;
+    public function __construct(
+        private readonly SupplierProductRepositoryInterface $repository,
+        private readonly SubjectHelperInterface             $subjectHelper
+    ) {
     }
 
     /**
      * @inheritDoc
      */
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (null === $value) {
             return;
         }
 
         if (!$value instanceof SupplierProductInterface) {
-            throw new InvalidArgumentException("Expected instance of " . SupplierProductInterface::class);
+            throw new UnexpectedTypeException($value, SupplierProductInterface::class);
         }
         if (!$constraint instanceof SupplierProduct) {
-            throw new InvalidArgumentException("Expected instance of " . SupplierProduct::class);
+            throw new UnexpectedTypeException($constraint, SupplierProduct::class);
         }
 
-        if (!$value->hasSubjectIdentity()) {
+        $this->validateUnique($value, $constraint);
+    }
+
+    private function validateUnique(SupplierProductInterface $product, SupplierProduct $constraint): void
+    {
+        if (!$product->hasSubjectIdentity()) {
             return;
         }
 
-        /** @var \Ekyna\Component\Commerce\Subject\Model\SubjectInterface $subject */
-        $subject = $this->subjectHelper->resolve($value);
+        /** @var SubjectInterface $subject */
+        $subject = $this->subjectHelper->resolve($product);
 
         $duplicate = $this->repository->findOneBySubjectAndSupplier(
             $subject,
-            $value->getSupplier(),
-            null !== $value->getId() ? $value : null
+            $product->getSupplier(),
+            null !== $product->getId() ? $product : null
         );
 
-        if (null !== $duplicate) {
-            $this->context
-                ->buildViolation($constraint->duplicate_by_subject)
-                ->atPath('subjectIdentity')
-                ->addViolation();
+        if (null === $duplicate) {
+            return;
         }
+
+        $this->context
+            ->buildViolation($constraint->duplicate_by_subject)
+            ->atPath('subjectIdentity')
+            ->addViolation();
     }
 }

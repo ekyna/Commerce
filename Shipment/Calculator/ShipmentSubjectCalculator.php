@@ -93,7 +93,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         }
 
         // TODO Packaging format
-        /** @var Stock\StockAssignmentsInterface $saleItem */
+        /** @var Stock\AssignableInterface $saleItem */
         $quantity = new Decimal(0);
         foreach ($saleItem->getStockAssignments() as $assignment) {
             $quantity += $assignment->getShippableQuantity();
@@ -205,7 +205,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
         foreach ($list->getEntries() as $entry) {
             $saleItem = $entry->getSaleItem();
 
-            if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
+            if (!$saleItem instanceof Stock\AssignableInterface) {
                 continue;
             }
 
@@ -357,7 +357,7 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
      */
     private function hasStockableSubject(SaleItem $saleItem): bool
     {
-        if (!$saleItem instanceof Stock\StockAssignmentsInterface) {
+        if (!$saleItem instanceof Stock\AssignableInterface) {
             return false;
         }
 

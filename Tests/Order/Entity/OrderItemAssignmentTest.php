@@ -4,19 +4,19 @@ namespace Ekyna\Component\Commerce\Tests\Order\Entity;
 
 use Acme\Product\Entity\StockUnit;
 use Ekyna\Component\Commerce\Order\Entity\OrderItem;
-use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
+use Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class OrderItemStockAssignmentTest
+ * Class OrderItemAssignmentTest
  * @package Ekyna\Component\Commerce\Tests\Order\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class OrderItemStockAssignmentTest extends TestCase
+class OrderItemAssignmentTest extends TestCase
 {
     public function test_setStockUnit_withStockUnit()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $unit = new StockUnit();
 
         $assignment->setStockUnit($unit);
@@ -27,7 +27,7 @@ class OrderItemStockAssignmentTest extends TestCase
 
     public function test_setStockUnit_withNull()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $unit = new StockUnit();
 
         $assignment->setStockUnit($unit);
@@ -39,7 +39,7 @@ class OrderItemStockAssignmentTest extends TestCase
 
     public function test_setStockUnit_withAnotherStockUnit()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $unitA = new StockUnit();
         $unitB = new StockUnit();
 
@@ -53,7 +53,7 @@ class OrderItemStockAssignmentTest extends TestCase
 
     public function test_setOrderItem_withOrderItem()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $item = new OrderItem();
 
         $assignment->setOrderItem($item);
@@ -64,7 +64,7 @@ class OrderItemStockAssignmentTest extends TestCase
 
     public function test_setOrderItem_withNull()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $item = new OrderItem();
 
         $assignment->setOrderItem($item);
@@ -76,7 +76,7 @@ class OrderItemStockAssignmentTest extends TestCase
 
     public function test_setOrderItem_withAnotherItem()
     {
-        $assignment = new OrderItemStockAssignment();
+        $assignment = new OrderItemAssignment();
         $itemA = new OrderItem();
         $itemB = new OrderItem();
 

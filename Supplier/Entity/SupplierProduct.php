@@ -22,11 +22,11 @@ class SupplierProduct implements SupplierProductInterface
     use SubjectRelativeTrait;
     use TimestampableTrait;
 
-    protected ?SupplierInterface $supplier               = null;
-    protected Decimal            $packing;
-    protected Decimal            $availableStock;
-    protected Decimal            $orderedStock;
-    protected ?DateTimeInterface $estimatedDateOfArrival = null;
+    protected ?SupplierInterface   $supplier               = null;
+    protected Decimal              $packing;
+    protected Decimal              $availableStock;
+    protected Decimal              $orderedStock;
+    protected ?DateTimeInterface   $estimatedDateOfArrival = null;
 
 
     public function __construct()
@@ -49,6 +49,15 @@ class SupplierProduct implements SupplierProductInterface
         }
 
         return $this->designation;
+    }
+
+    public function __clone()
+    {
+        $this->id = null;
+        $this->subjectIdentity = clone $this->subjectIdentity;
+        $this->availableStock = new Decimal(0);
+        $this->orderedStock = new Decimal(0);
+        $this->estimatedDateOfArrival = null;
     }
 
     public function getSupplier(): ?SupplierInterface

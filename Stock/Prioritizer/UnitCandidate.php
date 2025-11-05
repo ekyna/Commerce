@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Util\Combination;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionItemInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 use const SORT_NUMERIC;
@@ -23,26 +26,18 @@ final class UnitCandidate
      * Builds a new unit candidate.
      */
     public static function build(
-        StockUnitInterface $unit,
-        SaleItemInterface  $item,
-        Decimal            $quantity,
-        bool               $sameSale
+        StockUnitInterface  $unit,
+        AssignableInterface $assignable,
+        Decimal             $quantity,
+        bool                $sameSale
     ): UnitCandidate {
-        $sale = $item->getRootSale();
+        $filter = UnitCandidate::getFilter($assignable, $sameSale);
 
         /** @var array<int, Decimal> $map */
         $map = [];
         $greater = null;
         foreach ($unit->getStockAssignments() as $a) {
-            if ($sameSale) {
-                $i = $a->getSaleItem();
-                if ($item === $i) {
-                    continue;
-                }
-                if ($sale !== $i->getRootSale()) {
-                    continue;
-                }
-            } elseif ($sale === $a->getSaleItem()->getRootSale()) {
+            if ($filter($a)) {
                 continue;
             }
 
@@ -90,6 +85,66 @@ final class UnitCandidate
         return $candidate;
     }
 
+    private static function getFilter(AssignableInterface $assignable, bool $sameOrder): callable
+    {
+        if ($assignable instanceof OrderItemInterface) {
+            $order = $assignable->getRootSale();
+
+            if ($sameOrder) {
+                return function (AssignmentInterface $assignment) use ($order): bool {
+                    $assignable = $assignment->getAssignable();
+
+                    if (!$assignable instanceof OrderItemInterface) {
+                        return true;
+                    }
+
+                    return $order !== $assignable->getRootSale();
+                };
+            }
+
+            return function (AssignmentInterface $assignment) use ($order): bool {
+                $assignable = $assignment->getAssignable();
+
+                if (!$assignable instanceof OrderItemInterface) {
+                    return false;
+                }
+
+                return $order === $assignable->getRootSale();
+            };
+        }
+
+        if ($assignable instanceof ProductionItemInterface) {
+            $order = $assignable->getProductionOrder();
+
+            if ($sameOrder) {
+                return function (AssignmentInterface $assignment) use ($order): bool {
+                    $assignable = $assignment->getAssignable();
+
+                    if (!$assignable instanceof ProductionItemInterface) {
+                        return true;
+                    }
+
+                    return $order !== $assignable->getProductionOrder();
+                };
+            }
+
+            return function (AssignmentInterface $assignment) use ($order): bool {
+                $assignable = $assignment->getAssignable();
+
+                if (!$assignable instanceof ProductionItemInterface) {
+                    return false;
+                }
+
+                return $order === $assignable->getProductionOrder();
+            };
+        }
+
+        throw new UnexpectedTypeException($assignable, [
+            OrderItemInterface::class,
+            ProductionItemInterface::class,
+        ]);
+    }
+
     public readonly StockUnitInterface $unit;
     public readonly Decimal            $shippable;
     public readonly Decimal            $reservable;
@@ -122,7 +177,7 @@ final class UnitCandidate
     /**
      * Returns the stock assignment by its ID.
      */
-    public function getAssignmentById(int $id): ?StockAssignmentInterface
+    public function getAssignmentById(int $id): ?AssignmentInterface
     {
         foreach ($this->unit->getStockAssignments() as $assignment) {
             if ($assignment->getId() === $id) {

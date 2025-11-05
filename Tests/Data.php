@@ -1087,8 +1087,6 @@ class Data
             ],
             'supplier'      => [],
             'currency'      => Fixture::CURRENCY_USD,
-            'exchange_rate' => 1.12,
-            'exchange_date' => 'now',
             'shipping_cost' => 300.,
             'items'         => [
                 [
@@ -1139,6 +1137,12 @@ class Data
                 // Total weight:    79.2
                 // Total quantity:  90
             ],
+            'payments' => [
+                [
+                    'exchange_rate' => 1.12,
+                    'exchange_date' => 'now',
+                ],
+            ]
         ];
     }
 

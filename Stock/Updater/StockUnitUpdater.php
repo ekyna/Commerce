@@ -11,7 +11,6 @@ use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
 use Ekyna\Component\Commerce\Stock\Overflow\OverflowHandlerInterface;
-use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
@@ -23,7 +22,6 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 {
     public function __construct(
         protected readonly PersistenceHelperInterface $persistenceHelper,
-        protected readonly StockUnitResolverInterface $unitResolver,
         protected readonly StockUnitManagerInterface  $unitManager,
         protected readonly OverflowHandlerInterface   $overflowHandler
     ) {
@@ -35,6 +33,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getOrderedQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getOrderedQuantity())) {
+            return;
+        }
+
         if (0 > $quantity) {
             throw new StockLogicException('Unexpected ordered quantity.');
         }
@@ -60,6 +62,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getReceivedQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getReceivedQuantity())) {
+            return;
+        }
+
         if (0 > $quantity) {
             throw new StockLogicException('Unexpected received quantity.');
         }
@@ -87,6 +93,9 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getAdjustedQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getAdjustedQuantity())) {
+            return;
+        }
 
         // Prevent adjusted quantity to be set as lower than the shipped + locked - received quantity
         if ($quantity < $unit->getShippedQuantity() + $unit->getLockedQuantity() - $unit->getReceivedQuantity()) {
@@ -111,6 +120,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getSoldQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getSoldQuantity())) {
+            return;
+        }
+
         if (0 > $quantity) {
             throw new StockLogicException('Unexpected sold quantity.');
         }
@@ -135,6 +148,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getShippedQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getShippedQuantity())) {
+            return;
+        }
+
         if (0 > $quantity) {
             throw new StockLogicException('Unexpected shipped quantity.');
         }
@@ -164,6 +181,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
             // Turn into absolute quantity
             $quantity = $unit->getLockedQuantity() + $quantity;
         }
+        if ($quantity->equals($unit->getLockedQuantity())) {
+            return;
+        }
+
         if (0 > $quantity) {
             throw new StockLogicException('Unexpected locked quantity.');
         }

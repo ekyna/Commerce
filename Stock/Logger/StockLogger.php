@@ -42,7 +42,7 @@ class StockLogger extends AbstractLogger implements StockLoggerInterface
         ));
     }
 
-    public function assignmentSold(Model\StockAssignmentInterface $assignment, Decimal $quantity, bool $relative = true): void
+    public function assignmentSold(Model\AssignmentInterface $assignment, Decimal $quantity, bool $relative = true): void
     {
         // assignment.sold: {old} => {new} {assignment: {id}, unit: {id}}
 
@@ -53,7 +53,7 @@ class StockLogger extends AbstractLogger implements StockLoggerInterface
         ));
     }
 
-    public function assignmentUnit(Model\StockAssignmentInterface $assignment, Model\StockUnitInterface $unit): void
+    public function assignmentUnit(Model\AssignmentInterface $assignment, Model\StockUnitInterface $unit): void
     {
         // assignment.unit: {old} => {new} {assignment: {id}}
 

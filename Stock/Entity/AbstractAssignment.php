@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Entity;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Model as Stock;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Resource\Model\AbstractResource;
 
 /**
@@ -14,7 +14,7 @@ use Ekyna\Component\Resource\Model\AbstractResource;
  * @package Ekyna\Component\Commerce\Stock\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-abstract class AbstractStockAssignment extends AbstractResource implements Stock\StockAssignmentInterface
+abstract class AbstractAssignment extends AbstractResource implements Stock\AssignmentInterface
 {
     protected ?Stock\StockUnitInterface $stockUnit = null;
     protected Decimal                   $soldQuantity;
@@ -33,7 +33,7 @@ abstract class AbstractStockAssignment extends AbstractResource implements Stock
         return $this->stockUnit;
     }
 
-    public function setStockUnit(?Stock\StockUnitInterface $stockUnit): StockAssignmentInterface
+    public function setStockUnit(?Stock\StockUnitInterface $stockUnit): AssignmentInterface
     {
         if ($stockUnit === $this->stockUnit) {
             return $this;
@@ -56,7 +56,7 @@ abstract class AbstractStockAssignment extends AbstractResource implements Stock
         return $this->soldQuantity;
     }
 
-    public function setSoldQuantity(Decimal $quantity): Stock\StockAssignmentInterface
+    public function setSoldQuantity(Decimal $quantity): Stock\AssignmentInterface
     {
         $this->soldQuantity = $quantity;
 
@@ -68,7 +68,7 @@ abstract class AbstractStockAssignment extends AbstractResource implements Stock
         return $this->shippedQuantity;
     }
 
-    public function setShippedQuantity(Decimal $quantity): Stock\StockAssignmentInterface
+    public function setShippedQuantity(Decimal $quantity): Stock\AssignmentInterface
     {
         $this->shippedQuantity = $quantity;
 
@@ -80,7 +80,7 @@ abstract class AbstractStockAssignment extends AbstractResource implements Stock
         return $this->lockedQuantity;
     }
 
-    public function setLockedQuantity(Decimal $quantity): Stock\StockAssignmentInterface
+    public function setLockedQuantity(Decimal $quantity): Stock\AssignmentInterface
     {
         $this->lockedQuantity = $quantity;
 
@@ -126,5 +126,10 @@ abstract class AbstractStockAssignment extends AbstractResource implements Stock
         return $this->soldQuantity->isZero()
             && $this->shippedQuantity->isZero()
             && $this->lockedQuantity->isZero();
+    }
+
+    public function isRemovalPrevented(): bool
+    {
+        return 1 >= $this->getAssignable()->getStockAssignments()->count();
     }
 }

@@ -9,23 +9,25 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeTrait;
-use Ekyna\Component\Commerce\Supplier\Model;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierProductInterface;
 
 /**
  * Class SupplierOrderItem
  * @package Ekyna\Component\Commerce\Supplier\Entity
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SupplierOrderItem implements Model\SupplierOrderItemInterface
+class SupplierOrderItem implements SupplierOrderItemInterface
 {
     use SubjectRelativeTrait;
 
-    protected ?Model\SupplierOrderInterface   $order     = null;
-    protected ?Model\SupplierProductInterface $product   = null;
-    protected ?StockUnitInterface             $stockUnit = null;
-    protected Decimal                         $quantity;
-    protected Decimal                         $packing;
-    protected Collection                      $deliveryItems;
+    protected ?SupplierOrderInterface   $order     = null;
+    protected ?SupplierProductInterface $product   = null;
+    protected ?StockUnitInterface       $stockUnit = null;
+    protected Decimal                   $quantity;
+    protected Decimal                   $packing;
+    protected Collection                $deliveryItems;
 
     public function __construct()
     {
@@ -41,12 +43,12 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this->designation ?: 'New supplier order item';
     }
 
-    public function getOrder(): ?Model\SupplierOrderInterface
+    public function getOrder(): ?SupplierOrderInterface
     {
         return $this->order;
     }
 
-    public function setOrder(?Model\SupplierOrderInterface $order): Model\SupplierOrderItemInterface
+    public function setOrder(?SupplierOrderInterface $order): SupplierOrderItemInterface
     {
         if ($this->order === $order) {
             return $this;
@@ -64,12 +66,12 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this;
     }
 
-    public function getProduct(): ?Model\SupplierProductInterface
+    public function getProduct(): ?SupplierProductInterface
     {
         return $this->product;
     }
 
-    public function setProduct(?Model\SupplierProductInterface $product): Model\SupplierOrderItemInterface
+    public function setProduct(?SupplierProductInterface $product): SupplierOrderItemInterface
     {
         $this->product = $product;
 
@@ -81,7 +83,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this->stockUnit;
     }
 
-    public function setStockUnit(?StockUnitInterface $stockUnit): Model\SupplierOrderItemInterface
+    public function setStockUnit(?StockUnitInterface $stockUnit): SupplierOrderItemInterface
     {
         if ($this->stockUnit === $stockUnit) {
             return $this;
@@ -104,7 +106,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this->quantity;
     }
 
-    public function setQuantity(Decimal $quantity): Model\SupplierOrderItemInterface
+    public function setQuantity(Decimal $quantity): SupplierOrderItemInterface
     {
         $this->quantity = $quantity;
 
@@ -116,7 +118,7 @@ class SupplierOrderItem implements Model\SupplierOrderItemInterface
         return $this->packing;
     }
 
-    public function setPacking(Decimal $packing): Model\SupplierOrderItemInterface
+    public function setPacking(Decimal $packing): SupplierOrderItemInterface
     {
         $this->packing = $packing;
 

@@ -22,24 +22,25 @@ use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
  */
 class SupplierProductRepository extends ResourceRepository implements SupplierProductRepositoryInterface
 {
-    private ?Query $findBySubjectQuery            = null;
-    private ?Query $getAvailableSumBySubjectQuery = null;
-    private ?Query $getOrderedSumBySubjectQuery   = null;
-    private ?Query $getMinEdaBySubjectQuery       = null;
-    private ?Query $findBySubjectAndSupplierQuery = null;
+    private ?Query $findBySubjectQuery                = null;
+    private ?Query $findLatestWithPriceBySubjectQuery = null;
+    private ?Query $getAvailableSumBySubjectQuery     = null;
+    private ?Query $getOrderedSumBySubjectQuery       = null;
+    private ?Query $getMinEdaBySubjectQuery           = null;
+    private ?Query $findBySubjectAndSupplierQuery     = null;
 
     public function existsForSupplier(SupplierInterface $supplier): bool
     {
         $qb = $this->createQueryBuilder();
 
         return null !== $qb
-            ->select('sp.id')
-            ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
-            ->setMaxResults(1)
-            ->getQuery()
-            ->useQueryCache(true)
-            ->setParameter('supplier', $supplier)
-            ->getOneOrNullResult();
+                ->select('sp.id')
+                ->andWhere($qb->expr()->eq('sp.supplier', ':supplier'))
+                ->setMaxResults(1)
+                ->getQuery()
+                ->useQueryCache(true)
+                ->setParameter('supplier', $supplier)
+                ->getOneOrNullResult();
     }
 
     public function findBySupplier(SupplierInterface $supplier): array
@@ -56,6 +57,17 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
                 'identifier' => $subject->getId(),
             ])
             ->getResult();
+    }
+
+    public function findLatestWithPriceBySubject(SubjectInterface $subject): ?SupplierProductInterface
+    {
+        return $this
+            ->getFindLatestWithPriceBySubjectQuery()
+            ->setParameters([
+                'provider'   => $subject::getProviderName(),
+                'identifier' => $subject->getId(),
+            ])
+            ->getOneOrNullResult();
     }
 
     public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject): ?DateTimeInterface
@@ -99,8 +111,8 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
     }
 
     public function findOneBySubjectAndSupplier(
-        SubjectInterface $subject,
-        SupplierInterface $supplier,
+        SubjectInterface         $subject,
+        SupplierInterface        $supplier,
         SupplierProductInterface $exclude = null
     ): ?SupplierProductInterface {
         $parameters = [
@@ -141,6 +153,20 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         $qb = $this->createFindBySubjectQueryBuilder();
 
         return $this->findBySubjectQuery = $qb->getQuery();
+    }
+
+    /**
+     * Returns the "find latest with price by subject" query.
+     */
+    protected function getFindLatestWithPriceBySubjectQuery(): Query
+    {
+        if (null !== $this->findLatestWithPriceBySubjectQuery) {
+            return $this->findLatestWithPriceBySubjectQuery;
+        }
+
+        $qb = $this->createFindLatestWithPriceBySubjectQB();
+
+        return $this->findLatestWithPriceBySubjectQuery = $qb->getQuery();
     }
 
     /**
@@ -195,10 +221,12 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
 
         $qb
             ->andWhere($qb->expr()->isNotNull($as . '.estimatedDateOfArrival'))
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->gte($as . '.orderedStock', 0),
-                $qb->expr()->gte($as . '.availableStock', 0)
-            ))
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->gte($as . '.orderedStock', 0),
+                    $qb->expr()->gte($as . '.availableStock', 0)
+                )
+            )
             ->select('MIN(' . $as . '.estimatedDateOfArrival) as eda');
 
         return $this->getMinEdaBySubjectQuery = $qb->getQuery();
@@ -214,9 +242,10 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         }
 
         $qb = $this->createFindBySubjectQueryBuilder();
+        $as = $this->getAlias();
 
         return $this->findBySubjectAndSupplierQuery = $qb
-            ->andWhere($qb->expr()->eq($this->getAlias() . '.supplier', ':supplier'))
+            ->andWhere($qb->expr()->eq($as . '.supplier', ':supplier'))
             ->getQuery();
     }
 
@@ -231,6 +260,22 @@ class SupplierProductRepository extends ResourceRepository implements SupplierPr
         return $qb
             ->andWhere($qb->expr()->eq($as . '.subjectIdentity.provider', ':provider'))
             ->andWhere($qb->expr()->eq($as . '.subjectIdentity.identifier', ':identifier'));
+    }
+
+    /**
+     * Creates a "find latest with price by subject" query builder.
+     */
+    private function createFindLatestWithPriceBySubjectQB(): QueryBuilder
+    {
+        $as = $this->getAlias();
+        $qb = $this->createQueryBuilder();
+
+        return $qb
+            ->andWhere($qb->expr()->eq($as . '.subjectIdentity.provider', ':provider'))
+            ->andWhere($qb->expr()->eq($as . '.subjectIdentity.identifier', ':identifier'))
+            ->andWhere($qb->expr()->neq($as . '.netPrice', 0))
+            ->addOrderBy($as . '.createdAt', 'DESC')
+            ->setMaxResults(1);
     }
 
     protected function getAlias(): string

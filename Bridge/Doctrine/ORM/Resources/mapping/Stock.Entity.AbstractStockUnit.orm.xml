@@ -56,12 +56,17 @@
             <join-column name="warehouse_id" referenced-column-name="id" on-delete="RESTRICT" nullable="true"/>
         </many-to-one>
 
-        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Entity\SupplierOrderItem"
+        <one-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface"
                     field="supplierOrderItem" inversed-by="stockUnit">
             <join-column name="supplier_order_item_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </one-to-one>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractStockAssignment"
+        <one-to-one target-entity="Ekyna\Component\Commerce\Manufacture\Model\ProductionOrderInterface"
+                    field="productionOrder" inversed-by="stockUnit">
+            <join-column name="produciton_order_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+        </one-to-one>
+
+        <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractAssignment"
                      mapped-by="stockUnit" field="stockAssignments">
             <cascade>
                 <cascade-persist/>

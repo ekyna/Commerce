@@ -17,5 +17,5 @@ use Ekyna\Component\Resource\Repository\TranslatableRepositoryInterface;
  */
 interface SupplierTemplateRepositoryInterface extends TranslatableRepositoryInterface
 {
-
+    public function findDefault(): ?SupplierTemplateInterface;
 }

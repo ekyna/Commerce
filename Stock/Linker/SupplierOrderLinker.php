@@ -9,15 +9,16 @@ use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Calculator\SupplierOrderItemCalculatorInterface;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierDeliveryItemEvents;
+use Ekyna\Component\Commerce\Supplier\Model\SupplierDeliveryItemInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
 /**
- * Class StockUnitLinker
+ * Class SupplierOrderLinker
  * @package Ekyna\Component\Commerce\Stock\Linker
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class StockUnitLinker implements StockUnitLinkerInterface
+class SupplierOrderLinker implements SupplierOrderLinkerInterface
 {
     public function __construct(
         private readonly PersistenceHelperInterface           $persistenceHelper,
@@ -29,6 +30,9 @@ class StockUnitLinker implements StockUnitLinkerInterface
 
     public function linkItem(SupplierOrderItemInterface $item): void
     {
+        if (null !== $item->getStockUnit()) {
+            return;
+        }
         if (!$item->hasSubjectIdentity()) {
             return;
         }
@@ -36,7 +40,7 @@ class StockUnitLinker implements StockUnitLinkerInterface
         // Find 'unlinked' stock units ordered (+ Cached 'new' stock units look up)
         if (null === $unit = $this->unitResolver->findLinkable($item)) {
             // Not found -> create a new stock unit
-            $unit = $this->unitResolver->createBySubjectRelative($item);
+            $unit = $this->unitResolver->createBySubjectReference($item);
         }
 
         $unit
@@ -76,10 +80,6 @@ class StockUnitLinker implements StockUnitLinkerInterface
 
     public function unlinkItem(SupplierOrderItemInterface $item): void
     {
-        if (!$item->hasSubjectIdentity()) {
-            return;
-        }
-
         if (null === $unit = $item->getStockUnit()) {
             return;
         }
@@ -115,5 +115,20 @@ class StockUnitLinker implements StockUnitLinkerInterface
         $this->stockUnitUpdater->updateNetPrice($unit, $price);
         $this->stockUnitUpdater->updateShippingPrice($unit, $shipping);
         $this->stockUnitUpdater->updateEstimatedDateOfArrival($unit, $eda);
+    }
+
+    public function linkDeliveryItem(SupplierDeliveryItemInterface $item): void
+    {
+        // TODO
+    }
+
+    public function applyDeliveryItem(SupplierDeliveryItemInterface $item): void
+    {
+        // TODO
+    }
+
+    public function unlinkDeliveryItem(SupplierDeliveryItemInterface $item): void
+    {
+        // TODO
     }
 }

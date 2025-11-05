@@ -15,11 +15,9 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class QuantityChangeHelper
 {
-    private PersistenceHelperInterface $persistenceHelper;
-
-    public function __construct(PersistenceHelperInterface $persistenceHelper)
-    {
-        $this->persistenceHelper = $persistenceHelper;
+    public function __construct(
+        private readonly PersistenceHelperInterface $persistenceHelper
+    ) {
     }
 
     /**

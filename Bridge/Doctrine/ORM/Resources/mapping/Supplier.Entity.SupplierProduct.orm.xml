@@ -2,6 +2,7 @@
 <doctrine-mapping
         xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping"
         xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                             http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
@@ -14,7 +15,7 @@
         </indexes>
 
         <unique-constraints>
-            <unique-constraint columns="supplier_id,reference" name="unique_commerce_supplier_product_reference"/>
+            <unique-constraint columns="supplier_id,subject_provider,subject_identifier" name="unique_commerce_supplier_product_subject"/>
         </unique-constraints>
 
         <id name="id" type="integer" column="id">
@@ -38,6 +39,13 @@
             </options>
         </field>
         <field name="estimatedDateOfArrival" column="estimated_date_of_arrival" type="datetime" nullable="true"/>
+
+        <field name="createdAt" type="datetime" column="created_at">
+            <gedmo:timestampable on="create"/>
+        </field>
+        <field name="updatedAt" type="datetime" column="updated_at" nullable="true">
+            <gedmo:timestampable on="update"/>
+        </field>
 
         <many-to-one target-entity="Ekyna\Component\Commerce\Supplier\Model\SupplierInterface" field="supplier">
             <join-column name="supplier_id" referenced-column-name="id" on-delete="CASCADE" nullable="false"/>

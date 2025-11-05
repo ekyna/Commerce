@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<constraint-mapping
+        xmlns="http://symfony.com/schema/dic/constraint-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping
+                        http://symfony.com/schema/dic/constraint-mapping/constraint-mapping-1.0.xsd">
+
+    <class name="Ekyna\Component\Commerce\Manufacture\Entity\BillOfMaterials">
+        <property name="subjectIdentity">
+            <constraint name="NotNull"/>
+            <constraint name="Valid"/>
+        </property>
+        <property name="version">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+        <property name="state">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="components">
+            <constraint name="Count">
+                <option name="min">1</option>
+            </constraint>
+            <constraint name="Valid"/>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\BillOfMaterials" />
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Manufacture\Entity\BOMComponent">
+        <property name="subjectIdentity">
+            <constraint name="NotNull"/>
+            <constraint name="Valid"/>
+        </property>
+        <property name="bom">
+            <constraint name="NotNull"/>
+        </property>
+        <property name="quantity">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Manufacture\Entity\ProductionOrder">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Manufacture\Entity\ProductionItem">
+    </class>
+
+    <class name="Ekyna\Component\Commerce\Manufacture\Entity\Production">
+        <property name="quantity">
+            <constraint name="NotNull"/>
+            <constraint name="GreaterThan">0</constraint>
+        </property>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Production" />
+    </class>
+
+</constraint-mapping>

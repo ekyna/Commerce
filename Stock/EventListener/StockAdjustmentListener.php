@@ -20,15 +20,11 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 class StockAdjustmentListener
 {
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected StockUnitUpdaterInterface $stockUnitUpdater;
-
     public function __construct(
-        PersistenceHelperInterface $persistenceHelper,
-        StockUnitUpdaterInterface $stockUnitUpdater
+        protected readonly PersistenceHelperInterface $persistenceHelper,
+        protected readonly StockUnitUpdaterInterface  $stockUnitUpdater
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->stockUnitUpdater = $stockUnitUpdater;
+
     }
 
     public function onInsert(ResourceEventInterface $event): void

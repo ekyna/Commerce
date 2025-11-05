@@ -672,10 +672,10 @@ class Fixture
      * } $data
      */
     public static function stockAssignment(
-        OrderE\OrderItemStockAssignment|array|int|string $data = []
-    ): OrderE\OrderItemStockAssignment {
-        /** @var OrderE\OrderItemStockAssignment $assignment */
-        [$assignment, $return] = self::create($data, OrderE\OrderItemStockAssignment::class);
+        OrderE\OrderItemAssignment|array|int|string $data = []
+    ): OrderE\OrderItemAssignment {
+        /** @var OrderE\OrderItemAssignment $assignment */
+        [$assignment, $return] = self::create($data, OrderE\OrderItemAssignment::class);
 
         if ($return) {
             return $assignment;
@@ -1006,14 +1006,13 @@ class Fixture
             'customs_vat'     => 0,
             'forwarder_fee'   => 0,
             'forwarder_total' => 0,
-            'exchange_rate'   => null,
-            'exchange_date'   => null,
             'created_at'      => 'now',
             'ordered_at'      => null,
             'supplier'        => null,
             'carrier'         => null,
             'warehouse'       => null,
             'items'           => [],
+            'payments'        => [],
         ], $data);
 
         $order
@@ -1026,14 +1025,6 @@ class Fixture
             ->setCustomsVat(self::decimal($data['customs_vat']))
             ->setForwarderFee(self::decimal($data['forwarder_fee']))
             ->setForwarderTotal(self::decimal($data['forwarder_total']));
-
-        if (null !== $datum = $data['exchange_rate']) {
-            $order->setExchangeRate(self::decimal($datum));
-        }
-
-        if (null !== $datum = $data['exchange_date']) {
-            $order->setExchangeDate(self::date($datum));
-        }
 
         if (null !== $datum = $data['created_at']) {
             $order->setOrderedAt(self::date($datum));
@@ -1057,6 +1048,10 @@ class Fixture
 
         foreach ($data['items'] as $datum) {
             $order->addItem(self::supplierOrderItem($datum));
+        }
+
+        foreach ($data['payments'] as $datum) {
+            $order->addPayment(self::supplierOrderPayment($datum));
         }
 
         return $order;
@@ -1152,6 +1147,59 @@ class Fixture
         }
 
         return $item;
+    }
+
+    /**
+     * Creates a new supplier order payment.
+     *
+     * @psalm-param array{
+     *     order:         mixed,
+     *     state:         string,
+     *     to_forwarder:  bool,
+     *     description:   string,
+     *     amount:        string|int|float,
+     *     exchange_rate: string|int|float,
+     *     exchange_date: DateTimeInterface|string|null,
+     * } $data
+     */
+    public static function supplierOrderPayment(SupplierE\SupplierPayment|array|int|string $data = []
+    ): SupplierE\SupplierPayment {
+        /** @var SupplierE\SupplierPayment $payment */
+        [$payment, $return] = self::create($data, SupplierE\SupplierPayment::class);
+
+        if ($return) {
+            return $payment;
+        }
+
+        $data = array_replace([
+            'order'         => null,
+            'exchange_rate' => null,
+            'exchange_date' => null,
+            'state'         => PaymentStates::STATE_CAPTURED,
+            'amount'        => 0,
+            'to_forwarder'  => false,
+            'description'   => null,
+        ], $data);
+
+        if (null !== $datum = $data['order']) {
+            $payment->setOrder(self::supplierOrder($datum));
+        }
+
+        if (null !== $datum = $data['exchange_rate']) {
+            $payment->setExchangeRate(self::decimal($datum));
+        }
+
+        if (null !== $datum = $data['exchange_date']) {
+            $payment->setExchangeDate(self::date($datum));
+        }
+
+        $payment
+            ->setState($data['state'])
+            ->setAmount(self::decimal($data['amount']))
+            ->setToForwarder($data['to_forwarder'])
+            ->setDescription($data['description']);
+
+        return $payment;
     }
 
     /**

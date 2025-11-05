@@ -15,6 +15,7 @@ final class Group
     public const STOCK_UNIT       = 'StockUnit';
     public const STOCK_ASSIGNMENT = 'StockAssignment';
 
+
     /**
      * Disabled constructor.
      */

@@ -40,6 +40,11 @@ interface SupplierProductRepositoryInterface extends ResourceRepositoryInterface
     public function findBySubject(SubjectInterface $subject): array;
 
     /**
+     * Finds the latest supplier product having price.
+     */
+    public function findLatestWithPriceBySubject(SubjectInterface $subject): ?SupplierProductInterface;
+
+    /**
      * Returns the estimated date of arrival by subject.
      */
     public function getMinEstimatedDateOfArrivalBySubject(SubjectInterface $subject): ?DateTimeInterface;

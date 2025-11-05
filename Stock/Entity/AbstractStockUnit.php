@@ -14,6 +14,7 @@ use Ekyna\Component\Commerce\Common\Model\CurrencySubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectTrait;
 use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionOrderInterface;
 use Ekyna\Component\Commerce\Stock\Model;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
@@ -30,6 +31,7 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
 
     protected ?Model\WarehouseInterface   $warehouse         = null;
     protected ?SupplierOrderItemInterface $supplierOrderItem = null;
+    protected ?ProductionOrderInterface   $productionOrder = null;
     protected array                       $geocodes          = [];
     /** The estimated date of arrival (for ordered quantity). */
     protected ?DateTimeInterface $estimatedDateOfArrival = null;
@@ -55,7 +57,7 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
     protected DateTimeInterface  $createdAt;
     protected ?DateTimeInterface $closedAt = null;
 
-    /** @var Collection<Model\StockAssignmentInterface> */
+    /** @var Collection<Model\AssignmentInterface> */
     protected Collection $stockAssignments;
     /** @var Collection<Model\StockAdjustmentInterface> */
     protected Collection $stockAdjustments;
@@ -114,6 +116,10 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
             return $this;
         }
 
+        if ($item && $this->productionOrder) {
+            throw new LogicException('Already linked to a production order');
+        }
+
         if ($previous = $this->supplierOrderItem) {
             $this->supplierOrderItem = null;
             $previous->setStockUnit(null);
@@ -121,6 +127,33 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
 
         if ($this->supplierOrderItem = $item) {
             $this->supplierOrderItem->setStockUnit($this);
+        }
+
+        return $this;
+    }
+
+    public function getProductionOrder(): ?ProductionOrderInterface
+    {
+        return $this->productionOrder;
+    }
+
+    public function setProductionOrder(?ProductionOrderInterface $order): Model\StockUnitInterface
+    {
+        if ($order === $this->productionOrder) {
+            return $this;
+        }
+
+        if ($order && $this->supplierOrderItem) {
+            throw new LogicException('Already linked to a supplier order item');
+        }
+
+        if ($previous = $this->productionOrder) {
+            $this->productionOrder = null;
+            $previous->setStockUnit(null);
+        }
+
+        if ($this->productionOrder = $order) {
+            $this->productionOrder->setStockUnit($this);
         }
 
         return $this;
@@ -307,12 +340,12 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
         return $this;
     }
 
-    public function hasStockAssignment(Model\StockAssignmentInterface $assignment): bool
+    public function hasStockAssignment(Model\AssignmentInterface $assignment): bool
     {
         return $this->stockAssignments->contains($assignment);
     }
 
-    public function addStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
+    public function addStockAssignment(Model\AssignmentInterface $assignment): Model\StockUnitInterface
     {
         if ($this->hasStockAssignment($assignment)) {
             return $this;
@@ -324,7 +357,7 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
         return $this;
     }
 
-    public function removeStockAssignment(Model\StockAssignmentInterface $assignment): Model\StockUnitInterface
+    public function removeStockAssignment(Model\AssignmentInterface $assignment): Model\StockUnitInterface
     {
         if (!$this->hasStockAssignment($assignment)) {
             return $this;
@@ -378,6 +411,7 @@ abstract class AbstractStockUnit extends AbstractResource implements Model\Stock
     public function isEmpty(): bool
     {
         return null === $this->supplierOrderItem
+            && null === $this->productionOrder
             && $this->stockAssignments->isEmpty()
             && $this->stockAdjustments->isEmpty()
             && $this->orderedQuantity->isZero()

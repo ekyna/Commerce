@@ -21,4 +21,8 @@ interface SupplierTemplateInterface extends TranslatableInterface
     public function getTitle(): ?string;
 
     public function setTitle(?string $title): SupplierTemplate;
+
+    public function getSubject(): ?string;
+
+    public function getMessage(): ?string;
 }

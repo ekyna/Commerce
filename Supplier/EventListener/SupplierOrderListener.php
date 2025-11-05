@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
+use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderStates;
 use Ekyna\Component\Commerce\Supplier\Updater\SupplierOrderUpdaterInterface;
@@ -69,19 +70,23 @@ class SupplierOrderListener extends AbstractListener
 
             // If order's state has changed to a non-stockable state
             if (SupplierOrderStates::hasChangedFromStockable($stateCs)) {
-                // Delete stock unit (if exists) for each supplier order items.
+                // Delete stock unit (if exists) for each supplier order item.
                 foreach ($order->getItems() as $item) {
                     $this->stockUnitLinker->unlinkItem($item);
                 }
-            } // Else if order state's has changed to a stockable state
-            elseif (SupplierOrderStates::hasChangedToStockable($stateCs)) {
-                // Create stock unit (if not exists) for each supplier order items.
+
+                return;
+            }
+
+            // If order state's has changed to a stockable state
+            if (SupplierOrderStates::hasChangedToStockable($stateCs)) {
+                // Create stock unit (if not exists) for each supplier order item.
                 foreach ($order->getItems() as $item) {
                     $this->stockUnitLinker->linkItem($item);
                 }
-            }
 
-            return;
+                return;
+            }
         }
 
         $this->updateStockUnits($order);
@@ -115,6 +120,24 @@ class SupplierOrderListener extends AbstractListener
         $order = $this->getSupplierOrderFromEvent($event);
 
         $this->assertDeletable($order);
+    }
+
+    protected function updateState(SupplierOrderInterface $order): bool
+    {
+        if ($this->supplierOrderUpdater->updateState($order)) {
+            $this->persistenceHelper->persistAndRecompute($order, false);
+
+            $this->scheduleStateChangeEvent($order);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function scheduleStateChangeEvent(SupplierOrderInterface $order): void
+    {
+        $this->persistenceHelper->scheduleEvent($order, SupplierOrderEvents::STATE_CHANGE);
     }
 
     /**

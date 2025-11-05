@@ -4,37 +4,23 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Calculator;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\Cost;
-use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
-use Ekyna\Component\Commerce\Subject\Guesser\SubjectCostGuesserInterface;
-use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
-
-use function spl_object_id;
+use Ekyna\Component\Commerce\Stock\Calculator\AssignableCostCalculatorInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 
 /**
  * Class ItemCostCalculator
  * @package Ekyna\Component\Commerce\Common\Calculator
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class ItemCostCalculator implements ItemCostCalculatorInterface
 {
-    private array $unitCache = [];
-    private array $defaultCache = [];
-
     public function __construct(
-        private readonly SubjectHelperInterface      $subjectHelper,
-        private readonly SubjectCostGuesserInterface $subjectCostGuesser,
+        private readonly AssignableCostCalculatorInterface $calculator,
     ) {
-    }
-
-    public function onClear(): void
-    {
-        $this->unitCache = [];
-        $this->defaultCache = [];
     }
 
     /**
@@ -54,111 +40,46 @@ class ItemCostCalculator implements ItemCostCalculatorInterface
             $quantity = $item->getTotalQuantity();
         }
 
-        $cost = clone $this->calculateUnitCost($item);
+        $cost = $this->calculateUnitCost($item);
 
-        $cost->multiply($quantity);
+        $cost = $cost->multiply($quantity);
 
         if (!$single) {
-            $this->addChildren($cost, $item->getChildren(), $quantity);
+            return $cost->add($this->calculateChildrenCost($item->getChildren(), $quantity));
         }
 
         return $cost;
     }
 
     /**
-     * @param Cost                          $cost
      * @param Collection<SaleItemInterface> $children
      * @param Decimal                       $quantity
+     * @return Cost
      */
-    private function addChildren(Cost $cost, Collection $children, Decimal $quantity): void
+    private function calculateChildrenCost(Collection $children, Decimal $quantity): Cost
     {
+        $total = new Cost();
         foreach ($children as $child) {
             $childQuantity = $child->getQuantity()->mul($quantity);
 
             if (!($child->isCompound() && !$child->hasPrivateChildren())) {
-                $childCost = clone $this->calculateUnitCost($child);
+                $childCost = $this->calculateUnitCost($child);
 
-                $cost->add($childCost->multiply($childQuantity));
+                $total = $total->add($childCost->multiply($childQuantity));
             }
 
-            $this->addChildren($cost, $child->getChildren(), $childQuantity);
+            $total = $total->add($this->calculateChildrenCost($child->getChildren(), $childQuantity));
         }
+
+        return $total;
     }
 
     private function calculateUnitCost(SaleItemInterface $item): Cost
     {
-        $key = spl_object_id($item);
-
-        if (isset($this->unitCache[$key])) {
-            return $this->unitCache[$key];
+        if ($item instanceof AssignableInterface) {
+            return $this->calculator->calculateAssignableCost($item);
         }
 
-        if (!($item instanceof StockAssignmentsInterface && $item->hasStockAssignments())) {
-            return $this->unitCache[$key] = $this->getDefaultCost($item);
-        }
-
-        $result = new Cost();
-        $qtySum = new Decimal(0);
-
-        foreach ($item->getStockAssignments() as $assignment) {
-            if (null === $cost = $this->getAssignmentCost($assignment)) {
-                $result->setAverage();
-
-                $cost = clone $this->getDefaultCost($item);
-            }
-
-            $qtySum += $qty = $assignment->getSoldQuantity();
-
-            $result->add($cost->multiply($qty));
-        }
-
-        if ($qtySum->isZero()) {
-            return $this->unitCache[$key] = $this->getDefaultCost($item);
-        }
-
-        return $this->unitCache[$key] = $result->divide($qtySum);
-    }
-
-    private function getDefaultCost(SaleItemInterface $item): Cost
-    {
-        $key = spl_object_id($item);
-
-        if (isset($this->defaultCache[$key])) {
-            return $this->defaultCache[$key];
-        }
-
-        $default = $this->guessItemCost($item) ?? new Cost();
-        $default->setAverage();
-
-        return $this->defaultCache[$key] = $default;
-    }
-
-    /**
-     * Returns the stock assignment unit cost.
-     */
-    private function getAssignmentCost(StockAssignmentInterface $assignment): ?Cost
-    {
-        $unit = $assignment->getStockUnit();
-
-        if (null === $unit->getSupplierOrderItem()) {
-            return null;
-        }
-
-        return new Cost(
-            product: $unit->getNetPrice(),
-            supply: $unit->getShippingPrice()
-        );
-    }
-
-    /**
-     * Returns the sale item subject unit cost.
-     */
-    protected function guessItemCost(SaleItemInterface $item): ?Cost
-    {
-        if (null === $subject = $this->subjectHelper->resolve($item)) {
-            return null;
-        }
-
-        return $this->subjectCostGuesser->guess($subject);
+        return $this->calculator->calculateSubjectCost($item);
     }
 }

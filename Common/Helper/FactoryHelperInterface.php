@@ -8,7 +8,6 @@ use Ekyna\Component\Commerce\Common\Model;
 use Ekyna\Component\Commerce\Invoice\Model as Invoice;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Stock\Model as Stock;
 
 /**
  * Interface FactoryHelperInterface
@@ -20,7 +19,10 @@ interface FactoryHelperInterface
     /**
      * Creates an address regarding the sale type.
      */
-    public function createAddressForSale(Model\SaleInterface $sale, ?Model\AddressInterface $source): Model\SaleAddressInterface;
+    public function createAddressForSale(
+        Model\SaleInterface     $sale,
+        ?Model\AddressInterface $source
+    ): Model\SaleAddressInterface;
 
     /**
      * Creates an adjustment for the given adjustable.
@@ -41,11 +43,6 @@ interface FactoryHelperInterface
      * Creates an adjustment regarding the sale item type.
      */
     public function createAdjustmentForItem(Model\SaleItemInterface $item): Model\AdjustmentInterface;
-
-    /**
-     * Creates a stock assignment regarding the sale item type.
-     */
-    public function createStockAssignmentForItem(Model\SaleItemInterface $item): Stock\StockAssignmentInterface;
 
     /**
      * Creates an adjustment regarding the sale type.
@@ -78,7 +75,7 @@ interface FactoryHelperInterface
     public function createShipmentForSale(Model\SaleInterface $sale): Shipment\ShipmentInterface;
 
     /**
-     * Creates a invoice regarding the sale type.
+     * Creates an invoice regarding the sale type.
      */
     public function createInvoiceForSale(Model\SaleInterface $sale): Invoice\InvoiceInterface;
 }

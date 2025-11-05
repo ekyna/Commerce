@@ -1,40 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Manager;
 
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
  * Interface StockAssignmentManagerInterface
  * @package Ekyna\Component\Commerce\Stock\Manager
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO    Rename to AssignmentManagerInterface
  */
 interface StockAssignmentManagerInterface
 {
     /**
      * Persists the stock assignment.
      *
-     * @param StockAssignmentInterface $assignment
+     * @param AssignmentInterface $assignment
      */
-    public function persist(StockAssignmentInterface $assignment): void;
+    public function persist(AssignmentInterface $assignment): void;
 
     /**
      * Removes the stock assignment.
      *
-     * @param StockAssignmentInterface $assignment
-     * @param bool $hard Whether to remove assignment even if it has an id
+     * @param AssignmentInterface $assignment
+     * @param bool                $hard Whether to remove assignment even if it has an id
      */
-    public function remove(StockAssignmentInterface $assignment, bool $hard = false): void;
+    public function remove(AssignmentInterface $assignment, bool $hard = false): void;
 
     /**
      * Creates the stock assignment for the given sale item and stock unit.
      *
-     * @param SaleItemInterface       $item
+     * @param AssignableInterface     $assignable
      * @param StockUnitInterface|null $unit
      *
-     * @return StockAssignmentInterface
+     * @return AssignmentInterface
      */
-    public function create(SaleItemInterface $item, StockUnitInterface $unit = null): StockAssignmentInterface;
+    public function create(AssignableInterface $assignable, StockUnitInterface $unit = null): AssignmentInterface;
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Stock\Resolver;
 
-use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Repository\StockUnitRepositoryInterface;
-use Ekyna\Component\Commerce\Subject\Model\SubjectRelativeInterface;
+use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
 use Ekyna\Component\Resource\Factory\ResourceFactoryInterface;
@@ -24,26 +23,17 @@ use Ekyna\Component\Resource\Repository\RepositoryFactoryInterface;
  */
 class StockUnitResolver implements StockUnitResolverInterface
 {
-    protected SubjectHelperInterface $subjectHelper;
-    protected StockUnitCacheInterface $unitCache;
-    protected RepositoryFactoryInterface $repositoryFactory;
-    protected FactoryFactoryInterface $factoryFactory;
-
     public function __construct(
-        SubjectHelperInterface $subjectHelper,
-        StockUnitCacheInterface $unitCache,
-        RepositoryFactoryInterface $repositoryFactory,
-        FactoryFactoryInterface $factoryFactory
+        protected readonly SubjectHelperInterface     $subjectHelper,
+        protected readonly StockUnitCacheInterface    $unitCache,
+        protected readonly RepositoryFactoryInterface $repositoryFactory,
+        protected readonly FactoryFactoryInterface    $factoryFactory
     ) {
-        $this->subjectHelper     = $subjectHelper;
-        $this->unitCache         = $unitCache;
-        $this->repositoryFactory = $repositoryFactory;
-        $this->factoryFactory = $factoryFactory;
     }
 
     public function createBySubject(
         StockSubjectInterface $subject,
-        StockUnitInterface $exceptStockUnit = null
+        StockUnitInterface    $exceptStockUnit = null
     ): StockUnitInterface {
         // TODO Cache 'new' stock units created by sales (?)
 
@@ -76,7 +66,7 @@ class StockUnitResolver implements StockUnitResolverInterface
         return $stockUnit;
     }
 
-    public function createBySubjectRelative(SubjectRelativeInterface $relative): StockUnitInterface
+    public function createBySubjectReference(SubjectReferenceInterface $relative): StockUnitInterface
     {
         /** @var StockSubjectInterface $subject */
         $subject = $this->subjectHelper->resolve($relative);
@@ -87,7 +77,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritDoc
      */
-    public function findPending($subjectOrRelative): array
+    public function findPending(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array
     {
         /**
          * @var StockSubjectInterface        $subject
@@ -103,7 +93,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritDoc
      */
-    public function findReady($subjectOrRelative): array
+    public function findReady(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array
     {
         /**
          * @var StockSubjectInterface        $subject
@@ -119,7 +109,7 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritDoc
      */
-    public function findPendingOrReady($subjectOrRelative): array
+    public function findPendingOrReady(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array
     {
         /**
          * @var StockSubjectInterface        $subject
@@ -129,16 +119,20 @@ class StockUnitResolver implements StockUnitResolverInterface
 
         $fetched = $repository->findPendingOrReadyBySubject($subject);
 
-        return $this->replaceAndFilter($fetched, $subject, new StateFilter([
-            StockUnitStates::STATE_PENDING,
-            StockUnitStates::STATE_READY,
-        ]));
+        return $this->replaceAndFilter(
+            $fetched,
+            $subject,
+            new StateFilter([
+                StockUnitStates::STATE_PENDING,
+                StockUnitStates::STATE_READY,
+            ])
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function findNotClosed($subjectOrRelative): array
+    public function findNotClosed(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array
     {
         /**
          * @var StockSubjectInterface        $subject
@@ -148,17 +142,21 @@ class StockUnitResolver implements StockUnitResolverInterface
 
         $fetched = $repository->findNotClosedBySubject($subject);
 
-        return $this->replaceAndFilter($fetched, $subject, new StateFilter([
-            StockUnitStates::STATE_NEW,
-            StockUnitStates::STATE_PENDING,
-            StockUnitStates::STATE_READY,
-        ]));
+        return $this->replaceAndFilter(
+            $fetched,
+            $subject,
+            new StateFilter([
+                StockUnitStates::STATE_NEW,
+                StockUnitStates::STATE_PENDING,
+                StockUnitStates::STATE_READY,
+            ])
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function findAssignable($subjectOrRelative): array
+    public function findAssignable(StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative): array
     {
         /**
          * @var StockSubjectInterface        $subject
@@ -176,7 +174,11 @@ class StockUnitResolver implements StockUnitResolverInterface
                 // - Sold lower than ordered
                 return $unit->getState() !== StockUnitStates::STATE_CLOSED
                     && (
-                        (is_null($unit->getSupplierOrderItem()) && (0 == $unit->getAdjustedQuantity()))
+                        (
+                            is_null($unit->getSupplierOrderItem())
+                            && is_null($unit->getProductionOrder())
+                            && (0 == $unit->getAdjustedQuantity())
+                        )
                         || ($unit->getSoldQuantity() < $unit->getOrderedQuantity() + $unit->getAdjustedQuantity())
                     );
             }
@@ -188,8 +190,9 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * @inheritDoc
      */
-    public function findLinkable($subjectOrRelative): ?StockUnitInterface
-    {
+    public function findLinkable(
+        StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
+    ): ?StockUnitInterface {
         /**
          * @var StockSubjectInterface        $subject
          * @var StockUnitRepositoryInterface $repository
@@ -203,9 +206,11 @@ class StockUnitResolver implements StockUnitResolverInterface
             public function filter(StockUnitInterface $unit): bool
             {
                 // - Not linked to a supplier order
+                // - Not linked to a production order
                 // - Not adjusted
                 // - Not closed
                 return is_null($unit->getSupplierOrderItem())
+                    && is_null($unit->getProductionOrder())
                     && 0 == $unit->getAdjustedQuantity()
                     && ($unit->getState() !== StockUnitStates::STATE_CLOSED);
             }
@@ -223,16 +228,16 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * Replaces fetched units by their cached version, and filters the result.
      *
-     * @param array<StockUnitInterface>  $fetchedUnits
+     * @param array<StockUnitInterface> $fetchedUnits
      */
     protected function replaceAndFilter(
-        array $fetchedUnits,
+        array                 $fetchedUnits,
         StockSubjectInterface $subject,
-        FilterInterface $filter
+        FilterInterface       $filter
     ): array {
         $filtered = [];
 
-        $addedUnits   = $this->unitCache->findAddedBySubject($subject);
+        $addedUnits = $this->unitCache->findAddedBySubject($subject);
         $removedUnits = $this->unitCache->findRemovedBySubject($subject);
 
         // Loop through fetched units
@@ -272,22 +277,17 @@ class StockUnitResolver implements StockUnitResolverInterface
     /**
      * Returns the subject and his stock unit repository.
      *
-     * @param StockSubjectInterface|SubjectRelativeInterface $subjectOrRelative
+     * @param StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
      *
      * @return array [StockSubjectInterface, StockUnitRepositoryInterface]
      */
-    protected function getSubjectAndRepository($subjectOrRelative): array
-    {
-        if ($subjectOrRelative instanceof SubjectRelativeInterface) {
+    protected function getSubjectAndRepository(
+        StockSubjectInterface|SubjectReferenceInterface $subjectOrRelative
+    ): array {
+        if ($subjectOrRelative instanceof SubjectReferenceInterface) {
             $subject = $this->subjectHelper->resolve($subjectOrRelative);
-        } elseif ($subjectOrRelative instanceof StockSubjectInterface) {
-            $subject = $subjectOrRelative;
         } else {
-            throw new InvalidArgumentException(sprintf(
-                "Expected instance of '%s' or '%s'.",
-                SubjectRelativeInterface::class,
-                StockSubjectInterface::class
-            ));
+            $subject = $subjectOrRelative;
         }
 
         return [$subject, $this->getRepositoryBySubject($subject)];

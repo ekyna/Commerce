@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Stock\Dispatcher;
 
+use DateTimeInterface;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Util\DateUtil;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
+use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionItemInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Stock\Logger\StockLoggerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface as Assignment;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
 
 /**
@@ -20,12 +24,10 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface as Unit;
  */
 class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
 {
-    // Cannot declare properties as readonly as this service is lazy.
-    // Would raise "Compile Error: Cannot redeclare readonly property"
     public function __construct(
-        protected StockAssignmentManagerInterface $assignmentManager,
-        protected StockUnitManagerInterface       $unitManager,
-        protected StockLoggerInterface            $logger
+        protected readonly StockAssignmentManagerInterface $assignmentManager,
+        protected readonly StockUnitManagerInterface       $unitManager,
+        protected readonly StockLoggerInterface            $logger
     ) {
     }
 
@@ -82,7 +84,7 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
         }
 
         $sourceUnit = $assignment->getStockUnit();
-        $saleItem = $assignment->getSaleItem();
+        $assignable = $assignment->getAssignable();
 
         // Debit source unit's sold quantity
         $this->logger->unitSold($sourceUnit, $quantity->negate());
@@ -92,10 +94,10 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
         $this->logger->unitSold($targetUnit, $quantity);
         $targetUnit->setSoldQuantity($targetUnit->getSoldQuantity() + $quantity);
 
-        // Look for a target assignment with the same sale item
+        // Look for a target assignment with the same assignable
         $merge = null;
         foreach ($targetUnit->getStockAssignments() as $m) {
-            if ($m->getSaleItem() === $saleItem) {
+            if ($m->getAssignable() === $assignable) {
                 $merge = $m;
                 break;
             }
@@ -131,7 +133,7 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
                 $this->assignmentManager->persist($merge);
             } else {
                 // Credit quantity to new assignment
-                $create = $this->assignmentManager->create($saleItem, $targetUnit);
+                $create = $this->assignmentManager->create($assignable, $targetUnit);
                 $this->logger->assignmentSold($create, $quantity, false);
                 $create->setSoldQuantity($quantity);
                 $this->assignmentManager->persist($create);
@@ -151,9 +153,26 @@ class StockAssignmentDispatcher implements StockAssignmentDispatcherInterface
      */
     private function sortAssignments(array $assignments, int $direction = SORT_DESC): array
     {
-        usort($assignments, function (Assignment $a, Assignment $b) use ($direction) {
-            $aDate = $a->getSaleItem()->getRootSale()->getCreatedAt();
-            $bDate = $b->getSaleItem()->getRootSale()->getCreatedAt();
+        $getDate = static function (Assignment $a): DateTimeInterface {
+            $assignable = $a->getAssignable();
+
+            if ($assignable instanceof OrderItemInterface) {
+                return $assignable->getRootSale()->getCreatedAt();
+            }
+
+            if ($assignable instanceof ProductionItemInterface) {
+                return $assignable->getProductionOrder()->getCreatedAt();
+            }
+
+            throw new UnexpectedTypeException($assignable, [
+                OrderItemInterface::class,
+                ProductionItemInterface::class,
+            ]);
+        };
+
+        usort($assignments, function (Assignment $a, Assignment $b) use ($getDate, $direction) {
+            $aDate = $getDate($a);
+            $bDate = $getDate($b);
 
             if (DateUtil::equals($aDate, $bDate)) {
                 return 0;

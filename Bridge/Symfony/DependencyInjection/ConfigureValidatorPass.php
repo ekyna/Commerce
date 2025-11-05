@@ -29,6 +29,7 @@ class ConfigureValidatorPass implements CompilerPassInterface
             'common',
             'customer',
             'invoice',
+            'manufacture',
             'newsletter',
             'order',
             'payment',

@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Stock\Assigner\AssignmentSupportTrait;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 /**
@@ -57,7 +57,7 @@ class PrioritizeChecker implements PrioritizeCheckerInterface
             }
         }
 
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$item instanceof AssignableInterface) {
             return false;
         }
 

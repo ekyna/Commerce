@@ -6,6 +6,7 @@ use Acme\Product\Entity\StockUnit;
 use Acme\Product\Event\ProductEvents;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 use Ekyna\Component\Commerce\Stock\EventListener\AbstractStockUnitListener;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 
 /**
@@ -18,7 +19,7 @@ class StockUnitEventSubscriber extends AbstractStockUnitListener
     /**
      * @inheritDoc
      */
-    protected function getStockUnitFromEvent(ResourceEventInterface $event)
+    protected function getStockUnitFromEvent(ResourceEventInterface $event): StockUnitInterface
     {
         $stockUnit = $event->getResource();
 
@@ -32,15 +33,12 @@ class StockUnitEventSubscriber extends AbstractStockUnitListener
     /**
      * @inheritDoc
      */
-    protected function getSubjectStockUnitChangeEventName()
+    protected function getSubjectStockUnitChangeEventName(): string
     {
         return ProductEvents::STOCK_UNIT_CHANGE;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function getSubjectStockUnitRemoveEventName()
+    protected function getSubjectStockUnitRemoveEventName(): string
     {
         return ProductEvents::STOCK_UNIT_REMOVE;
     }

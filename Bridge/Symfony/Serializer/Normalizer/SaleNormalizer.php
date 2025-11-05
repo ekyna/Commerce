@@ -62,6 +62,8 @@ class SaleNormalizer extends ResourceNormalizer
                 'company_number'   => $object->getCompanyNumber(),
                 'first_name'       => $object->getFirstName(),
                 'last_name'        => $object->getLastName(),
+                'invoice_address'  => $this->normalizeObject($object->getInvoiceAddress(), $format, $context),
+                'delivery_address' => $this->normalizeObject($object->getDeliveryAddress(), $format, $context),
                 'items'            => $items,
                 'currency'         => $currency,
                 'total'            => $object->getGrandTotal()->toFixed($precision),

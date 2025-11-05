@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Assigner;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
@@ -22,23 +22,19 @@ trait AssignmentSupportTrait
     /**
      * Returns whether the given item supports assignments.
      *
-     * @param SaleItemInterface $item
+     * @param AssignableInterface $assignable
      *
      * @return bool
      */
-    public function supportsAssignment(SaleItemInterface $item): bool
+    public function supportsAssignment(AssignableInterface $assignable): bool
     {
         // TODO Check if sale is in stockable state
 
-        if ($item->isCompound()) {
+        if ($assignable instanceof SaleItemInterface && $assignable->isCompound()) {
             return false;
         }
 
-        if (!$item instanceof StockAssignmentsInterface) {
-            return false;
-        }
-
-        if (null === $subject = $this->subjectHelper->resolve($item, false)) {
+        if (null === $subject = $this->subjectHelper->resolve($assignable, false)) {
             return false;
         }
 

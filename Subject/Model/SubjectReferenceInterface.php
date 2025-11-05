@@ -26,4 +26,10 @@ interface SubjectReferenceInterface
     public function setSubjectIdentity(SubjectIdentity $identity): SubjectReferenceInterface;
 
     public function clearSubjectIdentity(): SubjectReferenceInterface;
+
+    public function copySubjectIdentity(
+        SubjectReferenceInterface $source,
+        bool                      $allowEmpty = true,
+        bool                      $allowChange = true,
+    ): bool;
 }

@@ -18,6 +18,7 @@ final class SupplierOrderEvents
 
     // Domain
     public const CONTENT_CHANGE = 'ekyna_commerce.supplier_order.content_change';
+    public const STATE_CHANGE   = 'ekyna_commerce.supplier_order.state_change';
 
     public const PRE_CREATE     = 'ekyna_commerce.supplier_order.pre_create';
     public const POST_CREATE    = 'ekyna_commerce.supplier_order.post_create';

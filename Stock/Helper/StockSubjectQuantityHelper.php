@@ -8,9 +8,8 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
+use Ekyna\Component\Commerce\Stock\Assigner\AssignmentSupportTrait;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 use function array_key_exists;
@@ -22,12 +21,15 @@ use function array_key_exists;
  */
 class StockSubjectQuantityHelper
 {
+    use AssignmentSupportTrait;
+
     private array $soldQuantityCache;
 
     public function __construct(
-        private readonly SubjectHelperInterface $subjectHelper,
-        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator
+        private readonly InvoiceSubjectCalculatorInterface $invoiceCalculator,
+        SubjectHelperInterface                             $subjectHelper,
     ) {
+        $this->subjectHelper = $subjectHelper;
         $this->clear();
     }
 
@@ -56,8 +58,7 @@ class StockSubjectQuantityHelper
             return $this->soldQuantityCache[$id] = $quantity;
         }
 
-        if ($this->supportsAssignment($item)) {
-            /** @var StockAssignmentsInterface $item */
+        if ($item instanceof AssignableInterface && $this->supportsAssignment($item)) {
             $soldTotal = new Decimal(0);
             foreach ($item->getStockAssignments() as $assignment) {
                 $soldTotal = $soldTotal->add($assignment->getSoldQuantity());
@@ -71,41 +72,5 @@ class StockSubjectQuantityHelper
         }
 
         return $this->soldQuantityCache[$id] = $item->getTotalQuantity();
-    }
-
-    /**
-     * Returns whether the given item supports assignments.
-     *
-     * @param SaleItemInterface $item
-     *
-     * @return bool
-     */
-    public function supportsAssignment(SaleItemInterface $item): bool
-    {
-        if ($item->isCompound()) {
-            return false;
-        }
-
-        if (!$item instanceof StockAssignmentsInterface) {
-            return false;
-        }
-
-        if (null === $subject = $this->subjectHelper->resolve($item, false)) {
-            return false;
-        }
-
-        if (!$subject instanceof StockSubjectInterface) {
-            return false;
-        }
-
-        if ($subject->isStockCompound()) {
-            return false;
-        }
-
-        if ($subject->getStockMode() === StockSubjectModes::MODE_DISABLED) {
-            return false;
-        }
-
-        return true;
     }
 }

@@ -16,16 +16,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterface
 {
     /**
-     * @var StockUnitInterface[][]
+     * @var array<string, array<StockUnitInterface>>
      * [<subject hash> => StockUnitInterface[]]
      */
-    protected $addedUnits;
+    protected array $addedUnits;
 
     /**
-     * @var StockUnitInterface[][]
+     * @var array<string, array<StockUnitInterface>>
      * [<subject hash> => StockUnitInterface[]]
      */
-    protected $removedUnits;
+    protected array $removedUnits;
 
 
     /**
@@ -50,7 +50,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     public function add(StockUnitInterface $unit): void
     {
         if (null === $subject = $unit->getSubject()) {
-            throw new LogicException("Stock unit's subject must be set.");
+            throw new LogicException('Stock unit\'s subject must be set.');
         }
 
         $hash = $this->getSubjectHash($subject);
@@ -68,7 +68,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     public function isAdded(StockUnitInterface $unit): bool
     {
         if (null === $subject = $unit->getSubject()) {
-            throw new LogicException("Stock unit's subject must be set.");
+            throw new LogicException('Stock unit\'s subject must be set.');
         }
 
         return $this->has($this->addedUnits, $this->getSubjectHash($subject), $unit);
@@ -147,7 +147,7 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     /**
      * Returns whether the unit exists into the given list for the given subject hash.
      *
-     * @param array              $list
+     * @param array<string, array<StockUnitInterface>> $list
      * @param string             $hash
      * @param StockUnitInterface $unit
      *
@@ -165,9 +165,9 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     /**
      * Return the unit's index from the given list for the given subject hash.
      *
-     * @param array              $list
-     * @param string             $hash
-     * @param StockUnitInterface $unit
+     * @param array<string, array<StockUnitInterface>> $list
+     * @param string                                   $hash
+     * @param StockUnitInterface                       $unit
      *
      * @return int|null
      */
@@ -187,7 +187,6 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
         }
 
         // Persisted search
-        /** @var StockUnitInterface $u */
         foreach ($list[$hash] as $index => $u) {
             if ($u->getId() == $unit->getId()) {
                 return $index;
@@ -200,9 +199,9 @@ class StockUnitCache implements StockUnitCacheInterface, EventSubscriberInterfac
     /**
      * Pushes the unit to the given list for the given subject hash.
      *
-     * @param array              $list
-     * @param string             $hash
-     * @param StockUnitInterface $unit
+     * @param array<string, array<StockUnitInterface>>              $list
+     * @param string                                                $hash
+     * @param StockUnitInterface                                    $unit
      */
     private function push(array &$list, string $hash, StockUnitInterface $unit): void
     {

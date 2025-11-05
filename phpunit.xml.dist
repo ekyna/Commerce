@@ -1,36 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
-         backupGlobals="true"
-         colors="true">
+
+<phpunit backupGlobals="true"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
 
     <extensions>
         <extension class="Ekyna\Component\Resource\Tests\PhpUnit\Decimal\DecimalExtension" />
     </extensions>
 
-    <coverage>
-        <include>
-            <directory>.</directory>
-        </include>
-        <exclude>
-            <directory>./Tests</directory>
-            <directory>./vendor</directory>
-        </exclude>
-    </coverage>
-
-    <php>
-        <ini name="error_reporting" value="-1"/>
-        <ini name="intl.default_locale" value="en"/>
-        <ini name="intl.error_level" value="0"/>
-        <ini name="memory_limit" value="-1"/>
-    </php>
-
     <testsuites>
         <testsuite name="Commerce">
             <directory>./Tests/</directory>
         </testsuite>
-        <testsuite name="Stock">
-            <directory>./Tests/Stock</directory>
-        </testsuite>
     </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./</directory>
+            <exclude>
+                <directory suffix="Interface.php">./</directory>
+                <directory>./Tests</directory>
+                <directory>./vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>

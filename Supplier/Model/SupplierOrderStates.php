@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Supplier\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
-use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 
 /**
  * Class SupplierOrderStates
@@ -40,23 +41,19 @@ final class SupplierOrderStates
     }
 
     /**
-     * Returns the from the given order if not string.
+     * Returns the state from the given order if not string.
      *
      * @param SupplierOrderInterface|string $state
      *
      * @return string
      */
-    private static function stateFromOrder($state): string
+    private static function stateFromOrder(SupplierOrderInterface|string $state): string
     {
         if (is_string($state)) {
             return $state;
         }
 
-        if ($state instanceof SupplierOrderInterface) {
-            return $state->getState();
-        }
-
-        throw new UnexpectedTypeException($state, ['string', SupplierOrderInterface::class]);
+        return $state->getState();
     }
 
     /**
@@ -66,7 +63,7 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    public static function isValidState($state): bool
+    public static function isValidState(SupplierOrderInterface|string $state): bool
     {
         return in_array(self::stateFromOrder($state), self::getStates(), true);
     }
@@ -91,11 +88,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    public static function isDeletableState($state): bool
+    public static function isDeletableState(SupplierOrderInterface|string $state): bool
     {
         $state = self::stateFromOrder($state);
 
-        return is_null($state) || in_array($state, self::getDeletableStates(), true);
+        return in_array($state, self::getDeletableStates(), true);
     }
 
     /**
@@ -119,16 +116,16 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    public static function isCancelableState($state): bool
+    public static function isCancelableState(SupplierOrderInterface|string $state): bool
     {
         $state = self::stateFromOrder($state);
 
-        return is_null($state) || in_array($state, self::getCancelableStates(), true);
+        return in_array($state, self::getCancelableStates(), true);
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a non deletable state to a deletable state.
+     * Returns whether the state has changed
+     * from a non-deletable state to a deletable state.
      *
      * @param array $cs The state persistence change set
      *
@@ -142,8 +139,8 @@ final class SupplierOrderStates
     }
 
     /**
-     * Returns whether or not the state has changed
-     * from a deletable state to a non deletable state.
+     * Returns whether the state has changed
+     * from a deletable state to a non-deletable state.
      *
      * @param array $cs The state persistence change set
      *
@@ -178,11 +175,11 @@ final class SupplierOrderStates
      *
      * @return bool
      */
-    public static function isStockableState($state): bool
+    public static function isStockableState(SupplierOrderInterface|string $state): bool
     {
         $state = self::stateFromOrder($state);
 
-        return !is_null($state) && in_array($state, self::getStockableStates(), true);
+        return in_array($state, self::getStockableStates(), true);
     }
 
     /**
@@ -235,7 +232,7 @@ final class SupplierOrderStates
             return true;
         }
 
-        throw new InvalidArgumentException("Unexpected supplier order state change set.");
+        throw new InvalidArgumentException('Unexpected supplier order state change set.');
     }
 
     /**

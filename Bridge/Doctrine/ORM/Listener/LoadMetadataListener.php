@@ -145,6 +145,10 @@ class LoadMetadataListener
         if ($rc->implementsInterface(Stock\StockUnitInterface::class)) {
             $this->configureStockUnitDiscriminatorMap($eventArgs);
         }
+
+        /* TODO if ($rc->implementsInterface(Stock\AssignmentInterface::class)) {
+            $this->configureStockAssignmentDiscriminatorMap($eventArgs);
+        }*/
     }
 
     /**

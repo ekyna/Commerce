@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Tests\Stock\Entity;
 
 use Acme\Product\Entity\StockUnit;
 use DateTime;
-use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
+use Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment;
 use Ekyna\Component\Commerce\Stock\Entity\StockAdjustment;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Supplier\Entity\SupplierOrder;
@@ -193,8 +193,8 @@ class StockUnitTest extends TestCase
 
         $this->assertEmpty($unit->getStockAssignments());
 
-        $assignmentA = new OrderItemStockAssignment();
-        $assignmentB = new OrderItemStockAssignment();
+        $assignmentA = new OrderItemAssignment();
+        $assignmentB = new OrderItemAssignment();
 
         $unit->addStockAssignment($assignmentA);
         $this->assertContains($assignmentA, $unit->getStockAssignments());
@@ -247,7 +247,7 @@ class StockUnitTest extends TestCase
         $this->assertFalse($unit->isEmpty());
 
         $unit = new StockUnit();
-        $unit->addStockAssignment(new OrderItemStockAssignment());
+        $unit->addStockAssignment(new OrderItemAssignment());
         $this->assertFalse($unit->isEmpty());
 
         $unit = new StockUnit();

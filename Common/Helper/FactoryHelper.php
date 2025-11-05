@@ -14,7 +14,6 @@ use Ekyna\Component\Commerce\Order\Model as Order;
 use Ekyna\Component\Commerce\Payment\Model as Payment;
 use Ekyna\Component\Commerce\Quote\Model as Quote;
 use Ekyna\Component\Commerce\Shipment\Model as Shipment;
-use Ekyna\Component\Commerce\Stock\Model as Stock;
 use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
 
 /**
@@ -24,68 +23,64 @@ use Ekyna\Component\Resource\Factory\FactoryFactoryInterface;
  */
 class FactoryHelper implements FactoryHelperInterface
 {
-    public const ADDRESS               = 'address';
-    public const ADJUSTMENT            = 'adjustment';
-    public const ATTACHMENT            = 'attachment';
-    public const INVOICE               = 'invoice';
-    public const INVOICE_LINE          = 'invoice_line';
-    public const ITEM                  = 'item';
-    public const ITEM_ADJUSTMENT       = 'item_adjustment';
-    public const ITEM_STOCK_ASSIGNMENT = 'item_stock_assignment';
-    public const NOTIFICATION          = 'notification';
-    public const PAYMENT               = 'payment';
-    public const SHIPMENT              = 'shipment';
-    public const SHIPMENT_ITEM         = 'shipment_item';
+    public const ADDRESS         = 'address';
+    public const ADJUSTMENT      = 'adjustment';
+    public const ATTACHMENT      = 'attachment';
+    public const INVOICE         = 'invoice';
+    public const INVOICE_LINE    = 'invoice_line';
+    public const ITEM            = 'item';
+    public const ITEM_ADJUSTMENT = 'item_adjustment';
+    public const NOTIFICATION    = 'notification';
+    public const PAYMENT         = 'payment';
+    public const SHIPMENT        = 'shipment';
+    public const SHIPMENT_ITEM   = 'shipment_item';
 
     private const MAP = [
-        self::ADDRESS               => [
+        self::ADDRESS         => [
             Cart\CartInterface::class   => Cart\CartAddressInterface::class,
             Order\OrderInterface::class => Order\OrderAddressInterface::class,
             Quote\QuoteInterface::class => Quote\QuoteAddressInterface::class,
         ],
-        self::ADJUSTMENT            => [
+        self::ADJUSTMENT      => [
             Cart\CartInterface::class   => Cart\CartAdjustmentInterface::class,
             Order\OrderInterface::class => Order\OrderAdjustmentInterface::class,
             Quote\QuoteInterface::class => Quote\QuoteAdjustmentInterface::class,
         ],
-        self::ATTACHMENT            => [
+        self::ATTACHMENT      => [
             Cart\CartInterface::class   => Cart\CartAttachmentInterface::class,
             Order\OrderInterface::class => Order\OrderAttachmentInterface::class,
             Quote\QuoteInterface::class => Quote\QuoteAttachmentInterface::class,
         ],
-        self::INVOICE               => [
+        self::INVOICE         => [
             Order\OrderInterface::class => Order\OrderInvoiceInterface::class,
         ],
-        self::INVOICE_LINE          => [
+        self::INVOICE_LINE    => [
             Order\OrderInvoiceInterface::class => Order\OrderInvoiceLineInterface::class,
         ],
-        self::ITEM                  => [
+        self::ITEM            => [
             Cart\CartInterface::class   => Cart\CartItemInterface::class,
             Order\OrderInterface::class => Order\OrderItemInterface::class,
             Quote\QuoteInterface::class => Quote\QuoteItemInterface::class,
         ],
-        self::ITEM_ADJUSTMENT       => [
+        self::ITEM_ADJUSTMENT => [
             Cart\CartItemInterface::class   => Cart\CartItemAdjustmentInterface::class,
             Order\OrderItemInterface::class => Order\OrderItemAdjustmentInterface::class,
             Quote\QuoteItemInterface::class => Quote\QuoteItemAdjustmentInterface::class,
         ],
-        self::ITEM_STOCK_ASSIGNMENT => [
-            Order\OrderItemInterface::class => Order\OrderItemStockAssignmentInterface::class,
-        ],
-        self::NOTIFICATION          => [
+        self::NOTIFICATION    => [
             Cart\CartInterface::class   => Cart\CartNotificationInterface::class,
             Order\OrderInterface::class => Order\OrderNotificationInterface::class,
             Quote\QuoteInterface::class => Quote\QuoteNotificationInterface::class,
         ],
-        self::PAYMENT               => [
+        self::PAYMENT         => [
             Cart\CartInterface::class   => Cart\CartPaymentInterface::class,
             Order\OrderInterface::class => Order\OrderPaymentInterface::class,
             Quote\QuoteInterface::class => Quote\QuotePaymentInterface::class,
         ],
-        self::SHIPMENT              => [
+        self::SHIPMENT        => [
             Order\OrderInterface::class => Order\OrderShipmentInterface::class,
         ],
-        self::SHIPMENT_ITEM         => [
+        self::SHIPMENT_ITEM   => [
             Order\OrderShipmentInterface::class => Order\OrderShipmentItemInterface::class,
         ],
     ];
@@ -138,11 +133,6 @@ class FactoryHelper implements FactoryHelperInterface
     public function createAdjustmentForItem(Model\SaleItemInterface $item): Model\AdjustmentInterface
     {
         return $this->resolveClassAndCreateObject(self::ITEM_ADJUSTMENT, $item);
-    }
-
-    public function createStockAssignmentForItem(Model\SaleItemInterface $item): Stock\StockAssignmentInterface
-    {
-        return $this->resolveClassAndCreateObject(self::ITEM_STOCK_ASSIGNMENT, $item);
     }
 
     public function createAdjustmentForSale(Model\SaleInterface $sale): Model\AdjustmentInterface

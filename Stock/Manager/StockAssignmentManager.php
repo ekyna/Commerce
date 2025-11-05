@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Manager;
 
-use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Exception\LogicException;
-use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Cache\StockAssignmentCacheInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Event\QueueEvents;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -20,35 +20,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class StockAssignmentManager implements StockAssignmentManagerInterface, EventSubscriberInterface
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    private $persistenceHelper;
-
-    /**
-     * @var StockAssignmentCacheInterface
-     */
-    private $assignmentCache;
-
-    /**
-     * @var FactoryHelperInterface
-     */
-    private $factoryHelper;
-
     public function __construct(
-        PersistenceHelperInterface    $persistenceHelper,
-        StockAssignmentCacheInterface $assignmentCache,
-        FactoryHelperInterface        $factoryHelper
+        private readonly PersistenceHelperInterface    $persistenceHelper,
+        private readonly StockAssignmentCacheInterface $assignmentCache,
     ) {
-        $this->persistenceHelper = $persistenceHelper;
-        $this->assignmentCache = $assignmentCache;
-        $this->factoryHelper = $factoryHelper;
     }
 
     /**
      * @inheritDoc
      */
-    public function persist(StockAssignmentInterface $assignment): void
+    public function persist(AssignmentInterface $assignment): void
     {
         // Do not persist
         if ($assignment->isEmpty()) {
@@ -63,14 +44,14 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
     /**
      * @inheritDoc
      */
-    public function remove(StockAssignmentInterface $assignment, bool $hard = false): void
+    public function remove(AssignmentInterface $assignment, bool $hard = false): void
     {
         if (!$assignment->isEmpty()) {
-            throw new LogicException("Assignment must be empty to be removed.");
+            throw new LogicException('Assignment must be empty to be removed.');
         }
 
         if (!$hard) {
-            if ($this->isRemovalPrevented($assignment)) {
+            if ($assignment->isRemovalPrevented()) {
                 $this->persistenceHelper->persistAndRecompute($assignment, false);
 
                 return;
@@ -84,52 +65,29 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
         }
 
         $assignment
-            ->setSaleItem(null)
+            ->setAssignable(null)
             ->setStockUnit(null);
 
         $this->persistenceHelper->remove($assignment, false);
     }
 
     /**
-     * Returns whether the assignment should not be removed.
-     *
-     * @param StockAssignmentInterface $assignment
-     *
-     * @return bool
-     */
-    private function isRemovalPrevented(StockAssignmentInterface $assignment): bool
-    {
-        if (!$item = $assignment->getSaleItem()) {
-            return false;
-        }
-
-        if (!$sale = $item->getRootSale()) {
-            return false;
-        }
-
-        if (!OrderStates::isStockableState($sale->getState())) {
-            return false;
-        }
-
-        return 1 >= $item->getStockAssignments()->count();
-    }
-
-    /**
      * @inheritDoc
      */
-    public function create(SaleItemInterface $item, StockUnitInterface $unit = null): StockAssignmentInterface
+    public function create(AssignableInterface $assignable, StockUnitInterface $unit = null): AssignmentInterface
     {
         $assignment = null;
 
         if ($unit) {
-            $assignment = $this->assignmentCache->findRemoved($unit, $item);
+            $assignment = $this->assignmentCache->findRemoved($unit, $assignable);
         }
 
         if (!$assignment) {
-            $assignment = $this->factoryHelper->createStockAssignmentForItem($item);
+            $class = $assignable->getAssignmentClass();
+            $assignment = new $class();
         }
 
-        $assignment->setSaleItem($item);
+        $assignment->setAssignable($assignable);
 
         if ($unit) {
             $assignment->setStockUnit($unit);
@@ -151,7 +109,7 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
     /**
      * @inheritDoc
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             QueueEvents::QUEUE_CLOSE => ['onEventQueueClose', 0],

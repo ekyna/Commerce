@@ -36,4 +36,14 @@ class SupplierTemplate extends AbstractTranslatable implements SupplierTemplateI
 
         return $this;
     }
+
+    public function getSubject(): ?string
+    {
+        return $this->translate()?->getSubject();
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->translate()?->getMessage();
+    }
 }

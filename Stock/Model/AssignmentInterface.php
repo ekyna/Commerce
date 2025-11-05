@@ -5,53 +5,46 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Model;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
 
 /**
- * Interface StockAssignmentInterface
+ * Interface AssignmentInterface
  * @package Ekyna\Component\Commerce\Stock\Model
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-interface StockAssignmentInterface extends ResourceInterface
+interface AssignmentInterface extends ResourceInterface
 {
     public function getStockUnit(): ?StockUnitInterface;
 
     /**
-     * @return $this|StockAssignmentInterface
+     * @return $this|AssignmentInterface
      */
-    public function setStockUnit(?StockUnitInterface $stockUnit): StockAssignmentInterface;
+    public function setStockUnit(?StockUnitInterface $stockUnit): AssignmentInterface;
 
-    /**
-     * Returns the sale item.
-     */
-    public function getSaleItem(): ?SaleItemInterface;
+    public function getAssignable(): ?AssignableInterface;
 
-    /**
-     * @return $this|StockAssignmentInterface
-     */
-    public function setSaleItem(?SaleItemInterface $saleItem): StockAssignmentInterface;
+    public function setAssignable(?AssignableInterface $assignable): AssignmentInterface;
 
     public function getSoldQuantity(): Decimal;
 
     /**
-     * @return $this|StockAssignmentInterface
+     * @return $this|AssignmentInterface
      */
-    public function setSoldQuantity(Decimal $quantity): StockAssignmentInterface;
+    public function setSoldQuantity(Decimal $quantity): AssignmentInterface;
 
     public function getShippedQuantity(): Decimal;
 
     /**
-     * @return $this|StockAssignmentInterface
+     * @return $this|AssignmentInterface
      */
-    public function setShippedQuantity(Decimal $quantity): StockAssignmentInterface;
+    public function setShippedQuantity(Decimal $quantity): AssignmentInterface;
 
     public function getLockedQuantity(): Decimal;
 
     /**
-     * @return $this|StockAssignmentInterface
+     * @return $this|AssignmentInterface
      */
-    public function setLockedQuantity(Decimal $quantity): StockAssignmentInterface;
+    public function setLockedQuantity(Decimal $quantity): AssignmentInterface;
 
     public function getShippableQuantity(): Decimal;
 
@@ -71,4 +64,11 @@ interface StockAssignmentInterface extends ResourceInterface
      * Returns whether the assignment is empty.
      */
     public function isEmpty(): bool;
+
+    /**
+     * Returns whether this assignment can be removed.
+     *
+     * @return bool
+     */
+    public function isRemovalPrevented(): bool;
 }

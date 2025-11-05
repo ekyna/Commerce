@@ -6,9 +6,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
 /**
@@ -23,9 +21,9 @@ class StockAssignmentNormalizer extends ResourceNormalizer
     /**
      * @inheritDoc
      *
-     * @param StockAssignmentInterface $object
+     * @param AssignmentInterface $object
      */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): array
     {
         $data = [];
 
@@ -38,14 +36,6 @@ class StockAssignmentNormalizer extends ResourceNormalizer
                 'locked'  => $formatter->number($object->getLockedQuantity()),
                 'ready'   => $object->isFullyShipped() || $object->isFullyShippable(),
             ]);
-
-            if (self::contextHasGroup(Group::STOCK_UNIT, $context)) {
-                $sale = $object->getSaleItem()->getRootSale();
-                $data['order_id'] = $sale->getId();
-                $data['preparation'] =
-                    $sale instanceof ShipmentSubjectInterface
-                    && $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION;
-            }
 
             if (self::contextHasGroup(Group::STOCK_ASSIGNMENT, $context)) {
                 $data['unit'] = $this->normalizeObject($object->getStockUnit(), $format, $context);

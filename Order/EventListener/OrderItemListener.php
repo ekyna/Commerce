@@ -35,12 +35,12 @@ class OrderItemListener extends AbstractSaleItemListener
 
         // If order is in stockable state
         if (OrderStates::isStockableState($item->getRootSale()->getState())) {
-            $this->stockAssigner->assignSaleItem($item);
+            $this->stockAssigner->assignOrderItem($item);
 
             return;
         }
 
-        $this->stockAssigner->detachSaleItem($item);
+        $this->stockAssigner->detachOrderItem($item);
     }
 
     public function onUpdate(ResourceEventInterface $event): void
@@ -92,7 +92,7 @@ class OrderItemListener extends AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         if ($item->hasStockAssignments()) {
-            $this->stockAssigner->detachSaleItem($item);
+            $this->stockAssigner->detachOrderItem($item);
         }
     }
 
@@ -103,10 +103,10 @@ class OrderItemListener extends AbstractSaleItemListener
     {
         // If subject has changed
         if ($this->persistenceHelper->isChanged($item, ['subjectIdentity.provider', 'subjectIdentity.identifier'])) {
-            $this->stockAssigner->detachSaleItem($item);
-            $this->stockAssigner->assignSaleItem($item);
+            $this->stockAssigner->detachOrderItem($item);
+            $this->stockAssigner->assignOrderItem($item);
         } else {
-            $this->stockAssigner->applySaleItem($item);
+            $this->stockAssigner->applyOrderItem($item);
         }
 
         foreach ($item->getChildren() as $child) {

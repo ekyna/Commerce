@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnusedFieldDefaultValueInspection */
+<?php
 
 declare(strict_types=1);
 
@@ -13,9 +13,18 @@ use Ekyna\Component\Commerce\Subject\Model\SubjectInterface;
  */
 final class SubjectIdentity
 {
-    private ?string           $provider   = null;
-    private ?int              $identifier = null;
-    private ?SubjectInterface $subject    = null;
+    private ?string           $provider;
+    private ?int              $identifier;
+    private ?SubjectInterface $subject = null;
+
+
+    public static function fromSubject(SubjectInterface $subject): self
+    {
+        return new self(
+            $subject::getProviderName(),
+            $subject->getIdentifier(),
+        );
+    }
 
     public function __construct(string $provider = null, int $identifier = null)
     {
@@ -55,8 +64,13 @@ final class SubjectIdentity
      */
     public function copy(SubjectIdentity $identity): void
     {
+        if ($this->equals($identity)) {
+            return;
+        }
+
         $this->provider = $identity->getProvider();
         $this->identifier = $identity->getIdentifier();
+        $this->subject = null;
     }
 
     public function getProvider(): ?string

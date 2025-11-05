@@ -2,7 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Updater;
 
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockAssignmentUpdater;
 use Ekyna\Component\Commerce\Tests\Fixture;
@@ -475,9 +475,9 @@ class StockAssignmentUpdaterTest extends StockTestCase
     /**
      * Asserts that the assignment will be persisted.
      *
-     * @param StockAssignmentInterface $assignment
+     * @param AssignmentInterface $assignment
      */
-    private function assertAssignmentWillBePersisted(StockAssignmentInterface $assignment): void
+    private function assertAssignmentWillBePersisted(AssignmentInterface $assignment): void
     {
         $this
             ->getStockAssignmentManagerMock()

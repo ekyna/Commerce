@@ -3,8 +3,8 @@
 namespace Ekyna\Component\Commerce\Tests\Stock\Linker;
 
 use Acme\Product\Entity\StockUnit;
-use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
-use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinker;
+use Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment;
+use Ekyna\Component\Commerce\Stock\Linker\SupplierOrderLinker;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Tests\Fixture;
@@ -18,7 +18,7 @@ use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 class StockUnitLinkerTest extends StockTestCase
 {
     /**
-     * @var StockUnitLinker
+     * @var SupplierOrderLinker
      */
     private $linker;
 
@@ -28,7 +28,7 @@ class StockUnitLinkerTest extends StockTestCase
      */
     protected function setUp(): void
     {
-        $this->linker = new StockUnitLinker(
+        $this->linker = new SupplierOrderLinker(
             $this->getPersistenceHelperMock(),
             $this->getStockUnitUpdaterMock(),
             $this->getStockUnitResolverMock(),
@@ -74,7 +74,7 @@ class StockUnitLinkerTest extends StockTestCase
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
             ->expects($this->once())
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -169,7 +169,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $stockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -234,7 +234,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -266,7 +266,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkableStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkableStockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -284,7 +284,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the new stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -349,7 +349,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -371,7 +371,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkableStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkableStockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have two assignment
         $this->assertCount(2, $assignments);
@@ -393,7 +393,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the new stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -564,7 +564,7 @@ class StockUnitLinkerTest extends StockTestCase
         $this->assertEquals(12, $linkedStockUnit->getNetPrice());
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
         $this->assertCount(2, $assignments);
@@ -585,7 +585,7 @@ class StockUnitLinkerTest extends StockTestCase
         $this->assertEquals(0, $newStockUnit->getNetPrice());
         // Then the new stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
         $this->assertCount(0, $assignments);
@@ -683,7 +683,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have one assignment
         $this->assertCount(2, $assignments);
@@ -705,7 +705,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the new stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -779,7 +779,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the stock unit should have no assignment
         $this->assertCount(1, $assignments);
@@ -858,7 +858,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -880,7 +880,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -973,7 +973,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -995,7 +995,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have one assignment
         $this->assertCount(2, $assignments);
@@ -1119,7 +1119,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = new StockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItemA)
             ->willReturn($newStockUnit);
 
@@ -1143,7 +1143,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $linkedStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkedStockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have one assignment
         $this->assertCount(2, $assignments);
@@ -1165,7 +1165,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the pending stock unit's state should equal 'pending'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $pendingStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($pendingStockUnit->getStockAssignments()->toArray());
         // Then the pending stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -1183,7 +1183,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the new stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $newStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($newStockUnit->getStockAssignments()->toArray());
         // Then the new stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -1238,7 +1238,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Given the stock unit resolver will return a new stock unit
         $newStockUnit = Fixture::stockUnit();
         $this->getStockUnitResolverMock()
-            ->method('createBySubjectRelative')
+            ->method('createBySubjectReference')
             ->with($supplierItem)
             ->willReturn($newStockUnit);
 
@@ -1258,7 +1258,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $stockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -1346,7 +1346,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $stockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have no assignment
         $this->assertCount(0, $assignments);
@@ -1360,7 +1360,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the linkable stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $stockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($linkableStockUnit->getStockAssignments()->toArray());
         // Then the linkable stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -1451,7 +1451,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_NEW, $stockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($stockUnit->getStockAssignments()->toArray());
         // Then the linked stock unit should have one assignment
         $this->assertCount(1, $assignments);
@@ -1469,7 +1469,7 @@ class StockUnitLinkerTest extends StockTestCase
         // Then the pending stock unit's state should equal 'new'
         $this->assertEquals(StockUnitStates::STATE_PENDING, $pendingStockUnit->getState());
 
-        /** @var OrderItemStockAssignment[] $assignments */
+        /** @var OrderItemAssignment[] $assignments */
         $assignments = array_values($pendingStockUnit->getStockAssignments()->toArray());
         // Then the pending stock unit should have one assignment
         $this->assertCount(1, $assignments);

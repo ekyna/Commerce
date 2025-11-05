@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 
 /**
  * Interface OrderItemInterface
@@ -15,7 +15,7 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  * @method OrderInterface getSale()
  * @method OrderInterface getRootSale()
  */
-interface OrderItemInterface extends SaleItemInterface, StockAssignmentsInterface
+interface OrderItemInterface extends SaleItemInterface, AssignableInterface
 {
     public function getOrder(): ?OrderInterface;
 

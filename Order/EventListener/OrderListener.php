@@ -452,7 +452,7 @@ class OrderListener extends AbstractSaleListener
      */
     protected function assignSaleItemRecursively(SaleItemInterface $item): void
     {
-        $this->stockAssigner->assignSaleItem($item);
+        $this->stockAssigner->assignOrderItem($item);
 
         foreach ($item->getChildren() as $child) {
             $this->assignSaleItemRecursively($child);
@@ -464,7 +464,7 @@ class OrderListener extends AbstractSaleListener
      */
     protected function applySaleItemRecursively(SaleItemInterface $item): void
     {
-        $this->stockAssigner->applySaleItem($item);
+        $this->stockAssigner->applyOrderItem($item);
 
         foreach ($item->getChildren() as $child) {
             $this->applySaleItemRecursively($child);
@@ -476,7 +476,7 @@ class OrderListener extends AbstractSaleListener
      */
     protected function detachSaleItemRecursively(SaleItemInterface $item): void
     {
-        $this->stockAssigner->detachSaleItem($item);
+        $this->stockAssigner->detachOrderItem($item);
 
         foreach ($item->getChildren() as $child) {
             $this->detachSaleItemRecursively($child);

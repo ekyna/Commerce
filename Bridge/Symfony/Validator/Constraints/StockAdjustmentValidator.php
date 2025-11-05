@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints;
 
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Symfony\Component\Validator\Constraint;
@@ -20,28 +22,28 @@ class StockAdjustmentValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($adjustment, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (null === $adjustment) {
+        if (null === $value) {
             return;
         }
 
-        if (!$adjustment instanceof StockAdjustmentInterface) {
-            throw new UnexpectedTypeException($adjustment, StockAdjustmentInterface::class);
+        if (!$value instanceof StockAdjustmentInterface) {
+            throw new UnexpectedTypeException($value, StockAdjustmentInterface::class);
         }
         if (!$constraint instanceof StockAdjustment) {
             throw new UnexpectedTypeException($constraint, StockAdjustment::class);
         }
 
-        if (!StockAdjustmentReasons::isDebitReason($adjustment->getReason())) {
+        if (!StockAdjustmentReasons::isDebitReason($value->getReason())) {
             return;
         }
 
-        $unit = $adjustment->getStockUnit();
+        $unit = $value->getStockUnit();
 
         $max = $unit->getReceivedQuantity() - $unit->getShippedQuantity();
         foreach ($unit->getStockAdjustments() as $a) {
-            if ($a === $adjustment) {
+            if ($a === $value) {
                 continue;
             }
 
@@ -50,21 +52,21 @@ class StockAdjustmentValidator extends ConstraintValidator
         }
 
         foreach ($unit->getStockAssignments() as $assignment) {
-            $sale = $assignment->getSaleItem()->getRootSale();
+            $assignable = $assignment->getAssignable();
             if (
-                $sale instanceof ShipmentSubjectInterface &&
-                $sale->getShipmentState() === ShipmentStates::STATE_PREPARATION
+                $assignable instanceof OrderItemInterface
+                && ShipmentStates::STATE_PREPARATION === $assignable->getRootSale()->getShipmentState()
             ) {
                 $max -= $assignment->getShippableQuantity();
             }
         }
 
-        if ($max < $adjustment->getQuantity()) {
+        if ($max < $value->getQuantity()) {
             $this->context
                 ->buildViolation($constraint->stock_unit_shipped_quantity_overflow, [
                     '%max%' => $max->toFixed(3),
                 ])
-                ->setInvalidValue($adjustment->getQuantity())
+                ->setInvalidValue($value->getQuantity())
                 ->atPath('quantity')
                 ->addViolation();
         }

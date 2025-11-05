@@ -22,10 +22,10 @@ interface StockLoggerInterface
     /**
      * Logs the stock assignment sold quantity change.
      */
-    public function assignmentSold(Model\StockAssignmentInterface $assignment, Decimal $quantity, bool $relative = true): void;
+    public function assignmentSold(Model\AssignmentInterface $assignment, Decimal $quantity, bool $relative = true): void;
 
     /**
      * Logs the stock assignment unit change.
      */
-    public function assignmentUnit(Model\StockAssignmentInterface $assignment, Model\StockUnitInterface $unit): void;
+    public function assignmentUnit(Model\AssignmentInterface $assignment, Model\StockUnitInterface $unit): void;
 }

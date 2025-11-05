@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Order\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Entity\AbstractSaleItem;
 use Ekyna\Component\Commerce\Common\Model as Common;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Order\Model;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableTrait;
 
 /**
  * Class OrderItem
@@ -20,17 +17,15 @@ use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
  */
 class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
 {
+    use AssignableTrait;
+
     protected ?Model\OrderInterface $order = null;
-
-    /** @var Collection|StockAssignmentInterface[] */
-    protected Collection $stockAssignments;
-
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->stockAssignments = new ArrayCollection();
+        $this->initializeAssignments();
     }
 
     public function getSale(): ?Common\SaleInterface
@@ -75,43 +70,9 @@ class OrderItem extends AbstractSaleItem implements Model\OrderItemInterface
         return $this;
     }
 
-    public function hasStockAssignment(StockAssignmentInterface $assignment): bool
+    public function getAssignmentClass(): string
     {
-        return $this->stockAssignments->contains($assignment);
-    }
-
-    public function addStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface
-    {
-        if ($this->hasStockAssignment($assignment)) {
-            return $this;
-        }
-
-        $this->stockAssignments->add($assignment);
-        $assignment->setSaleItem($this);
-
-        return $this;
-    }
-
-    public function removeStockAssignment(StockAssignmentInterface $assignment): StockAssignmentsInterface
-    {
-        if (!$this->hasStockAssignment($assignment)) {
-            return $this;
-        }
-
-        $this->stockAssignments->removeElement($assignment);
-        $assignment->setSaleItem(null);
-
-        return $this;
-    }
-
-    public function hasStockAssignments(): bool
-    {
-        return 0 < $this->stockAssignments->count();
-    }
-
-    public function getStockAssignments(): Collection
-    {
-        return $this->stockAssignments;
+        return OrderItemAssignment::class;
     }
 
     protected function assertSaleClass(Common\SaleInterface $sale): void

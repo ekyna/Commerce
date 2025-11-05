@@ -7,7 +7,7 @@ namespace Ekyna\Component\Commerce\Invoice\Calculator;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Document\Model\DocumentLineTypes;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Subject\Model\PurchaseCost;
 
 /**
@@ -33,7 +33,7 @@ class InvoiceCostCalculator
                 continue;
             }
 
-            if (!$item instanceof StockAssignmentsInterface) {
+            if (!$item instanceof AssignableInterface) {
                 continue;
             }
 

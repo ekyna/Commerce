@@ -15,13 +15,13 @@ use Exception;
 /**
  * Class SupplierOrderItemCalculator
  * @package Ekyna\Component\Commerce\Supplier\Calculator
- * @author Étienne Dauvergne <contact@ekyna.com>
+ * @author  Étienne Dauvergne <contact@ekyna.com>
  */
 class SupplierOrderItemCalculator implements SupplierOrderItemCalculatorInterface
 {
     public function __construct(
-        private readonly WeightingCalculatorInterface $weightingCalculator,
-        private readonly CurrencyConverterInterface   $currencyConverter,
+        private readonly WeightingCalculatorInterface      $weightingCalculator,
+        private readonly CurrencyConverterInterface        $currencyConverter,
     ) {
     }
 
@@ -32,14 +32,16 @@ class SupplierOrderItemCalculator implements SupplierOrderItemCalculatorInterfac
         }
 
         if ($order->getDiscountTotal()->isZero()) {
-            $price = $item->getNetPrice()->div($item->getPacking());
+            $price = $item->getNetPrice();
         } else {
             $weighting = $this->weightingCalculator->getWeighting($item)->price;
 
             $discount = $order->getDiscountTotal() * $weighting;
 
-            $price = $item->getNetPrice()->sub($discount)->div($item->getPacking());
+            $price = $item->getNetPrice()->sub($discount);
         }
+
+        $price = $price->div($item->getPacking());
 
         return $this->convertPrice($price, $order, false)->round(5);
     }

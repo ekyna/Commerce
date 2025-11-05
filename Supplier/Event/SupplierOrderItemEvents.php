@@ -17,8 +17,6 @@ final class SupplierOrderItemEvents
     public const DELETE         = 'ekyna_commerce.supplier_order_item.delete';
 
     // Domain
-    public const CONTENT_CHANGE = 'ekyna_commerce.supplier_order_item.content_change';
-
     public const PRE_CREATE     = 'ekyna_commerce.supplier_order_item.pre_create';
     public const POST_CREATE    = 'ekyna_commerce.supplier_order_item.post_create';
 

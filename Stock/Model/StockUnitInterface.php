@@ -9,6 +9,8 @@ use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\ExchangeSubjectInterface;
 use Ekyna\Component\Commerce\Common\Model\StateSubjectInterface;
+use Ekyna\Component\Commerce\Exception\LogicException;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderInterface;
 use Ekyna\Component\Commerce\Supplier\Model\SupplierOrderItemInterface;
 use Ekyna\Component\Resource\Model\ResourceInterface;
@@ -30,7 +32,17 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
 
     public function getSupplierOrderItem(): ?SupplierOrderItemInterface;
 
+    /**
+     * @throws LogicException
+     */
     public function setSupplierOrderItem(?SupplierOrderItemInterface $item): StockUnitInterface;
+
+    public function getProductionOrder(): ?ProductionOrderInterface;
+
+    /**
+     * @throws LogicException
+     */
+    public function setProductionOrder(?ProductionOrderInterface $order): StockUnitInterface;
 
     public function getGeocodes(): array;
 
@@ -110,14 +122,14 @@ interface StockUnitInterface extends ResourceInterface, StateSubjectInterface, E
      */
     public function setClosedAt(?DateTimeInterface $date): StockUnitInterface;
 
-    public function hasStockAssignment(StockAssignmentInterface $assignment): bool;
+    public function hasStockAssignment(AssignmentInterface $assignment): bool;
 
-    public function addStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
+    public function addStockAssignment(AssignmentInterface $assignment): StockUnitInterface;
 
-    public function removeStockAssignment(StockAssignmentInterface $assignment): StockUnitInterface;
+    public function removeStockAssignment(AssignmentInterface $assignment): StockUnitInterface;
 
     /**
-     * @return Collection|StockAssignmentInterface[]
+     * @return Collection|AssignmentInterface[]
      */
     public function getStockAssignments(): Collection;
 

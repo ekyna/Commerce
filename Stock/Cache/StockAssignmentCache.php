@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ekyna\Component\Commerce\Stock\Cache;
 
-use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
 /**
@@ -14,20 +16,20 @@ use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 class StockAssignmentCache implements StockAssignmentCacheInterface
 {
     /**
-     * @var StockAssignmentInterface[]
+     * @var array<string, AssignmentInterface>
      */
-    private $removedAssignments = [];
+    private array $removedAssignments = [];
 
 
     /**
      * @inheritDoc
      */
-    public function addRemoved(StockAssignmentInterface $assignment): void
+    public function addRemoved(AssignmentInterface $assignment): void
     {
-        $key = $this->buildKey($assignment->getStockUnit(), $assignment->getSaleItem());
+        $key = $this->buildKey($assignment->getStockUnit(), $assignment->getAssignable());
 
         $assignment
-            ->setSaleItem(null)
+            ->setAssignable(null)
             ->setStockUnit(null);
 
         $this->removedAssignments[$key] = $assignment;
@@ -36,9 +38,9 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
     /**
      * @inheritDoc
      */
-    public function findRemoved(StockUnitInterface $unit, SaleItemInterface $item): ?StockAssignmentInterface
+    public function findRemoved(StockUnitInterface $unit, AssignableInterface $assignable): ?AssignmentInterface
     {
-        $key = $this->buildKey($unit, $item);
+        $key = $this->buildKey($unit, $assignable);
 
         if (isset($this->removedAssignments[$key])) {
             $assignment = $this->removedAssignments[$key];
@@ -53,7 +55,7 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
     /**
      * Returns all the cached removed assignments.
      *
-     * @return StockAssignmentInterface[]
+     * @return array<string, AssignmentInterface>
      */
     public function flush(): array
     {
@@ -66,14 +68,9 @@ class StockAssignmentCache implements StockAssignmentCacheInterface
 
     /**
      * Builds the assignment key.
-     *
-     * @param StockUnitInterface $unit
-     * @param SaleItemInterface  $item
-     *
-     * @return string
      */
-    private function buildKey(StockUnitInterface $unit, SaleItemInterface $item): ?string
+    private function buildKey(StockUnitInterface $unit, AssignableInterface $assignable): string
     {
-        return sprintf("%s-%s", spl_object_hash($unit), spl_object_hash($item));
+        return sprintf('%d-%d', spl_object_id($unit), spl_object_id($assignable));
     }
 }

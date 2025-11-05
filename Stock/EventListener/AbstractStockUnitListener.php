@@ -4,6 +4,7 @@ namespace Ekyna\Component\Commerce\Stock\EventListener;
 
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+use Ekyna\Component\Commerce\Manufacture\Model\POState;
 use Ekyna\Component\Commerce\Stock\Event\StockUnitEvents;
 use Ekyna\Component\Commerce\Stock\Event\SubjectStockUnitEvent;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
@@ -20,58 +21,30 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractStockUnitListener
 {
-    /**
-     * @var PersistenceHelperInterface
-     */
-    protected $persistenceHelper;
-
-    /**
-     * @var ResourceEventDispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
-     * @var StockUnitStateResolverInterface
-     */
-    protected $stateResolver;
+    protected PersistenceHelperInterface       $persistenceHelper;
+    protected ResourceEventDispatcherInterface $dispatcher;
+    protected StockUnitStateResolverInterface  $stateResolver;
 
 
-    /**
-     * Sets the persistence helper.
-     *
-     * @param PersistenceHelperInterface $helper
-     */
-    public function setPersistenceHelper(PersistenceHelperInterface $helper)
+    public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    /**
-     * Sets the resource event dispatcher.
-     *
-     * @param ResourceEventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher)
+    public function setDispatcher(ResourceEventDispatcherInterface $dispatcher): void
     {
         $this->dispatcher = $dispatcher;
     }
 
-    /**
-     * Sets the stock unit state resolver.
-     *
-     * @param StockUnitStateResolverInterface $stateResolver
-     */
-    public function setStateResolver(StockUnitStateResolverInterface $stateResolver)
+    public function setStateResolver(StockUnitStateResolverInterface $stateResolver): void
     {
         $this->stateResolver = $stateResolver;
     }
 
     /**
      * Insert event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onInsert(ResourceEventInterface $event)
+    public function onInsert(ResourceEventInterface $event): void
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
@@ -84,10 +57,8 @@ abstract class AbstractStockUnitListener
 
     /**
      * Update event handler.
-     *
-     * @param ResourceEventInterface $event
      */
-    public function onUpdate(ResourceEventInterface $event)
+    public function onUpdate(ResourceEventInterface $event): void
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
@@ -121,22 +92,31 @@ abstract class AbstractStockUnitListener
      *
      * @throws IllegalOperationException
      */
-    public function onDelete(ResourceEventInterface $event)
+    public function onDelete(ResourceEventInterface $event): void
     {
         $stockUnit = $this->getStockUnitFromEvent($event);
 
         if (null !== $item = $stockUnit->getSupplierOrderItem()) {
             // Prevent deletion if the supplier order has a stockable state
-            if (SupplierOrderStates::isStockableState($item->getOrder()->getState())) {
+            if (SupplierOrderStates::isStockableState($item->getOrder())) {
                 throw new IllegalOperationException(
-                    "The stock unit can't be deleted as it is linked to a supplier order with a stockable state."
+                    'The stock unit can\'t be deleted as it is linked to a supplier order with a stockable state.'
+                ); // TODO message as translation id
+            }
+        }
+
+        if (null !== $order = $stockUnit->getProductionOrder()) {
+            // Prevent deletion if the supplier order has a stockable state
+            if (POState::isStockableState($order)) {
+                throw new IllegalOperationException(
+                    'The stock unit can\'t be deleted as it is linked to a production order with a stockable state.'
                 ); // TODO message as translation id
             }
         }
 
         if (!$stockUnit->isEmpty()) {
             throw new IllegalOperationException(
-                "The stock unit can't be deleted as it has been received, adjusted, sold or shipped."
+                'The stock unit can\'t be deleted as it has been received, adjusted, sold or shipped.'
             ); // TODO message as translation id
         }
 
@@ -145,10 +125,8 @@ abstract class AbstractStockUnitListener
 
     /**
      * Dispatches the subject's "stock unit change" event.
-     *
-     * @param StockUnitInterface $stockUnit
      */
-    protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit)
+    protected function scheduleSubjectStockUnitChangeEvent(StockUnitInterface $stockUnit): void
     {
         $this->persistenceHelper->scheduleEvent(
             new SubjectStockUnitEvent($stockUnit),
@@ -159,17 +137,12 @@ abstract class AbstractStockUnitListener
     /**
      * Returns the stock unit from the event.
      *
-     * @param ResourceEventInterface $event
-     *
-     * @return StockUnitInterface
      * @throws InvalidArgumentException
      */
-    abstract protected function getStockUnitFromEvent(ResourceEventInterface $event);
+    abstract protected function getStockUnitFromEvent(ResourceEventInterface $event): StockUnitInterface;
 
     /**
      * Returns the subject's "stock unit change" event name.
-     *
-     * @return string
      */
-    abstract protected function getSubjectStockUnitChangeEventName();
+    abstract protected function getSubjectStockUnitChangeEventName(): string;
 }

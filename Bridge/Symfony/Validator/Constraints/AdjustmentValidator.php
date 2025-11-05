@@ -19,24 +19,24 @@ class AdjustmentValidator extends ConstraintValidator
     /**
      * @inheritDoc
      */
-    public function validate($adjustment, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
-        if (null === $adjustment) {
+        if (null === $value) {
             return;
         }
 
-        if (!$adjustment instanceof AdjustmentInterface) {
-            throw new UnexpectedTypeException($adjustment, AdjustmentInterface::class);
+        if (!$value instanceof AdjustmentInterface) {
+            throw new UnexpectedTypeException($value, AdjustmentInterface::class);
         }
         if (!$constraint instanceof Adjustment) {
             throw new UnexpectedTypeException($constraint, Adjustment::class);
         }
 
-        if ($adjustment->getType() !== AdjustmentTypes::TYPE_DISCOUNT) {
+        if ($value->getType() !== AdjustmentTypes::TYPE_DISCOUNT) {
             $violationList = $this
                 ->context
                 ->getValidator()
-                ->validate($adjustment->getDesignation(), [new Assert\NotBlank()]);
+                ->validate($value->getDesignation(), [new Assert\NotBlank()]);
 
             /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
             foreach ($violationList as $violation) {

@@ -39,7 +39,7 @@
             </cascade>
         </one-to-many>
 
-        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment"
+        <one-to-many target-entity="Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment"
                      field="stockAssignments" mapped-by="orderItem">
             <cascade>
                 <cascade-persist/>

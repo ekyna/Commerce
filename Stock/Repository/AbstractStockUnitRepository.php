@@ -83,6 +83,7 @@ abstract class AbstractStockUnitRepository extends ResourceRepository implements
                 $qb->expr()->orX(
                     $qb->expr()->andX(
                         $qb->expr()->isNull($alias . '.supplierOrderItem'), // Not linked to a supplier order
+                        $qb->expr()->isNull($alias . '.productionOrder'),   // Not linked to a production order
                         $qb->expr()->eq($alias . '.adjustedQuantity', 0)    // Not adjusted
                     ),
                     $qb->expr()->lt(                                    // Sold lower than ordered + adjusted
@@ -111,6 +112,7 @@ abstract class AbstractStockUnitRepository extends ResourceRepository implements
             ->andWhere($qb->expr()->eq($alias . '.product', ':product'))
             ->andWhere($qb->expr()->neq($alias . '.state', ':state'))      // Not closed
             ->andWhere($qb->expr()->isNull($alias . '.supplierOrderItem')) // Not linked to a supplier order
+            ->andWhere($qb->expr()->isNull($alias . '.productionOrder'))   // Not linked to a production order
             ->andWhere($qb->expr()->eq($alias . '.adjustedQuantity', 0))   // Not adjusted
             ->setParameters([
                 'product' => $subject,

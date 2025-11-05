@@ -6,7 +6,7 @@ namespace Ekyna\Component\Commerce\Stock\Prioritizer;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
 /**
@@ -26,7 +26,7 @@ final class PrioritizeUnitResolver
     /**
      * Finds the best stock unit to move/merge assignment(s) into for the given quantity.
      */
-    public function getUnitCandidate(StockAssignmentInterface $assignment, Decimal $quantity): ?UnitCandidate
+    public function getUnitCandidate(AssignmentInterface $assignment, Decimal $quantity): ?UnitCandidate
     {
         $stockUnit = $assignment->getStockUnit();
         $subject = $stockUnit->getSubject();
@@ -36,7 +36,7 @@ final class PrioritizeUnitResolver
             return null;
         }
 
-        $item = $assignment->getSaleItem();
+        $assignable = $assignment->getAssignable();
 
         $candidates = [];
 
@@ -47,7 +47,7 @@ final class PrioritizeUnitResolver
 
             $this->unitCache->add($unit);
 
-            $candidate = UnitCandidate::build($unit, $item, $quantity, $this->sameSale);
+            $candidate = UnitCandidate::build($unit, $assignable, $quantity, $this->sameSale);
 
             // Skip if no reservable and no releasable quantity
             if ((0 >= $candidate->reservable) && (0 >= $candidate->releasable)) {

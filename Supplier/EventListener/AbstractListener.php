@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Supplier\EventListener;
 
 use Ekyna\Component\Commerce\Exception;
-use Ekyna\Component\Commerce\Stock\Linker\StockUnitLinkerInterface;
+use Ekyna\Component\Commerce\Stock\Linker\SupplierOrderLinkerInterface;
 use Ekyna\Component\Commerce\Stock\Updater\StockUnitUpdaterInterface;
 use Ekyna\Component\Commerce\Supplier\Event\SupplierOrderEvents;
 use Ekyna\Component\Commerce\Supplier\Model;
@@ -19,16 +19,16 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
  */
 abstract class AbstractListener
 {
-    protected PersistenceHelperInterface $persistenceHelper;
-    protected StockUnitLinkerInterface $stockUnitLinker;
-    protected StockUnitUpdaterInterface $stockUnitUpdater;
+    protected PersistenceHelperInterface   $persistenceHelper;
+    protected SupplierOrderLinkerInterface $stockUnitLinker;
+    protected StockUnitUpdaterInterface  $stockUnitUpdater;
 
     public function setPersistenceHelper(PersistenceHelperInterface $helper): void
     {
         $this->persistenceHelper = $helper;
     }
 
-    public function setStockUnitLinker(StockUnitLinkerInterface $stockUnitLinker): void
+    public function setStockUnitLinker(SupplierOrderLinkerInterface $stockUnitLinker): void
     {
         $this->stockUnitLinker = $stockUnitLinker;
     }
@@ -86,7 +86,7 @@ abstract class AbstractListener
             Model\SupplierOrderItemInterface::class,
             Model\SupplierOrderInterface::class,
             Model\SupplierDeliveryItemInterface::class,
-            Model\SupplierDeliveryInterface::class
+            Model\SupplierDeliveryInterface::class,
         ]);
     }
 

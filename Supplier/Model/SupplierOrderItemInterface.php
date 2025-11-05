@@ -36,6 +36,9 @@ interface SupplierOrderItemInterface extends SubjectRelativeInterface
 
     public function setPacking(Decimal $packing): SupplierOrderItemInterface;
 
+    /**
+     * @return Collection<SupplierDeliveryItemInterface>
+     */
     public function getDeliveryItems(): Collection;
 
     public function getSubjectQuantity(): Decimal;

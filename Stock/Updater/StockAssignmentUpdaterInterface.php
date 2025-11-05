@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Updater;
 
 use Decimal\Decimal;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface as Assignment;
 
 /**
  * Interface StockAssignmentUpdaterInterface
  * @package Ekyna\Component\Commerce\Stock\Updater
  * @author  Etienne Dauvergne <contact@ekyna.com>
+ *
+ * @TODO    Rename to AssignmentUpdaterInterface
  */
 interface StockAssignmentUpdaterInterface
 {

@@ -28,6 +28,9 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         if (null !== $stockUnit = $orderItem->getStockUnit()) {
+            // TODO Use SupplierOrderLinker
+            /** @see \Ekyna\Component\Commerce\Stock\Linker\SupplierOrderLinkerInterface::linkDeliveryItem */
+
             $stockUnit->addGeocode($item->getGeocode());
 
             $this->stockUnitUpdater->updateReceived($stockUnit, $item->getSubjectQuantity(), true);
@@ -65,6 +68,8 @@ class SupplierDeliveryItemListener extends AbstractListener
         }
 
         if ($this->hasQuantityChanged($item)) {
+            // TODO Use SupplierOrderLinker
+            /** @see \Ekyna\Component\Commerce\Stock\Linker\SupplierOrderLinkerInterface::applyDeliveryItem */
             $this->handleQuantityChange($item);
 
             // Dispatch supplier order content change event
@@ -101,6 +106,9 @@ class SupplierDeliveryItemListener extends AbstractListener
         } elseif ($orderItem->hasSubjectIdentity()) {
             throw new RuntimeException('Failed to retrieve stock unit.');
         }
+
+        // TODO Use SupplierOrderLinker
+        /** @see \Ekyna\Component\Commerce\Stock\Linker\SupplierOrderLinkerInterface::unlinkDeliveryItem */
 
         if ($this->hasQuantityChanged($item)) {
             $this->handleQuantityChange($item);

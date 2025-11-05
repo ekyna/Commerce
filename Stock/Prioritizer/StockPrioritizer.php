@@ -16,8 +16,8 @@ use Ekyna\Component\Commerce\Stock\Cache\StockUnitCacheInterface;
 use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManagerInterface;
 use Ekyna\Component\Commerce\Stock\Manager\StockUnitManagerInterface;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface as Assignment;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentsInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface as Assignment;
+use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 
 use function min;
@@ -86,7 +86,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             $changed = $this->prioritize($child, $qty, false, $allowSameSale) || $changed;
         }
 
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$item instanceof AssignableInterface) {
             return $changed;
         }
 
@@ -94,7 +94,7 @@ class StockPrioritizer implements StockPrioritizerInterface
 
         if (0 === $assignments->count()) {
             if ($this->unitAssigner->supportsAssignment($item)) {
-                $this->unitAssigner->assignSaleItem($item);
+                $this->unitAssigner->assignOrderItem($item);
 
                 $changed = true;
             }
@@ -212,7 +212,7 @@ class StockPrioritizer implements StockPrioritizerInterface
             }
         }
 
-        if (!$item instanceof StockAssignmentsInterface) {
+        if (!$item instanceof AssignableInterface) {
             return false;
         }
 

@@ -2,10 +2,10 @@
 
 namespace Ekyna\Component\Commerce\Tests\Stock\Manager;
 
-use Ekyna\Component\Commerce\Order\Entity\OrderItemStockAssignment;
+use Ekyna\Component\Commerce\Order\Entity\OrderItemAssignment;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Stock\Manager\StockAssignmentManager;
-use Ekyna\Component\Commerce\Stock\Model\StockAssignmentInterface;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Tests\Fixture;
 use Ekyna\Component\Commerce\Tests\Stock\StockTestCase;
 
@@ -26,7 +26,6 @@ class StockAssignmentManagerTest extends StockTestCase
         $this->manager = new StockAssignmentManager(
             $this->getPersistenceHelperMock(),
             $this->getStockAssignmentCacheMock(),
-            $this->getFactoryHelperMock()
         );
     }
 
@@ -91,7 +90,7 @@ class StockAssignmentManagerTest extends StockTestCase
         $this->manager->remove($assignment, $result['hard']);
 
         if ($result['removed']) {
-            $this->assertNull($assignment->getSaleItem());
+            $this->assertNull($assignment->getAssignable());
             $this->assertNull($assignment->getStockUnit());
         }
     }
@@ -188,7 +187,7 @@ class StockAssignmentManagerTest extends StockTestCase
         ];
     }
 
-    protected function assertCached(StockAssignmentInterface $assignment, bool $isDone): void
+    protected function assertCached(AssignmentInterface $assignment, bool $isDone): void
     {
         $this
             ->getStockAssignmentCacheMock()
@@ -207,18 +206,12 @@ class StockAssignmentManagerTest extends StockTestCase
             ->expects($this->never())
             ->method('findRemoved');
 
-        $this
-            ->getFactoryHelperMock()
-            ->method('createStockAssignmentForItem')
-            ->with($item)
-            ->willReturn(new OrderItemStockAssignment());
-
         $assignment = $this->manager->create($item);
 
         // Method should return an assignment
-        $this->assertInstanceOf(StockAssignmentInterface::class, $assignment);
+        $this->assertInstanceOf(OrderItemAssignment::class, $assignment);
         // Assignment should be initialized with the given sale item
-        $this->assertSame($item, $assignment->getSaleItem());
+        $this->assertSame($item, $assignment->getAssignable());
         // Assignment should be empty
         $this->assertTrue($assignment->isEmpty());
     }
@@ -236,18 +229,12 @@ class StockAssignmentManagerTest extends StockTestCase
             ->with($unit, $item)
             ->willReturn(null);
 
-        $this
-            ->getFactoryHelperMock()
-            ->method('createStockAssignmentForItem')
-            ->with($item)
-            ->willReturn(new OrderItemStockAssignment());
-
         $assignment = $this->manager->create($item, $unit);
 
         // Method should return an assignment
-        $this->assertInstanceOf(StockAssignmentInterface::class, $assignment);
+        $this->assertInstanceOf(OrderItemAssignment::class, $assignment);
         // Assignment should be initialized with the given sale item
-        $this->assertSame($item, $assignment->getSaleItem());
+        $this->assertSame($item, $assignment->getAssignable());
         // Assignment should be initialized with the given stock unit
         $this->assertSame($unit, $assignment->getStockUnit());
         // Assignment should be empty
@@ -270,7 +257,7 @@ class StockAssignmentManagerTest extends StockTestCase
         // Method should return an assignment
         $this->assertSame($assignment, $this->manager->create($item, $unit));
         // Assignment should be initialized with the given sale item
-        $this->assertSame($item, $assignment->getSaleItem());
+        $this->assertSame($item, $assignment->getAssignable());
         // Assignment should be initialized with the given stock unit
         $this->assertSame($unit, $assignment->getStockUnit());
         // Assignment should be empty
