@@ -63,7 +63,7 @@
 
         <one-to-one target-entity="Ekyna\Component\Commerce\Manufacture\Model\ProductionOrderInterface"
                     field="productionOrder" inversed-by="stockUnit">
-            <join-column name="produciton_order_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            <join-column name="production_order_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
         </one-to-one>
 
         <one-to-many target-entity="Ekyna\Component\Commerce\Stock\Entity\AbstractAssignment"
