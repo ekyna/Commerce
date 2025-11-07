@@ -6,6 +6,10 @@ namespace Ekyna\Component\Commerce\Order\Model;
 
 use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
+use function array_key_exists;
+use function in_array;
+use function is_null;
+
 /**
  * Class OrderStates
  * @package Ekyna\Component\Commerce\Order\Model
@@ -85,7 +89,7 @@ final class OrderStates
      *
      * @param array $cs The persistence change set
      */
-    static public function hasChangedFromDeletable(array $cs): bool
+    public static function hasChangedFromDeletable(array $cs): bool
     {
         return self::assertValidChangeSet($cs)
             && self::isDeletableState($cs[0])
@@ -94,48 +98,74 @@ final class OrderStates
 
     /**
      * Returns the states which must result in a stock management.
+     *
+     * @param bool $withRefunded Whether to include REFUNDED state as stockable
      */
-    public static function getStockableStates(): array
+    public static function getStockableStates(bool $withRefunded): array
     {
+        if ($withRefunded) {
+            return [
+                self::STATE_ACCEPTED,
+                self::STATE_REFUNDED,
+                self::STATE_COMPLETED,
+            ];
+        }
+
         return [
             self::STATE_ACCEPTED,
-            self::STATE_REFUNDED,
             self::STATE_COMPLETED,
         ];
     }
 
     /**
      * Returns whether the given state is a stock state.
+     *
+     * @param bool $withRefunded Whether to treat REFUNDED state as stockable
      */
-    public static function isStockableState(?string $state): bool
+    public static function isStockableState(OrderInterface|string|null $state, bool $withRefunded = null): bool
     {
-        return !is_null($state) && in_array($state, self::getStockableStates(), true);
+        if ($state instanceof OrderInterface) {
+            // If order has at least one shipment or invoice,
+            // REFUNDED state is considered as stockable
+            $withRefunded = $state->hasShipmentOrInvoice();
+            $state = $state->getState();
+        }
+
+        if (is_null($withRefunded)) {
+            throw new InvalidArgumentException(
+                'Argument \'withRefunded\' is required, if argument \'state\' is provided as a string.'
+            );
+        }
+
+        return !is_null($state) && in_array($state, self::getStockableStates($withRefunded), true);
     }
 
     /**
      * Returns whether the state has changed
      * from a non-stockable state to a stockable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs           The persistence change set
+     * @param bool  $withRefunded Whether to treat REFUNDED state as stockable
      */
-    public static function hasChangedToStockable(array $cs): bool
+    public static function hasChangedToStockable(array $cs, bool $withRefunded): bool
     {
         return self::assertValidChangeSet($cs)
-            && !self::isStockableState($cs[0])
-            && self::isStockableState($cs[1]);
+            && !self::isStockableState($cs[0], $withRefunded)
+            && self::isStockableState($cs[1], $withRefunded);
     }
 
     /**
      * Returns whether the state has changed
      * from a stockable state to a non-stockable state.
      *
-     * @param array $cs The persistence change set
+     * @param array $cs           The persistence change set
+     * @param bool  $withRefunded Whether to treat REFUNDED state as stockable
      */
-    public static function hasChangedFromStockable(array $cs): bool
+    public static function hasChangedFromStockable(array $cs, bool $withRefunded): bool
     {
         return self::assertValidChangeSet($cs)
-            && self::isStockableState($cs[0])
-            && !self::isStockableState($cs[1]);
+            && self::isStockableState($cs[0], $withRefunded)
+            && !self::isStockableState($cs[1], $withRefunded);
     }
 
     /**

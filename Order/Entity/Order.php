@@ -542,4 +542,15 @@ class Order extends AbstractSale implements Model\OrderInterface
 
         return true;
     }
+
+    public function hasShipmentOrInvoice(): bool
+    {
+        foreach ($this->getShipments() as $shipment) {
+            if (Shipment\ShipmentStates::isStockableState($shipment, true)) {
+                return true;
+            }
+        }
+
+        return $this->hasInvoices();
+    }
 }

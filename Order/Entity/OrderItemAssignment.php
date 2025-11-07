@@ -63,7 +63,7 @@ class OrderItemAssignment extends AbstractAssignment
             return false;
         }
 
-        if (!OrderStates::isStockableState($order->getState())) {
+        if (!OrderStates::isStockableState($order)) {
             return false;
         }
 

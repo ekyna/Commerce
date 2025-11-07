@@ -52,7 +52,7 @@ class ShipmentValidator extends ConstraintValidator
             if (!$sale instanceof OrderInterface) {
                 throw new UnexpectedTypeException($sale, OrderInterface::class);
             }
-            if (!OrderStates::isStockableState($sale->getState())) {
+            if (!OrderStates::isStockableState($sale)) {
                 $this
                     ->context
                     ->buildViolation($constraint->shipped_state_denied)

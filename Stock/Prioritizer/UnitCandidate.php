@@ -13,6 +13,8 @@ use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 
+use function spl_object_id;
+
 use const SORT_NUMERIC;
 
 /**
@@ -33,10 +35,15 @@ final class UnitCandidate
     ): UnitCandidate {
         $filter = UnitCandidate::getFilter($assignable, $sameSale);
 
+        $assignments = [];
+        foreach ($unit->getStockAssignments() as $a) {
+            $assignments[spl_object_id($a)] = $a;
+        }
+
         /** @var array<int, Decimal> $map */
         $map = [];
         $greater = null;
-        foreach ($unit->getStockAssignments() as $a) {
+        foreach ($assignments as $id => $a) {
             if ($filter($a)) {
                 continue;
             }
@@ -49,7 +56,7 @@ final class UnitCandidate
             // Perfect assigment
             if ($d->equals($quantity)) {
                 // Keep as greater
-                $greater = ['id' => $a->getId(), 'quantity' => $d];
+                $greater = ['id' => $id, 'quantity' => $d];
                 // Clear map
                 $map = [];
 
@@ -57,13 +64,13 @@ final class UnitCandidate
             } elseif ($d > $quantity) {
                 // Keep greater as separate map
                 if (null === $greater || $greater['quantity'] > $d) {
-                    $greater = ['id' => $a->getId(), 'quantity' => $d];
+                    $greater = ['id' => $id, 'quantity' => $d];
                 }
 
                 continue;
             }
 
-            $map[$a->getId()] = $d;
+            $map[$id] = $d;
         }
 
         arsort($map, SORT_NUMERIC);
@@ -76,6 +83,7 @@ final class UnitCandidate
         $candidate = new UnitCandidate();
 
         $candidate->unit = $unit;
+        $candidate->assignments = $assignments;
         $candidate->shippable = $unit->getShippableQuantity();
         $candidate->reservable = $unit->getReservableQuantity();
         $candidate->releasable = $releasable;
@@ -146,6 +154,8 @@ final class UnitCandidate
     }
 
     public readonly StockUnitInterface $unit;
+    /** @var array<int, AssignmentInterface> */
+    public readonly array              $assignments;
     public readonly Decimal            $shippable;
     public readonly Decimal            $reservable;
     public readonly Decimal            $releasable;
@@ -179,8 +189,8 @@ final class UnitCandidate
      */
     public function getAssignmentById(int $id): ?AssignmentInterface
     {
-        foreach ($this->unit->getStockAssignments() as $assignment) {
-            if ($assignment->getId() === $id) {
+        foreach ($this->assignments as $aId => $assignment) {
+            if ($aId === $id) {
                 return $assignment;
             }
         }

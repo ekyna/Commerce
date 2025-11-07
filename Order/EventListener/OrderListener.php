@@ -17,6 +17,7 @@ use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
 use Ekyna\Component\Commerce\Invoice\Resolver\InvoicePaymentResolverInterface;
 use Ekyna\Component\Commerce\Order\Event\OrderEvents;
 use Ekyna\Component\Commerce\Order\Model\OrderInterface;
+use Ekyna\Component\Commerce\Order\Model\OrderItemInterface;
 use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Ekyna\Component\Commerce\Order\Repository\OrderRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Updater\OrderUpdaterInterface;
@@ -70,7 +71,7 @@ class OrderListener extends AbstractSaleListener
     {
         $order = $this->getSaleFromEvent($event);
 
-        if (!OrderStates::isStockableState($order->getState())) {
+        if (!OrderStates::isStockableState($order)) {
             throw new IllegalOperationException(
                 'Order is not ready for shipment preparation'
             );
@@ -160,7 +161,7 @@ class OrderListener extends AbstractSaleListener
             return true;
         }
 
-        if (!OrderStates::isStockableState($order->getState())) {
+        if (!OrderStates::isStockableState($order)) {
             return false;
         }
 
@@ -289,7 +290,9 @@ class OrderListener extends AbstractSaleListener
             return;
         }
 
-        if (OrderStates::hasChangedToStockable($stateCs)) {
+        $withRefunded = $sale->hasShipmentOrInvoice();
+
+        if (OrderStates::hasChangedToStockable($stateCs, $withRefunded)) {
             // Order state has changed from non stockable to stockable
             foreach ($sale->getItems() as $item) {
                 $this->assignSaleItemRecursively($item);
@@ -298,7 +301,7 @@ class OrderListener extends AbstractSaleListener
             return;
         }
 
-        if (OrderStates::hasChangedFromStockable($stateCs)) {
+        if (OrderStates::hasChangedFromStockable($stateCs, $withRefunded)) {
             // Order state has changed from stockable to non stockable
             foreach ($sale->getItems() as $item) {
                 $this->detachSaleItemRecursively($item);
@@ -428,8 +431,8 @@ class OrderListener extends AbstractSaleListener
             return false;
         }
 
-        if (in_array($state = $sale->getState(), OrderStates::getStockableStates(), true)) {
-            if ($state !== OrderStates::STATE_COMPLETED) {
+        if (in_array($state = $sale->getState(), OrderStates::getStockableStates(true), true)) {
+            if ($state === OrderStates::STATE_ACCEPTED) {
                 $sale->setCompletedAt(null);
             } elseif (null === $sale->getCompletedAt()) {
                 $sale->setCompletedAt(new DateTime());
@@ -446,9 +449,10 @@ class OrderListener extends AbstractSaleListener
         return true;
     }
 
-
     /**
      * Assigns the sale item to stock units recursively.
+     *
+     * @param OrderItemInterface $item
      */
     protected function assignSaleItemRecursively(SaleItemInterface $item): void
     {
@@ -461,6 +465,8 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * Applies the sale item to stock units recursively.
+     *
+     * @param OrderItemInterface $item
      */
     protected function applySaleItemRecursively(SaleItemInterface $item): void
     {
@@ -473,6 +479,8 @@ class OrderListener extends AbstractSaleListener
 
     /**
      * Detaches the sale item from stock units recursively.
+     *
+     * @param OrderItemInterface $item
      */
     protected function detachSaleItemRecursively(SaleItemInterface $item): void
     {

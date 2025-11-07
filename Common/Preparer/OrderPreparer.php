@@ -13,9 +13,8 @@ use Ekyna\Component\Commerce\Order\Model\OrderInterface;
 use Ekyna\Component\Commerce\Shipment\Builder\ShipmentBuilderInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentInterface;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
-use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
-use Ekyna\Component\Commerce\Stock\Prioritizer\PrioritizeCheckerInterface;
-use Ekyna\Component\Commerce\Stock\Prioritizer\StockPrioritizerInterface;
+use Ekyna\Component\Commerce\Stock\Prioritizer\OrderPrioritizeCheckerInterface;
+use Ekyna\Component\Commerce\Stock\Prioritizer\OrderPrioritizerInterface;
 use Ekyna\Component\Resource\Dispatcher\ResourceEventDispatcherInterface;
 
 use function is_null;
@@ -25,47 +24,41 @@ use function is_null;
  * @package Ekyna\Component\Commerce\Common\Preparer
  * @author  Etienne Dauvergne <contact@ekyna.com>
  */
-class SalePreparer implements SalePreparerInterface
+class OrderPreparer implements OrderPreparerInterface
 {
     public function __construct(
         private readonly ResourceEventDispatcherInterface $eventDispatcher,
-        private readonly PrioritizeCheckerInterface       $prioritizeChecker,
-        private readonly StockPrioritizerInterface        $stockPrioritizer,
+        private readonly OrderPrioritizeCheckerInterface  $prioritizeChecker,
+        private readonly OrderPrioritizerInterface        $stockPrioritizer,
         private readonly ShipmentBuilderInterface         $shipmentBuilder,
         private readonly FactoryHelperInterface           $factoryHelper
     ) {
     }
 
-    public function prepare(SaleInterface $sale): ?ShipmentInterface
+    public function prepare(OrderInterface $order): ?ShipmentInterface
     {
-        if (!$sale instanceof ShipmentSubjectInterface) {
+        if (!$this->dispatchPrepareEvent($order)) {
             return null;
         }
 
-        // TODO Abort if not stockable
-
-        if (!$this->dispatchPrepareEvent($sale)) {
+        if (!ShipmentStates::isPreparableState($order->getShipmentState())) {
             return null;
         }
 
-        if (!ShipmentStates::isPreparableState($sale->getShipmentState())) {
-            return null;
+        if ($this->prioritizeChecker->check($order)) {
+            $this->stockPrioritizer->prioritize($order);
         }
 
-        if ($this->prioritizeChecker->canPrioritizeSale($sale)) {
-            $this->stockPrioritizer->prioritizeSale($sale);
-        }
+        $shipment = $this->factoryHelper->createShipmentForSale($order);
 
-        $shipment = $this->factoryHelper->createShipmentForSale($sale);
-
-        $sale->addShipment($shipment);
+        $order->addShipment($shipment);
 
         $this->shipmentBuilder->build($shipment);
 
         $this->purge($shipment);
 
         if ($shipment->isEmpty()) {
-            $sale->removeShipment($shipment);
+            $order->removeShipment($shipment);
 
             return null;
         }
@@ -87,13 +80,9 @@ class SalePreparer implements SalePreparerInterface
         }
     }
 
-    public function abort(SaleInterface $sale): ?ShipmentInterface
+    public function abort(OrderInterface $order): ?ShipmentInterface
     {
-        if (!$sale instanceof ShipmentSubjectInterface) {
-            return null;
-        }
-
-        foreach ($sale->getShipments() as $shipment) {
+        foreach ($order->getShipments() as $shipment) {
             if ($shipment->getState() === ShipmentStates::STATE_PREPARATION) {
                 return $shipment;
             }

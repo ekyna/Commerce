@@ -34,7 +34,7 @@ class OrderItemListener extends AbstractSaleItemListener
         $item = $this->getSaleItemFromEvent($event);
 
         // If order is in stockable state
-        if (OrderStates::isStockableState($item->getRootSale()->getState())) {
+        if (OrderStates::isStockableState($item->getRootSale())) {
             $this->stockAssigner->assignOrderItem($item);
 
             return;
@@ -63,10 +63,12 @@ class OrderItemListener extends AbstractSaleItemListener
         if ($this->persistenceHelper->isChanged($sale, 'state')) {
             $stateCs = $this->persistenceHelper->getChangeSet($sale, 'state');
 
+            $withRefunded = $sale->hasShipmentOrInvoice();
+
             // If order just did a stockable state transition
             if (
-                OrderStates::hasChangedToStockable($stateCs)
-                || OrderStates::hasChangedFromStockable($stateCs)
+                OrderStates::hasChangedToStockable($stateCs, $withRefunded)
+                || OrderStates::hasChangedFromStockable($stateCs, $withRefunded)
             ) {
                 // Prevent assignments update (done by the order listener)
                 return;
@@ -80,7 +82,7 @@ class OrderItemListener extends AbstractSaleItemListener
         }
 
         // If order is in stockable state and order item quantity has changed
-        if (OrderStates::isStockableState($sale->getState())) {
+        if (OrderStates::isStockableState($sale)) {
             $this->applySaleItemRecursively($item);
         }
     }
@@ -98,6 +100,8 @@ class OrderItemListener extends AbstractSaleItemListener
 
     /**
      * Applies the sale item to stock units recursively.
+     *
+     * @param OrderItemInterface $item
      */
     protected function applySaleItemRecursively(Model\SaleItemInterface $item): void
     {

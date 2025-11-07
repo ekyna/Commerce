@@ -79,4 +79,10 @@ interface OrderInterface
     public function getItemsCount(): int;
 
     public function setItemsCount(int $count): OrderInterface;
+
+    /**
+     * Returns whether the order has at least one shipment (in stockable state) or invoice.
+     * Used to determine if RETURNED order state must be considered as stockable.
+     */
+    public function hasShipmentOrInvoice(): bool;
 }
