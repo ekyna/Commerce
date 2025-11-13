@@ -147,7 +147,7 @@ class AddressValidator extends ConstraintValidator
         }
 
         $helper = new ValidationHelper($this->context);
-        $helper->validate($address, $config);
+        $helper->validate($address, $config, false);
 
         IdentityValidator::validateIdentity($this->context, $address, [
             'required' => $constraint->identity,

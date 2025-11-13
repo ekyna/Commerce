@@ -36,9 +36,28 @@ class OrderValidator extends ConstraintValidator
                 ->addViolation();
         }
 
+        $this->validateIdentity($value);
+
         $this->validateOriginCustomer($value, $constraint);
 
         $this->validateCompanyNumber($value, $constraint);
+    }
+
+    /**
+     * Validates the sale identity.
+     */
+    protected function validateIdentity(OrderInterface $order): void
+    {
+        if (null !== $order->getCustomer()) {
+            return;
+        }
+
+        if (empty($order->getEmail())) {
+            $this->context
+                ->buildViolation((new Sale())->email_is_required_if_no_customer)
+                ->atPath('email')
+                ->addViolation();
+        }
     }
 
     private function validateOriginCustomer(OrderInterface $order, Order $constraint): void

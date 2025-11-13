@@ -7,7 +7,9 @@
 
     <class name="Ekyna\Component\Commerce\Order\Entity\Order">
         <property name="invoiceAddress">
-            <constraint name="NotNull" />
+            <constraint name="NotNull">
+                <option name="message">ekyna_commerce.sale.invoice_address_must_be_set</option>
+            </constraint>
         </property>
         <property name="shipmentMethod">
             <constraint name="NotNull" />
@@ -32,6 +34,7 @@
             <option name="fields">customer</option>
             <option name="fields">voucherNumber</option>
         </constraint>
+        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity"/>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Order"/>
     </class>
 

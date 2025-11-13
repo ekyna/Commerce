@@ -146,19 +146,10 @@ class SaleValidator extends ConstraintValidator
             return;
         }
 
-        IdentityValidator::validateIdentity($this->context, $sale);
-
         if (null === $sale->getCustomerGroup()) {
             $this->context
                 ->buildViolation($constraint->customer_group_is_required_if_no_customer)
                 ->atPath('customerGroup')
-                ->addViolation();
-        }
-
-        if (empty($sale->getEmail())) {
-            $this->context
-                ->buildViolation($constraint->email_is_required_if_no_customer)
-                ->atPath('email')
                 ->addViolation();
         }
     }

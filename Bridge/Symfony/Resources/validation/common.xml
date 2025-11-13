@@ -274,6 +274,7 @@
                 <option name="groups">
                     <value>Checkout</value>
                 </option>
+                <option name="message">ekyna_commerce.sale.invoice_address_must_be_set</option>
             </constraint>
             <constraint name="Valid"/>
         </property>

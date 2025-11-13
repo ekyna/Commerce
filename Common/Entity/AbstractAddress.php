@@ -253,6 +253,9 @@ abstract class AbstractAddress implements Model\AddressInterface
 
     public function isEmpty(): bool
     {
-        return empty($this->street) && empty($this->postalCode) && empty($this->city) && is_null($this->country);
+        return empty($this->street)
+            && empty($this->postalCode)
+            && empty($this->city)
+            && is_null($this->country);
     }
 }
