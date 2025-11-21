@@ -119,6 +119,30 @@ class BillOfMaterialsRepository extends ResourceRepository implements BillOfMate
             ->getResult();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function findValidatedByComponentWithSubject(Reference|Subject|Identity $identity): array
+    {
+        $identity = $this->getIdentity($identity);
+
+        $qb = $this->createQueryBuilder('b');
+
+        return$qb
+            ->join('b.components', 'c')
+            ->andWhere($qb->expr()->eq('c.subjectIdentity.provider', ':provider'))
+            ->andWhere($qb->expr()->eq('c.subjectIdentity.identifier', ':identifier'))
+            ->andWhere($qb->expr()->eq('b.state', ':state'))
+            ->orderBy('b.id', 'DESC')
+            ->getQuery()
+            ->setParameters([
+                'provider'   => $identity->getProvider(),
+                'identifier' => $identity->getIdentifier(),
+                'state'      => BOMState::VALIDATED,
+            ])
+            ->getResult();
+    }
+
     private function getIdentity(Reference|Subject|Identity $identity): Identity
     {
         if ($identity instanceof Reference) {

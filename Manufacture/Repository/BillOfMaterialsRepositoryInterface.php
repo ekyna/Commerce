@@ -34,4 +34,9 @@ interface BillOfMaterialsRepositoryInterface extends ResourceRepositoryInterface
      * @return array<int, BillOfMaterialsInterface>
      */
     public function findByComponentWithSubject(Reference|Subject|Identity $identity): array;
+
+    /**
+     * @return array<int, BillOfMaterialsInterface>
+     */
+    public function findValidatedByComponentWithSubject(Reference|Subject|Identity $identity): array;
 }

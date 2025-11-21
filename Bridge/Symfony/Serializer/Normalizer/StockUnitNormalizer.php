@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
+use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
@@ -20,20 +22,11 @@ class StockUnitNormalizer extends ResourceNormalizer
 {
     use FormatterAwareTrait;
 
-    protected CurrencyConverterInterface $currencyConverter;
-
-    /**
-     * Constructor.
-     *
-     * @param FormatterFactory           $formatterFactory
-     * @param CurrencyConverterInterface $currencyConverter
-     */
     public function __construct(
-        FormatterFactory           $formatterFactory,
-        CurrencyConverterInterface $currencyConverter
+        FormatterFactory                              $formatterFactory,
+        protected readonly CurrencyConverterInterface $currencyConverter
     ) {
         $this->formatterFactory = $formatterFactory;
-        $this->currencyConverter = $currencyConverter;
     }
 
     /**
@@ -59,7 +52,7 @@ class StockUnitNormalizer extends ResourceNormalizer
                 foreach ($object->getStockAdjustments() as $adjustment) {
                     $adjustments[] = $this->normalizeObject($adjustment, $format, $context);
                 }
-                foreach ($object->getStockAssignments() as $assignment) {
+                foreach ($this->getAssignments($object) as $assignment) {
                     $assignments[] = $this->normalizeObject($assignment, $format, $context);
                 }
             }
@@ -87,5 +80,18 @@ class StockUnitNormalizer extends ResourceNormalizer
         }
 
         return $data;
+    }
+
+    private function getAssignments(StockUnitInterface $stockUnit): Collection
+    {
+        $assignments = $stockUnit->getStockAssignments();
+
+        if ($assignments->count() < 100) {
+            return $assignments;
+        }
+
+        return $assignments->filter(static function (AssignmentInterface $assignment): bool {
+            return !$assignment->isFullyShipped();
+        });
     }
 }
