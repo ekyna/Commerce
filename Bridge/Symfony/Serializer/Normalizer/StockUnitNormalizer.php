@@ -84,14 +84,10 @@ class StockUnitNormalizer extends ResourceNormalizer
 
     private function getAssignments(StockUnitInterface $stockUnit): Collection
     {
-        $assignments = $stockUnit->getStockAssignments();
-
-        if ($assignments->count() < 100) {
-            return $assignments;
-        }
-
-        return $assignments->filter(static function (AssignmentInterface $assignment): bool {
-            return !$assignment->isFullyShipped();
-        });
+        return $stockUnit
+            ->getStockAssignments()
+            ->filter(static function (AssignmentInterface $assignment): bool {
+                return !$assignment->isFullyShipped();
+            });
     }
 }

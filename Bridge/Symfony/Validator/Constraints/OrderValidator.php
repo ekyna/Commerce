@@ -52,6 +52,8 @@ class OrderValidator extends ConstraintValidator
             return;
         }
 
+        IdentityValidator::validateIdentity($this->context, $order);
+
         if (empty($order->getEmail())) {
             $this->context
                 ->buildViolation((new Sale())->email_is_required_if_no_customer)

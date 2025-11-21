@@ -34,7 +34,6 @@
             <option name="fields">customer</option>
             <option name="fields">voucherNumber</option>
         </constraint>
-        <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Identity"/>
         <constraint name="Ekyna\Component\Commerce\Bridge\Symfony\Validator\Constraints\Order"/>
     </class>
 
