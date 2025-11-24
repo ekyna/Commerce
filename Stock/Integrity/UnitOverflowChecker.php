@@ -106,8 +106,18 @@ SELECT u.id,
 FROM commerce_stock_unit AS u
 JOIN product_product p ON p.id=u.product_id 
 WHERE u.ordered_quantity<u.received_quantity 
-   OR (u.supplier_order_item_id IS NOT NULL AND (u.adjusted_quantity+u.ordered_quantity)<u.sold_quantity)
-   OR (u.supplier_order_item_id IS NULL AND p.stock_mode!='manual' AND state!='new' AND 0<u.adjusted_quantity AND u.adjusted_quantity<u.sold_quantity)
+   OR (
+       (u.supplier_order_item_id IS NOT NULL OR u.production_order_id IS NOT NULL) 
+       AND (u.adjusted_quantity+u.ordered_quantity)<u.sold_quantity
+   )
+   OR (
+       u.supplier_order_item_id IS NULL 
+       AND u.production_order_id IS NULL 
+       AND p.stock_mode!='manual' 
+       AND state!='new' 
+       AND 0<u.adjusted_quantity 
+       AND u.adjusted_quantity<u.sold_quantity
+   )
    OR (u.adjusted_quantity+u.received_quantity)<u.shipped_quantity
    OR u.sold_quantity<u.shipped_quantity
 SQL;

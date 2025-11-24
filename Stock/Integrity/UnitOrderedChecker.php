@@ -32,7 +32,7 @@ class UnitOrderedChecker extends AbstractChecker
 
             $this->actions[] = new Fix(
                 $label,
-                "UPDATE commerce_stock_unit SET ordered_quantity=:ordered WHERE id=:id LIMIT 1",
+                'UPDATE commerce_stock_unit SET ordered_quantity=:ordered WHERE id=:id LIMIT 1',
                 ['ordered' => $unit['ordered_sum'], 'id' => $unit['id']],
                 $unit['id']
             );
@@ -74,7 +74,13 @@ JOIN commerce_supplier_order AS o ON o.id=oi.supplier_order_id
 WHERE o.state IN ('validated', 'partial', 'received', 'completed')
 GROUP BY u.id
 HAVING ordered_qty != ordered_sum
+UNION
+SELECT u.id, u.product_id, u.ordered_quantity AS ordered_qty, SUM(o.quantity) AS ordered_sum
+FROM commerce_stock_unit AS u
+JOIN commerce_production_order AS o ON o.id=u.production_order_id
+WHERE o.state IN ('scheduled', 'done')
+GROUP BY u.id
+HAVING ordered_qty != ordered_sum
 SQL;
-
     }
 }

@@ -51,7 +51,7 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
         }
 
         if (!$hard) {
-            if ($assignment->isRemovalPrevented()) {
+            if ($this->isRemovalPrevented($assignment)) {
                 $this->persistenceHelper->persistAndRecompute($assignment, false);
 
                 return;
@@ -69,6 +69,19 @@ class StockAssignmentManager implements StockAssignmentManagerInterface, EventSu
             ->setStockUnit(null);
 
         $this->persistenceHelper->remove($assignment, false);
+    }
+
+    private function isRemovalPrevented(AssignmentInterface $assignment): bool
+    {
+        if (null === $assignable = $assignment->getAssignable()) {
+            return false;
+        }
+
+        if ($this->persistenceHelper->isScheduledForRemove($assignable)) {
+            return false;
+        }
+
+        return $assignment->isRemovalPrevented();
     }
 
     /**

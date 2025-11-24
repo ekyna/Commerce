@@ -74,6 +74,13 @@ JOIN commerce_supplier_order AS o ON o.id=oi.supplier_order_id
 LEFT JOIN commerce_supplier_delivery_item AS di ON di.supplier_order_item_id=oi.id
 GROUP BY u.id
 HAVING received_qty != received_sum
+UNION
+SELECT u.id, u.product_id, u.received_quantity AS received_qty, SUM(p.quantity) AS received_sum
+FROM commerce_stock_unit AS u
+JOIN commerce_production_order AS o ON o.id=u.production_order_id
+LEFT JOIN commerce_production AS p ON p.order_id=o.id
+GROUP BY u.id
+HAVING received_qty != received_sum
 SQL;
     }
 }
