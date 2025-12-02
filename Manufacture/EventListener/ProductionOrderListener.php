@@ -54,32 +54,51 @@ class ProductionOrderListener
     {
         $order = $this->getPOFromEvent($event);
 
+        $this->updateAssignments($order);
+        $this->updateData($order);
+    }
+
+    private function updateAssignments(ProductionOrderInterface $order): void
+    {
         if (!$this->persistenceHelper->isChanged($order, ['state', 'quantity'])) {
             return;
         }
 
         $stateCs = $this->persistenceHelper->getChangeSet($order, 'state');
 
-        if (POState::hasChangedToStockable($stateCs)) {
+        if ($stateCs && POState::hasChangedToStockable($stateCs)) {
             $this->orderLinker->linkOrder($order);
 
             foreach ($order->getItems() as $item) {
                 $this->stockUnitAssigner->assignProductionItem($item);
             }
-        } elseif (POState::hasChangedFromStockable($stateCs)) {
+
+            return;
+        }
+
+        if ($stateCs && POState::hasChangedFromStockable($stateCs)) {
             $this->orderLinker->unlinkOrder($order);
 
             foreach ($order->getItems() as $item) {
                 $this->stockUnitAssigner->detachProductionItem($item);
             }
-        } elseif (
+
+            return;
+        }
+
+        if (
             POState::isStockableState($order)
             && $this->persistenceHelper->isChanged($order, 'quantity')
         ) {
             foreach ($order->getItems() as $item) {
                 $this->stockUnitAssigner->applyProductionItem($item);
             }
-        } else {
+        }
+    }
+
+    private function updateData(ProductionOrderInterface $order): void
+    {
+        if (!$this->persistenceHelper->isChanged($order, ['startAt', 'endAt', 'quantity'])) {
             return;
         }
 

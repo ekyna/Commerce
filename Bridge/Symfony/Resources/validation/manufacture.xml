@@ -45,6 +45,12 @@
     </class>
 
     <class name="Ekyna\Component\Commerce\Manufacture\Entity\ProductionOrder">
+        <property name="quantity">
+            <constraint name="NotBlank"/>
+            <constraint name="GreaterThan">
+                <option name="value">0</option>
+            </constraint>
+        </property>
     </class>
 
     <class name="Ekyna\Component\Commerce\Manufacture\Entity\ProductionItem">
