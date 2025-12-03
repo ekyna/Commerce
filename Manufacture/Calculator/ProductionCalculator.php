@@ -7,6 +7,10 @@ namespace Ekyna\Component\Commerce\Manufacture\Calculator;
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Manufacture\Model\ProductionInterface;
 
+use Ekyna\Component\Commerce\Stock\Assigner\AssignmentSupportTrait;
+
+use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
+
 use function max;
 use function min;
 
@@ -17,6 +21,14 @@ use function min;
  */
 class ProductionCalculator
 {
+    use AssignmentSupportTrait;
+
+    public function __construct(
+        SubjectHelperInterface $subjectHelper,
+    ) {
+        $this->subjectHelper = $subjectHelper;
+    }
+
     public function calculateMaxQuantity(ProductionInterface $current): int
     {
         $order = $current->getProductionOrder();
@@ -33,6 +45,10 @@ class ProductionCalculator
 
         // Limit by assignments
         foreach ($order->getItems() as $item) {
+            if (!$this->supportsAssignment($item)) {
+                continue;
+            }
+
             $shippable = new Decimal(0);
             foreach ($item->getStockAssignments() as $assignment) {
                 $shippable = $shippable->add($assignment->getShippableQuantity());

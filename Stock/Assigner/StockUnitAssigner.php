@@ -176,7 +176,7 @@ class StockUnitAssigner implements StockUnitAssignerInterface
 
         $quantity = $itemCs[1]
             ->mul($orderCs[1])
-            ->rem(
+            ->sub(
                 $itemCs[0]->mul($orderCs[0])
             );
 
