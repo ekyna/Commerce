@@ -19,6 +19,8 @@ use Ekyna\Component\Resource\Doctrine\ORM\Repository\ResourceRepository;
  */
 class BillOfMaterialsRepository extends ResourceRepository implements BillOfMaterialsRepositoryInterface
 {
+    use SubjectArgumentTrait;
+
     public function findNewVersion(BillOfMaterialsInterface $bom): ?BillOfMaterialsInterface
     {
         $qb = $this->createQueryBuilder('b');
@@ -141,18 +143,5 @@ class BillOfMaterialsRepository extends ResourceRepository implements BillOfMate
                 'state'      => BOMState::VALIDATED,
             ])
             ->getResult();
-    }
-
-    private function getIdentity(Reference|Subject|Identity $identity): Identity
-    {
-        if ($identity instanceof Reference) {
-            return $identity->getSubjectIdentity();
-        }
-
-        if ($identity instanceof Subject) {
-            return Identity::fromSubject($identity);
-        }
-
-        return $identity;
     }
 }

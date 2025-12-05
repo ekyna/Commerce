@@ -6,9 +6,7 @@ namespace Ekyna\Component\Commerce\Manufacture\Calculator;
 
 use Decimal\Decimal;
 use Ekyna\Component\Commerce\Manufacture\Model\ProductionInterface;
-
 use Ekyna\Component\Commerce\Stock\Assigner\AssignmentSupportTrait;
-
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
 use function max;
