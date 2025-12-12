@@ -413,6 +413,7 @@ class OrderRepository extends AbstractSaleRepository implements OrderRepositoryI
                 OrderStates::STATE_ACCEPTED,
                 OrderStates::STATE_PENDING,
             ])
+            ->addOrderBy('o.acceptedAt', 'ASC')
             ->getQuery()
             ->useQueryCache(true);
     }

@@ -22,7 +22,7 @@ class InvoiceStatRepository extends AbstractStatRepository implements InvoiceSta
 
         return $qb
             ->select([
-                'SUM(o.revenue - o.shipping) as revenue',
+                'SUM(o.revenue) as revenue',
                 'SUM(o.shipping) as shipping',
                 'SUM(o.cost) as cost',
                 'SUM(o.count) as count',
