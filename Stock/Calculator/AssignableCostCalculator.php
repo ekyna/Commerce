@@ -8,7 +8,7 @@ use Decimal\Decimal;
 use Ekyna\Component\Commerce\Common\Model\Cost;
 use Ekyna\Component\Commerce\Stock\Model\AssignableInterface;
 use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
-use Ekyna\Component\Commerce\Subject\Guesser\SubjectCostGuesserInterface;
+use Ekyna\Component\Commerce\Subject\Calculator\SubjectCostCalculatorInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 
@@ -26,8 +26,8 @@ class AssignableCostCalculator implements AssignableCostCalculatorInterface
     private array $subjectCache    = [];
 
     public function __construct(
-        private readonly SubjectHelperInterface      $subjectHelper,
-        private readonly SubjectCostGuesserInterface $subjectCostGuesser,
+        private readonly SubjectHelperInterface         $subjectHelper,
+        private readonly SubjectCostCalculatorInterface $subjectCostCalculator,
     ) {
     }
 
@@ -79,7 +79,7 @@ class AssignableCostCalculator implements AssignableCostCalculatorInterface
             return $this->subjectCache[$key];
         }
 
-        $default = $this->guessItemCost($item) ?? new Cost();
+        $default = $this->getItemCost($item) ?? new Cost();
         $default = $default->setAverage();
 
         return $this->subjectCache[$key] = $default;
@@ -102,15 +102,12 @@ class AssignableCostCalculator implements AssignableCostCalculatorInterface
         );
     }
 
-    /**
-     * Guesses the default subject unit cost.
-     */
-    protected function guessItemCost(SubjectReferenceInterface $item): ?Cost
+    protected function getItemCost(SubjectReferenceInterface $item): ?Cost
     {
         if (null === $subject = $this->subjectHelper->resolve($item)) {
             return null;
         }
 
-        return $this->subjectCostGuesser->guess($subject);
+        return $this->subjectCostCalculator->calculate($subject);
     }
 }

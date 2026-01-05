@@ -49,8 +49,8 @@ class BillOfMaterialsCalculator
             ->guess($subject);
 
         if (null === $cost) {
-            $boms = $this->bomRepository->findBySubject($component);
-            if ($bom = reset($boms)) {
+            $bom = $this->bomRepository->findOneValidatedBySubject($component);
+            if (null !== $bom) {
                 $cost = $this->calculateBOMCost($bom);
             }
         }
