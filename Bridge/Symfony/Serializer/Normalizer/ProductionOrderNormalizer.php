@@ -12,6 +12,8 @@ use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 use Ekyna\Component\Resource\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\ObjectToPopulateTrait;
 
+use function array_replace;
+
 /**
  * Class ProductionOrderNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
@@ -36,21 +38,37 @@ class ProductionOrderNormalizer extends ResourceNormalizer
     {
         $subject = $this->helper->resolve($object);
 
-        $text = $subject->getReference() . ' - ' . $subject;
+        $data = [
+            'id'   => $object->getId(),
+            'text' => $subject->getReference() . ' - ' . $subject,
+        ];
 
-        $progress = $this->calculator->calculateProducedQuantity($object) / $object->getQuantity();
+        $produced = $this->calculator->calculateProducedQuantity($object);
 
         if (self::contextHasGroup(['Gantt'], $context)) {
-            return [
-                'id'         => $object->getId(),
-                'text'       => $text,
+            return array_replace($data, [
                 'start_date' => $object->getStartAt()->format('Y-m-d 00:00'),
                 'end_date'   => $object->getEndAt()->format('Y-m-d 23:59'),
-                'progress'   => $progress,
-            ];
+                'progress'   => $produced / $object->getQuantity(),
+            ]);
         }
 
-        return parent::normalize($object, $format, $context);
+        if (self::contextHasGroup(['Summary'], $context)) {
+            $items = [];
+            foreach ($object->getItems() as $item) {
+                $items[] = $this->normalizeObject($item, $format, $context);
+            }
+
+            return array_replace($data, [
+                'start_date' => $object->getStartAt()->format('Y-m-d'),
+                'end_date'   => $object->getEndAt()->format('Y-m-d'),
+                'produced' => $produced,
+                'quantity' => $object->getQuantity(),
+                'items' => $items,
+            ]);
+        }
+
+        return $data;
     }
 
     public function denormalize($data, string $type, string $format = null, array $context = []): mixed

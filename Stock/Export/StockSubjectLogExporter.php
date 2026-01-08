@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Stock\Export;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionItemInterface;
+use Ekyna\Component\Commerce\Manufacture\Repository\ProductionRepositoryInterface;
 use Ekyna\Component\Commerce\Order\Repository\OrderShipmentItemRepositoryInterface;
 use Ekyna\Component\Commerce\Stock\Entity\StockSubjectLog;
 use Ekyna\Component\Commerce\Stock\Helper\StockUnitHelper;
 use Ekyna\Component\Commerce\Stock\Model\StockAdjustmentReasons;
 use Ekyna\Component\Commerce\Stock\Model\StockLogTypeEnum;
 use Ekyna\Component\Commerce\Stock\Model\StockSubjectInterface;
+use Ekyna\Component\Commerce\Subject\Entity\SubjectIdentity;
 use Ekyna\Component\Commerce\Supplier\Repository\SupplierDeliveryItemRepositoryInterface;
 use Ekyna\Component\Resource\Helper\File\Xls;
 use Ekyna\Component\Resource\Model\DateRange;
@@ -26,6 +29,7 @@ class StockSubjectLogExporter
 {
     public function __construct(
         private readonly SupplierDeliveryItemRepositoryInterface $supplierDeliveryItemRepository,
+        private readonly ProductionRepositoryInterface           $productionRepository,
         private readonly OrderShipmentItemRepositoryInterface    $orderShipmentItemRepository,
         private readonly StockUnitHelper                         $stockUnitHelper,
     ) {
@@ -93,6 +97,44 @@ class StockSubjectLogExporter
                 $item->getDelivery()->getCreatedAt(),
                 $item->getSubjectQuantity(),
                 $item->getDelivery()->getOrder()->getNumber()
+            );
+        }
+
+        // Production (subject credits) logs
+        $productions = $this
+            ->productionRepository
+            ->findBySubjectAndDateRange($subject, $range);
+
+        foreach ($productions as $production) {
+            $list[] = new StockSubjectLog(
+                $subject,
+                StockLogTypeEnum::ProductionSubject,
+                $production->getCreatedAt(),
+                new Decimal($production->getQuantity()),
+                $production->getProductionOrder()->getNumber()
+            );
+        }
+
+        // Production (component debits) logs
+        $productions = $this
+            ->productionRepository
+            ->findByComponentAndDateRange($subject, $range);
+
+        $identity = SubjectIdentity::fromSubject($subject);
+
+        foreach ($productions as $production) {
+            $item = $production
+                ->getProductionOrder()
+                ->getItems()
+                ->filter(fn (ProductionItemInterface $item): bool => $item->getSubjectIdentity()->equals($identity))
+                ->current();
+
+            $list[] = new StockSubjectLog(
+                $subject,
+                StockLogTypeEnum::ProductionComponent,
+                $production->getCreatedAt(),
+                new Decimal(- $production->getQuantity() * $item->getQuantity()),
+                $production->getProductionOrder()->getNumber()
             );
         }
 

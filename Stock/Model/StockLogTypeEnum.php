@@ -11,7 +11,9 @@ namespace Ekyna\Component\Commerce\Stock\Model;
  */
 enum StockLogTypeEnum: string
 {
-    case SupplierDelivery = 'Supplier delivery';
-    case OrderShipment    = 'Order shipment';
-    case StockAdjustment  = 'Stock adjustment';
+    case SupplierDelivery    = 'Supplier delivery';
+    case OrderShipment       = 'Order shipment';
+    case ProductionSubject   = 'Production subject';
+    case ProductionComponent = 'Production component';
+    case StockAdjustment     = 'Stock adjustment';
 }

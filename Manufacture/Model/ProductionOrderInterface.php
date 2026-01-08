@@ -7,7 +7,6 @@ namespace Ekyna\Component\Commerce\Manufacture\Model;
 use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
-use Ekyna\Component\Commerce\Manufacture\Entity\ProductionItem;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
@@ -54,10 +53,13 @@ interface ProductionOrderInterface
     public function setQuantity(?int $quantity): ProductionOrderInterface;
 
     /**
-     * @return Collection<ProductionItem>
+     * @return Collection<ProductionItemInterface>
      */
     public function getItems(): Collection;
 
+    /**
+     * @param Collection<ProductionItemInterface> $items
+     */
     public function setItems(Collection $items): ProductionOrderInterface;
 
     /**

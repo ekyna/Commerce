@@ -11,6 +11,7 @@ use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
 use Ekyna\Component\Commerce\Manufacture\Model\BillOfMaterialsInterface;
 use Ekyna\Component\Commerce\Manufacture\Model\POState;
 use Ekyna\Component\Commerce\Manufacture\Model\ProductionInterface;
+use Ekyna\Component\Commerce\Manufacture\Model\ProductionItemInterface;
 use Ekyna\Component\Commerce\Manufacture\Model\ProductionOrderInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Commerce\Stock\Model\WarehouseInterface;
@@ -36,7 +37,7 @@ class ProductionOrder extends AbstractResource implements ProductionOrderInterfa
     protected ?DateTimeInterface        $startAt = null;
     protected ?DateTimeInterface        $endAt   = null;
     protected ?int                      $quantity = null;
-    /** @var Collection<ProductionItem> */
+    /** @var Collection<ProductionItemInterface> */
     protected Collection                $items;
     /** @var Collection<ProductionInterface> */
     protected Collection                $productions;
@@ -143,6 +144,9 @@ class ProductionOrder extends AbstractResource implements ProductionOrderInterfa
         return $this;
     }
 
+    /**
+     * @return Collection<ProductionItemInterface>
+     */
     public function getItems(): Collection
     {
         return $this->items;
