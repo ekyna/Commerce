@@ -130,9 +130,13 @@ class DocumentBuilder implements DocumentBuilderInterface
         return $changed;
     }
 
-    protected function buildInvoiceAddress(Document\DocumentInterface $document): array
+    protected function buildInvoiceAddress(Document\DocumentInterface $document): ?array
     {
-        return $this->buildAddressData($document->getSale()->getInvoiceAddress());
+        if (null === $address = $document->getSale()->getInvoiceAddress()) {
+            return null;
+        }
+
+        return $this->buildAddressData($address);
     }
 
     protected function buildDeliveryAddress(Document\DocumentInterface $document): ?array
@@ -166,6 +170,10 @@ class DocumentBuilder implements DocumentBuilderInterface
     {
         $sale = $document->getSale();
         $address = $sale->isSameAddress() ? $sale->getInvoiceAddress() : $sale->getDeliveryAddress();
+
+        if (null === $address) {
+            return null;
+        }
 
         if ($address->getCountry() === $this->addressTransformer->getCountryRepository()->findDefault()) {
             return null;

@@ -19,6 +19,7 @@ final class DocumentTypes
     // Sale
     public const TYPE_FORM         = 'form';
     public const TYPE_VOUCHER      = 'voucher';
+    public const TYPE_PROPOSAL     = 'proposal';
     public const TYPE_QUOTE        = 'quote';
     public const TYPE_PROFORMA     = 'proforma';
     public const TYPE_CONFIRMATION = 'confirmation';
@@ -45,6 +46,7 @@ final class DocumentTypes
         return [
             self::TYPE_FORM,
             self::TYPE_VOUCHER,
+            self::TYPE_PROPOSAL,
             self::TYPE_QUOTE,
             self::TYPE_PROFORMA,
             self::TYPE_CONFIRMATION,
@@ -86,6 +88,7 @@ final class DocumentTypes
         return [
             self::TYPE_FORM,
             self::TYPE_VOUCHER,
+            self::TYPE_PROPOSAL,
             self::TYPE_QUOTE,
             self::TYPE_PROFORMA,
             self::TYPE_CONFIRMATION,
@@ -174,11 +177,12 @@ final class DocumentTypes
     public static function getClasses(string $type): array
     {
         return match ($type) {
-            self::TYPE_FORM => [CartInterface::class],
+            self::TYPE_FORM                       => [CartInterface::class],
+            self::TYPE_PROPOSAL                   => [QuoteInterface::class],
             self::TYPE_QUOTE, self::TYPE_PROFORMA => [QuoteInterface::class, OrderInterface::class],
-            self::TYPE_CONFIRMATION => [OrderInterface::class],
-            self::TYPE_VOUCHER => [],
-            default => throw new InvalidArgumentException("Unexpected type '$type'."),
+            self::TYPE_CONFIRMATION               => [OrderInterface::class],
+            self::TYPE_VOUCHER                    => [],
+            default                               => throw new InvalidArgumentException("Unexpected type '$type'."),
         };
     }
 

@@ -148,7 +148,7 @@ class ViewBuilder
         if ($this->view->vars['show_margin']) {
             $columnsCount++;
         }
-        if ($this->options['editable']) {
+        if ($this->options['editable'] && is_null($this->view->vars['show_batch'])) {
             $columnsCount++;
             $batchableCount = 0;
             foreach ($this->view->getItems() as $line) {
