@@ -30,7 +30,21 @@ class CustomerNormalizer extends ResourceNormalizer
 
         $parent = $object->getParent();
 
-        if (self::contextHasGroup(['Default', 'Customer', 'Search', 'Summary'], $context)) {
+        if (self::contextHasGroup(['Search'], $context)) {
+            return array_replace($data, [
+                'number'        => $object->getNumber(),
+                'company'       => $object->getCompany(),
+                'companyNumber' => $object->getCompanyNumber(),
+                'email'         => $object->getEmail(),
+                'firstName'     => $object->getFirstName(),
+                'lastName'      => $object->getLastName(),
+                'parent'        => $parent?->getId(),
+                'currency'      => $object->getCurrency()->getCode(),
+                'locale'        => $object->getLocale(),
+            ]);
+        }
+
+        if (self::contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
             $data = array_replace($data, [
                 'number'         => $object->getNumber(),
                 'company'        => $object->getCompany(),
@@ -41,13 +55,8 @@ class CustomerNormalizer extends ResourceNormalizer
                 'parent'         => $parent ? $parent->getId() : null,
                 'currency'       => $object->getCurrency()->getCode(),
                 'locale'         => $object->getLocale(),
-            ]);
-        }
-
-        if (self::contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
-            $data = array_replace($data, [
-                'phone'  => $this->normalizeObject($object->getPhone(), $format, $context),
-                'mobile' => $this->normalizeObject($object->getMobile(), $format, $context),
+                'phone'          => $this->normalizeObject($object->getPhone(), $format, $context),
+                'mobile'         => $this->normalizeObject($object->getMobile(), $format, $context),
             ]);
         }
 
