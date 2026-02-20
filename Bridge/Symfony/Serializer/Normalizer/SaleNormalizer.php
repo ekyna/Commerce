@@ -15,6 +15,8 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
+use function array_replace;
+
 /**
  * Class SaleNormalizer
  * @package Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer
@@ -35,8 +37,20 @@ class SaleNormalizer extends ResourceNormalizer
 
         $data = parent::normalize($object, $format, $context);
 
-        if (self::contextHasGroup(['Default', 'Cart', 'Order', 'Quote', 'Search'], $context)) {
-            $data = array_replace($data, [
+        if (self::contextHasGroup('Search', $context)) {
+            return array_replace($data, [
+                'number'         => $object->getNumber(),
+                'voucherNumber' => $object->getVoucherNumber(),
+                'email'          => $object->getEmail(),
+                'company'        => $object->getCompany(),
+                'firstName'     => $object->getFirstName(),
+                'lastName'      => $object->getLastName(),
+                'title'          => $object->getTitle(),
+            ]);
+        }
+
+        if (self::contextHasGroup(['Default', 'Cart', 'Order', 'Quote'], $context)) {
+            return array_replace($data, [
                 'number'         => $object->getNumber(),
                 'voucher_number' => $object->getVoucherNumber(),
                 'email'          => $object->getEmail(),
@@ -45,112 +59,116 @@ class SaleNormalizer extends ResourceNormalizer
                 'last_name'      => $object->getLastName(),
                 'title'          => $object->getTitle(),
             ]);
-        } elseif (self::contextHasGroup('Summary', $context)) {
-            $items = [];
+        }
 
-            foreach ($object->getItems() as $item) {
-                $items[] = $this->normalizeObject($item, $format, $context);
+        if (!self::contextHasGroup('Summary', $context)) {
+            return $data;
+        }
+
+        $items = [];
+
+        foreach ($object->getItems() as $item) {
+            $items[] = $this->normalizeObject($item, $format, $context);
+        }
+
+        $precision = Money::getPrecision($currency = $object->getCurrency()->getCode());
+
+        $data = array_replace($data, [
+            'number'           => $object->getNumber(),
+            'email'            => $object->getEmail(),
+            'customer_group'   => $object->getCustomerGroup()->getName(),
+            'company'          => $object->getCompany(),
+            'company_number'   => $object->getCompanyNumber(),
+            'first_name'       => $object->getFirstName(),
+            'last_name'        => $object->getLastName(),
+            'invoice_address'  => $this->normalizeObject($object->getInvoiceAddress(), $format, $context),
+            'delivery_address' => $this->normalizeObject($object->getDeliveryAddress(), $format, $context),
+            'items'            => $items,
+            'currency'         => $currency,
+            'total'            => $object->getGrandTotal()->toFixed($precision),
+            'description'      => $object->getDescription(),
+            'comment'          => $object->getComment(),
+            'preparation_note' => $object->getPreparationNote(),
+            'payment_term'     => null,
+            'outstanding_date' => null,
+            'created_at'       => $object->getCreatedAt()->format('Y-m-d'),
+            'state'            => $object->getState(),
+            'payment_state'    => $object->getPaymentState(),
+            'paid_total'       => $object->getPaidTotal()->toFixed($precision),
+            'refunded_total'   => $object->getRefundedTotal()->toFixed($precision),
+            'shipment_subject' => false,
+            'invoice_subject'  => false,
+            'payments'         => [],
+            'refunds'          => [],
+        ]);
+
+        if (null !== $term = $object->getPaymentTerm()) {
+            $data['payment_term'] = $term->getName();
+        }
+
+        if (null !== $date = $object->getOutstandingDate()) {
+            $data['outstanding_date'] = $date->format('Y-m-d');
+        }
+
+        // Payments
+        foreach ($object->getPayments(true) as $payment) {
+            if (PaymentStates::isDeletableState($payment)) {
+                continue;
             }
 
-            $precision = Money::getPrecision($currency = $object->getCurrency()->getCode());
+            $data['payments'][] = $this->normalizePayment($payment);
+        }
 
-            $data = array_replace($data, [
-                'number'           => $object->getNumber(),
-                'email'            => $object->getEmail(),
-                'customer_group'   => $object->getCustomerGroup()->getName(),
-                'company'          => $object->getCompany(),
-                'company_number'   => $object->getCompanyNumber(),
-                'first_name'       => $object->getFirstName(),
-                'last_name'        => $object->getLastName(),
-                'invoice_address'  => $this->normalizeObject($object->getInvoiceAddress(), $format, $context),
-                'delivery_address' => $this->normalizeObject($object->getDeliveryAddress(), $format, $context),
-                'items'            => $items,
-                'currency'         => $currency,
-                'total'            => $object->getGrandTotal()->toFixed($precision),
-                'description'      => $object->getDescription(),
-                'comment'          => $object->getComment(),
-                'preparation_note' => $object->getPreparationNote(),
-                'payment_term'     => null,
-                'outstanding_date' => null,
-                'created_at'       => $object->getCreatedAt()->format('Y-m-d'),
-                'state'            => $object->getState(),
-                'payment_state'    => $object->getPaymentState(),
-                'paid_total'       => $object->getPaidTotal()->toFixed($precision),
-                'refunded_total'   => $object->getRefundedTotal()->toFixed($precision),
-                'shipment_subject' => false,
-                'invoice_subject'  => false,
-                'payments'         => [],
-                'refunds'          => [],
-            ]);
-
-            if (null !== $term = $object->getPaymentTerm()) {
-                $data['payment_term'] = $term->getName();
+        // Refunds
+        foreach ($object->getPayments(false) as $refund) {
+            if (PaymentStates::isDeletableState($refund)) {
+                continue;
             }
 
-            if (null !== $date = $object->getOutstandingDate()) {
-                $data['outstanding_date'] = $date->format('Y-m-d');
-            }
+            $data['refunds'][] = $this->normalizePayment($refund);
+        }
 
-            // Payments
-            foreach ($object->getPayments(true) as $payment) {
-                if (PaymentStates::isDeletableState($payment)) {
+        if ($object instanceof ShipmentSubjectInterface) {
+            $data['shipment_subject'] = true;
+            $data['shipment_state'] = $object->getShipmentState();
+
+            // Shipments
+            $data['shipments'] = [];
+            foreach ($object->getShipments(true) as $shipment) {
+                if (ShipmentStates::isDeletableState($shipment->getState())) {
                     continue;
                 }
 
-                $data['payments'][] = $this->normalizePayment($payment);
+                $data['shipments'][] = $this->normalizeShipment($shipment);
             }
 
-            // Refunds
-            foreach ($object->getPayments(false) as $refund) {
-                if (PaymentStates::isDeletableState($refund)) {
+            // Returns
+            $data['returns'] = [];
+            foreach ($object->getShipments(false) as $shipment) {
+                if (ShipmentStates::isDeletableState($shipment->getState())) {
                     continue;
                 }
 
-                $data['refunds'][] = $this->normalizePayment($refund);
+                $data['returns'][] = $this->normalizeShipment($shipment);
+            }
+        }
+
+        if ($object instanceof InvoiceSubjectInterface) {
+            $data['invoice_subject'] = !$object->isSample();
+            $data['invoice_state'] = $object->getInvoiceState();
+            $data['invoice_total'] = $object->getInvoiceTotal()->toFixed($precision);
+            $data['credit_total'] = $object->getCreditTotal()->toFixed($precision);
+
+            // Invoices
+            $data['invoices'] = [];
+            foreach ($object->getInvoices(true) as $invoice) {
+                $data['invoices'][] = $this->normalizeInvoice($invoice);
             }
 
-            if ($object instanceof ShipmentSubjectInterface) {
-                $data['shipment_subject'] = true;
-                $data['shipment_state'] = $object->getShipmentState();
-
-                // Shipments
-                $data['shipments'] = [];
-                foreach ($object->getShipments(true) as $shipment) {
-                    if (ShipmentStates::isDeletableState($shipment->getState())) {
-                        continue;
-                    }
-
-                    $data['shipments'][] = $this->normalizeShipment($shipment);
-                }
-
-                // Returns
-                $data['returns'] = [];
-                foreach ($object->getShipments(false) as $shipment) {
-                    if (ShipmentStates::isDeletableState($shipment->getState())) {
-                        continue;
-                    }
-
-                    $data['returns'][] = $this->normalizeShipment($shipment);
-                }
-            }
-
-            if ($object instanceof InvoiceSubjectInterface) {
-                $data['invoice_subject'] = !$object->isSample();
-                $data['invoice_state'] = $object->getInvoiceState();
-                $data['invoice_total'] = $object->getInvoiceTotal()->toFixed($precision);
-                $data['credit_total'] = $object->getCreditTotal()->toFixed($precision);
-
-                // Invoices
-                $data['invoices'] = [];
-                foreach ($object->getInvoices(true) as $invoice) {
-                    $data['invoices'][] = $this->normalizeInvoice($invoice);
-                }
-
-                // Credits
-                $data['credits'] = [];
-                foreach ($object->getInvoices(false) as $credit) {
-                    $data['credits'][] = $this->normalizeInvoice($credit);
-                }
+            // Credits
+            $data['credits'] = [];
+            foreach ($object->getInvoices(false) as $credit) {
+                $data['credits'][] = $this->normalizeInvoice($credit);
             }
         }
 
