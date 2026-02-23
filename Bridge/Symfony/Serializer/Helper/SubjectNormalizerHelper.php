@@ -151,7 +151,7 @@ class SubjectNormalizerHelper
 
         $stockUnits = array_merge(
             $repository->findNotClosedBySubject($subject),
-            $repository->findLatestClosedBySubject($subject)
+            $repository->findLatestClosedBySubject($subject, 0)
         );
 
         // Sort by "created/closed at" date desc

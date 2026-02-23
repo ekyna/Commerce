@@ -173,7 +173,7 @@ abstract class AbstractStockUnitRepository extends ResourceRepository implements
         $alias = $this->getAlias();
         $qb = $this->getQueryBuilder();
 
-        return $qb
+        $query = $qb
             ->andWhere($qb->expr()->eq($alias . '.product', ':product'))
             ->andWhere($qb->expr()->eq($alias . '.state', ':state'))
             ->addOrderBy($alias . '.closedAt', 'DESC')
@@ -181,9 +181,13 @@ abstract class AbstractStockUnitRepository extends ResourceRepository implements
                 'product' => $subject,
                 'state'   => StockUnitStates::STATE_CLOSED,
             ])
-            ->getQuery()
-            ->setMaxResults($limit)
-            ->getResult();
+            ->getQuery();
+
+        if (0 < $limit) {
+            $query->setMaxResults($limit);
+        }
+
+        return $query->getResult();
     }
 
     public function findAdjustmentsBySubjectAndDateRange(SubjectInterface $subject, ?DateRange $range): array

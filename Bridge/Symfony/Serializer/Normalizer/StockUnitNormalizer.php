@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyConverterInterface;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
-use Ekyna\Component\Commerce\Stock\Model\AssignmentInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
@@ -84,10 +84,10 @@ class StockUnitNormalizer extends ResourceNormalizer
 
     private function getAssignments(StockUnitInterface $stockUnit): Collection
     {
-        return $stockUnit
-            ->getStockAssignments()
-            ->filter(static function (AssignmentInterface $assignment): bool {
-                return !$assignment->isFullyShipped();
-            });
+        if ($stockUnit->isClosed()) {
+            return new ArrayCollection();
+        }
+
+        return $stockUnit->getStockAssignments();
     }
 }
