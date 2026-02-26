@@ -26,6 +26,8 @@
         <field name="number" column="number" type="string" length="16"/>
         <field name="version" column="version" type="smallint"/>
         <field name="state" type="string" column="state" length="9" enum-type="Ekyna\Component\Commerce\Manufacture\Model\BOMState"/>
+        <field name="cost" column="cost" type="php_decimal" precision="10" scale="5" nullable="true"/>
+        <field name="description" column="description" type="text" nullable="true"/>
 
         <field name="createdAt" type="datetime" column="created_at">
             <gedmo:timestampable on="create"/>

@@ -30,10 +30,14 @@ class SubjectCostCalculator implements SubjectCostCalculatorInterface
             return $cost;
         }
 
-        if (null !== $bom = $this->bomRepository->findOneValidatedBySubject($subject)) {
-            return $this->bomCalculator->calculateBOMCost($bom);
+        if (null === $bom = $this->bomRepository->findOneValidatedBySubject($subject)) {
+            return null;
         }
 
-        return null;
+        if (null !== $bom->getCost() && $bom->getCost()->isPositive()) {
+            return new Cost($bom->getCost());
+        }
+
+        return $this->bomCalculator->calculateBOMCost($bom);
     }
 }

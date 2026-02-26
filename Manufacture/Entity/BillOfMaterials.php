@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Manufacture\Entity;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectTrait;
@@ -30,6 +31,8 @@ class BillOfMaterials extends AbstractResource implements BillOfMaterialsInterfa
 
     private int        $version;
     private BOMState   $state;
+    private ?Decimal   $cost        = null;
+    protected ?string  $description = null;
     /** @var Collection<BOMComponentInterface> */
     private Collection $components;
 
@@ -74,6 +77,30 @@ class BillOfMaterials extends AbstractResource implements BillOfMaterialsInterfa
     public function setState(BOMState $state): BillOfMaterialsInterface
     {
         $this->state = $state;
+
+        return $this;
+    }
+
+    public function getCost(): ?Decimal
+    {
+        return $this->cost;
+    }
+
+    public function setCost(?Decimal $cost): BillOfMaterialsInterface
+    {
+        $this->cost = $cost;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): BillOfMaterialsInterface
+    {
+        $this->description = $description;
 
         return $this;
     }

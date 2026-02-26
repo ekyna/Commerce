@@ -27,8 +27,7 @@ class BillOfMaterialsCalculator
 
     public function calculateBOMCost(BillOfMaterialsInterface $bom): Cost
     {
-        $total = new Cost();
-
+        $total = new Cost(average: true);
         foreach ($bom->getComponents() as $component) {
             $total = $total->add(
                 $this->calculateComponentTotalCost($component)

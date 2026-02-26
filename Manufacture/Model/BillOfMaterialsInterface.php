@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Manufacture\Model;
 
+use Decimal\Decimal;
 use Doctrine\Common\Collections\Collection;
 use Ekyna\Component\Commerce\Common\Model\NumberSubjectInterface;
 use Ekyna\Component\Commerce\Subject\Model\SubjectReferenceInterface;
@@ -30,6 +31,14 @@ interface BillOfMaterialsInterface
     public function getState(): BOMState;
 
     public function setState(BOMState $state): BillOfMaterialsInterface;
+
+    public function getCost(): ?Decimal;
+
+    public function setCost(?Decimal $cost): BillOfMaterialsInterface;
+
+    public function getDescription(): ?string;
+
+    public function setDescription(?string $description): BillOfMaterialsInterface;
 
     /**
      * @return Collection<BOMComponentInterface>
