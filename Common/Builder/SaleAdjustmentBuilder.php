@@ -11,6 +11,8 @@ use Ekyna\Component\Commerce\Common\Resolver\DiscountResolverInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
 use Ekyna\Component\Commerce\Pricing\Resolver\TaxResolverInterface;
 
+use function array_key_exists;
+
 /**
  * Class AdjustmentBuilder
  * @package Ekyna\Component\Commerce\Common
@@ -80,9 +82,16 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
 
         $data = !$item->getRootSale()->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
 
+        $changed = false;
+        if (array_key_exists('force_update', $data)) {
+            $changed = (bool)$data['force_update'];
+            unset($data['force_update']);
+        }
+
         return $this
             ->adjustmentBuilder
-            ->buildAdjustments(AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence);
+            ->buildAdjustments(AdjustmentTypes::TYPE_DISCOUNT, $item, $data, $persistence)
+            || $changed;
     }
 
     /**

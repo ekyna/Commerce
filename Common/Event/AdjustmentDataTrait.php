@@ -36,4 +36,9 @@ trait AdjustmentDataTrait
     {
         $this->adjustmentsData[] = $data;
     }
+
+    public function setForceUpdate(): void
+    {
+        $this->adjustmentsData['force_update'] = true;
+    }
 }
