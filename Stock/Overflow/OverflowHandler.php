@@ -7,6 +7,7 @@ namespace Ekyna\Component\Commerce\Stock\Overflow;
 use Ekyna\Component\Commerce\Exception\StockLogicException;
 use Ekyna\Component\Commerce\Stock\Dispatcher\StockAssignmentDispatcherInterface;
 use Ekyna\Component\Commerce\Stock\Model\StockUnitInterface;
+use Ekyna\Component\Commerce\Stock\Model\StockUnitStates;
 use Ekyna\Component\Commerce\Stock\Resolver\StockUnitResolverInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 
@@ -39,14 +40,14 @@ class OverflowHandler implements OverflowHandlerInterface
             - $stockUnit->getAdjustedQuantity();
 
         // Abort if no overflow
-        if (0 == $overflow) {
+        if ($overflow->isZero()) {
             return false;
         }
 
         $subject = $stockUnit->getSubject();
 
         // Positive case : too much sold quantity
-        if (0 < $overflow) {
+        if ($overflow->isPositive()) {
             // Try to move sold overflow to other pending/ready stock units
             // TODO prefer ready units with enough quantity
             $targetStockUnits = $this->unitResolver->findPendingOrReady($subject);
@@ -58,7 +59,7 @@ class OverflowHandler implements OverflowHandlerInterface
 
                 $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
 
-                if (0 == $overflow) {
+                if ($overflow->isZero()) {
                     return true; // We're done dispatching sold quantity
                 }
             }
@@ -73,13 +74,19 @@ class OverflowHandler implements OverflowHandlerInterface
 
                 $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $targetStockUnit, $overflow);
 
-                if (0 == $overflow) {
+                if ($overflow->isZero()) {
                     return true; // We're done dispatching sold quantity
                 }
             }
 
             // Move sold overflow to a new stock unit
-            if (0 < $overflow) {
+            if ($overflow->isPositive()) {
+                // We did not found another pending or assignable stock unit to move assignments to.
+                // If current stock unit has its state to 'new', just stop here.
+                if (StockUnitStates::STATE_NEW === $stockUnit->getState()) {
+                    return false;
+                }
+
                 $newStockUnit = $this->unitResolver->createBySubject($subject, $stockUnit);
 
                 // Pre persist stock unit
@@ -88,7 +95,7 @@ class OverflowHandler implements OverflowHandlerInterface
                 $overflow -= $this->assignmentDispatcher->moveAssignments($stockUnit, $newStockUnit, $overflow);
             }
 
-            if (0 != $overflow) {
+            if (!$overflow->isZero()) {
                 throw new StockLogicException('Failed to fix stock unit sold quantity overflow.');
             }
 

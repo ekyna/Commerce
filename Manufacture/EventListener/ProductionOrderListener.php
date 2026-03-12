@@ -90,6 +90,8 @@ class ProductionOrderListener
             POState::isStockableState($order)
             && $this->persistenceHelper->isChanged($order, 'quantity')
         ) {
+            $this->orderLinker->applyOrder($order);
+
             foreach ($order->getItems() as $item) {
                 $this->stockUnitAssigner->applyProductionItem($item);
             }

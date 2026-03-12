@@ -137,7 +137,10 @@ class StockUnitUpdater implements StockUnitUpdaterInterface
 
         $unit->setSoldQuantity($quantity);
 
-        // TODO Use overflow handler ?
+        if ($this->overflowHandler->handle($unit)) {
+            // Stock unit persistence has been made by assignment dispatcher.
+            return;
+        }
 
         $this->unitManager->persistOrRemove($unit);
     }
