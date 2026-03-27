@@ -149,8 +149,11 @@ class SaleItemNormalizer extends ResourceNormalizer
             'designation' => $object->getDesignation(),
             'reference'   => $object->getReference(),
             'quantity'    => $object->getQuantity()->toFixed(Units::getPrecision($object->getUnit())),
+            'net_price'   => $object->getNetPrice()->toFixed(5),
+            //TODO tax_group
             'private'     => $object->isPrivate(),
             'children'    => $children,
+            // TODO adjustments
         ];
     }
 
