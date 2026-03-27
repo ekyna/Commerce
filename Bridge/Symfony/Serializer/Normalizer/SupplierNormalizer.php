@@ -28,7 +28,7 @@ class SupplierNormalizer extends ResourceNormalizer
                 'name'        => $object->getName(),
                 'description' => $object->getDescription(),
             ]);
-        } elseif (self::contextHasGroup('Summary', $context)) {
+        } elseif (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $data = array_replace($data, [
                 'description' => $object->getDescription(),
             ]);

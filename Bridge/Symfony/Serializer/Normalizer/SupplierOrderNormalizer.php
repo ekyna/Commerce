@@ -40,7 +40,7 @@ class SupplierOrderNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if (self::contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $items = [];
             foreach ($object->getItems() as $item) {
                 $items[] = $this->normalizeObject($item, $format, $context);

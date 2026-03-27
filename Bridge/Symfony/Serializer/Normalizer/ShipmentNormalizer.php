@@ -60,7 +60,7 @@ class ShipmentNormalizer extends ResourceNormalizer
                 'sale_number' => $sale->getNumber(),
                 'sale_id'     => $sale->getId(),
             ]);
-        } elseif (self::contextHasGroup('Summary', $context)) {
+        } elseif (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $items = [];
             $parcels = [];
 

@@ -47,6 +47,10 @@ class AddressNormalizer extends ResourceNormalizer
      */
     public function normalize($object, $format = null, array $context = [])
     {
+        if (self::contextHasGroup('Api', $context)) {
+            return $this->normalizeForApi($object);
+        }
+
         $data = [];
         $exclude = [];
 
@@ -80,6 +84,25 @@ class AddressNormalizer extends ResourceNormalizer
                 $data['mobile_country'] = $this->phoneNumberUtil->getRegionCodeForNumber($mobile);
             }
         }
+
+        if ($object instanceof CustomerAddressInterface) {
+            $data['invoice_default'] = $object->isInvoiceDefault() ? 1 : 0;
+            $data['delivery_default'] = $object->isDeliveryDefault() ? 1 : 0;
+        }
+
+        if ($object instanceof RelayPointInterface) {
+            $data['number'] = $object->getNumber();
+        }
+
+        return $data;
+    }
+
+    private function normalizeForApi(AddressInterface $object): array
+    {
+        $data = array_replace(
+            parent::normalize($object),
+            $this->transformer->transformAddress($object)
+        );
 
         if ($object instanceof CustomerAddressInterface) {
             $data['invoice_default'] = $object->isInvoiceDefault() ? 1 : 0;

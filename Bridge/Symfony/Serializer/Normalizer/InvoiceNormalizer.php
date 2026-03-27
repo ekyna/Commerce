@@ -46,7 +46,7 @@ class InvoiceNormalizer extends ResourceNormalizer
                 'sale_number' => $sale->getNumber(),
                 'sale_id'     => $sale->getId(),
             ]);
-        } elseif (self::contextHasGroup(['Summary'], $context)) {
+        } elseif (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $lines = [];
             foreach ($object->getLines() as $line) {
                 $lines[] = $this->normalizeObject($line, $format, $context);

@@ -23,15 +23,15 @@ class InvoiceLineNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if (self::contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $saleItem = $object->getSaleItem();
 
             $data = array_replace($data, [
                 'designation' => $object->getDesignation(),
                 'reference'   => $object->getReference(),
                 'quantity'    => $object->getQuantity(),
-                'total'       => $saleItem ? $saleItem->getTotalQuantity() : null,
-                'level'       => $saleItem ? $saleItem->getLevel() : 0,
+                'total'       => $saleItem?->getTotalQuantity(),
+                'level'       => $saleItem?->getLevel() || 0,
             ]);
         }
 

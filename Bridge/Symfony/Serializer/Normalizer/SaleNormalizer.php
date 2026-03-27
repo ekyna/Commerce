@@ -61,10 +61,23 @@ class SaleNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if (!self::contextHasGroup('Summary', $context)) {
-            return $data;
+        if (self::contextHasGroup('Summary', $context)) {
+            return $this->normalizeForSummary($object, $data, $format, $context);
         }
 
+        if (self::contextHasGroup('Api', $context)) {
+            return $this->normalizeForApi($object, $data, $format, $context);
+        }
+
+        return $data;
+    }
+
+    protected function normalizeForSummary(
+        SaleInterface $object,
+        array         $data,
+        string        $format = null,
+        array         $context = []
+    ): array {
         $items = [];
 
         foreach ($object->getItems() as $item) {
@@ -169,6 +182,111 @@ class SaleNormalizer extends ResourceNormalizer
             $data['credits'] = [];
             foreach ($object->getInvoices(false) as $credit) {
                 $data['credits'][] = $this->normalizeInvoice($credit);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function normalizeForApi(
+        SaleInterface $object,
+        array         $data,
+        string        $format = null,
+        array         $context = []
+    ): array {
+        $items = [];
+
+        foreach ($object->getItems() as $item) {
+            $items[] = $this->normalizeObject($item, $format, $context);
+        }
+
+        $precision = Money::getPrecision($currency = $object->getCurrency()->getCode());
+
+        $data = array_replace($data, [
+            'number'           => $object->getNumber(),
+            'customer'         => $object->getCustomer()?->getNumber(),
+            'email'            => $object->getEmail(),
+            'customer_group'   => $object->getCustomerGroup()->getName(),
+            'company'          => $object->getCompany(),
+            'company_number'   => $object->getCompanyNumber(),
+            'first_name'       => $object->getFirstName(),
+            'last_name'        => $object->getLastName(),
+            'invoice_address'  => $this->normalizeObject($object->getInvoiceAddress(), $format, $context),
+            'delivery_address' => $this->normalizeObject($object->getDeliveryAddress(), $format, $context),
+            'items'            => $items,
+            'currency'         => $currency,
+            'total'            => $object->getGrandTotal()->toFixed($precision),
+            'description'      => $object->getDescription(),
+            'comment'          => $object->getComment(),
+            'preparation_note' => $object->getPreparationNote(),
+            'payment_term'     => null,
+            'outstanding_date' => null,
+            'created_at'       => $object->getCreatedAt()->format('Y-m-d'),
+            'state'            => $object->getState(),
+            'payment_state'    => $object->getPaymentState(),
+            'paid_total'       => $object->getPaidTotal()->toFixed($precision),
+            'refunded_total'   => $object->getRefundedTotal()->toFixed($precision),
+        ]);
+
+        if (null !== $term = $object->getPaymentTerm()) {
+            $data['payment_term'] = $term->getName();
+        }
+
+        if (null !== $date = $object->getOutstandingDate()) {
+            $data['outstanding_date'] = $date->format('Y-m-d');
+        }
+
+        // Payments
+        $data['payments'] = [];
+        foreach ($object->getPayments(true) as $payment) {
+            if (PaymentStates::isDeletableState($payment)) {
+                continue;
+            }
+
+            $data['payments'][] = [
+                'number'       => $payment->getNumber(),
+                'is_refund'    => $payment->isRefund(),
+                'method'       => $payment->getMethod()->getName(),
+                'state'        => $payment->getState(),
+                'currency'     => $currency = $payment->getCurrency()->getCode(),
+                'amount'       => $payment->getAmount()->toFixed(Money::getPrecision($currency)),
+                'completed_at' => $payment->getCompletedAt()?->format('Y-m-d'),
+            ];
+        }
+
+        // Shipments
+        if ($object instanceof ShipmentSubjectInterface) {
+            $data['shipment_state'] = $object->getShipmentState();
+
+            $data['shipments'] = [];
+            foreach ($object->getShipments() as $shipment) {
+                if (ShipmentStates::isDeletableState($shipment->getState())) {
+                    continue;
+                }
+
+                $data['shipments'][] = [
+                    'number'     => $shipment->getNumber(),
+                    'is_return'  => $shipment->isReturn(),
+                    'method'     => $shipment->getMethod()->getName(),
+                    'state'      => $shipment->getState(),
+                    'shipped_at' => $shipment->getShippedAt()?->format('Y-m-d'),
+                ];
+            }
+        }
+
+        // Invoices
+        if ($object instanceof InvoiceSubjectInterface) {
+            $data['invoice_state'] = $object->getInvoiceState();
+
+            $data['invoices'] = [];
+            foreach ($object->getInvoices() as $invoice) {
+                $data['invoices'][] = [
+                    'number'      => $invoice->getNumber(),
+                    'is_credit'   => $invoice->isCredit(),
+                    'currency'    => $invoice->getCurrency(),
+                    'grand_total' => Money::fixed($invoice->getRealGrandTotal(), $invoice->getCurrency()),
+                    'created_at'  => $invoice->getCreatedAt()->format('Y-m-d'),
+                ];
             }
         }
 

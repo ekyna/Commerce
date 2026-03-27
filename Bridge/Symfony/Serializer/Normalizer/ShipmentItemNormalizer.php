@@ -23,7 +23,7 @@ class ShipmentItemNormalizer extends ResourceNormalizer
     {
         $data = [];
 
-        if (self::contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $saleItem = $object->getSaleItem();
 
             $data = array_replace($data, [

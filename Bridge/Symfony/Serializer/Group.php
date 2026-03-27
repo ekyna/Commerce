@@ -11,6 +11,7 @@ namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer;
  */
 final class Group
 {
+    public const STOCK_DATA       = 'StockData';
     public const STOCK_VIEW       = 'StockView';
     public const STOCK_UNIT       = 'StockUnit';
     public const STOCK_ASSIGNMENT = 'StockAssignment';

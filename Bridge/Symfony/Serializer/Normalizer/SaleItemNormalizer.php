@@ -16,6 +16,8 @@ use Ekyna\Component\Commerce\Stock\Model\StockSubjectModes;
 use Ekyna\Component\Commerce\Subject\SubjectHelperInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
+use function array_replace;
+
 use const INF;
 
 /**
@@ -49,82 +51,107 @@ class SaleItemNormalizer extends ResourceNormalizer
         $data = [];
 
         if (self::contextHasGroup('Summary', $context)) {
-            $children = [];
-            foreach ($object->getChildren() as $child) {
-                $children[] = $this->normalize($child, $format, $context);
-            }
+            return $this->normalizeForSummary($object);
+        }
 
-            $sale = $object->getRootSale();
-            $total = $object->getTotalQuantity();
-            $unit = $object->getUnit();
-
-            $invoiceData = ['invoiced' => 0, 'credited' => 0, 'invoice_class' => null,];
-            if ($sale instanceof InvoiceSubjectInterface && !$sale->isSample()) {
-                $invoiceData = [
-                    'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($object),
-                    'credited' => $this->invoiceCalculator->calculateCreditedQuantity($object, null, false),
-                ];
-
-                $invoiceable = $this->invoiceCalculator->calculateInvoiceableQuantity($object);
-                if ($invoiceable->isZero()) {
-                    $invoiceData['invoice_class'] = 'success';
-                } elseif ($invoiceable->equals($total)) {
-                    $invoiceData['invoice_class'] = 'danger';
-                } else {
-                    $invoiceData['invoice_class'] = 'warning';
-                }
-            }
-
-            $shipmentData = [
-                'shipped'            => null,
-                'returned'           => null,
-                'available'          => null,
-                'in_stock'           => null,
-                'shipment_class'     => null,
-                'availability_class' => null,
-            ];
-            if ($sale instanceof ShipmentSubjectInterface) {
-                $shipmentData = [
-                    'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($object),
-                    'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($object),
-                    'available'          => $this->shipmentCalculator->calculateAvailableQuantity($object),
-                    'in_stock'           => $this->getInStock($object),
-                    'availability_class' => null,
-                ];
-
-                $shippable = $this->shipmentCalculator->calculateShippableQuantity($object);
-                if ($shippable->isZero()) {
-                    $invoiceData['shipment_class'] = 'success';
-                } elseif ($shippable->equals($total)) {
-                    $invoiceData['shipment_class'] = 'danger';
-                } else {
-                    $invoiceData['shipment_class'] = 'warning';
-                }
-
-                if (0 < $shippable) {
-                    if ($shipmentData['available'] > $shippable) {
-                        $invoiceData['availability_class'] = 'success';
-                    } elseif ($shipmentData['available']->isZero()) {
-                        $invoiceData['availability_class'] = 'danger';
-                    } else {
-                        $invoiceData['availability_class'] = 'warning';
-                    }
-                }
-            }
-
-            $data = array_replace($data, [
-                'designation'    => $object->getDesignation(),
-                'reference'      => $object->getReference(),
-                'quantity'       => $object->getQuantity(),
-                'total_quantity' => $total,
-                'private'        => $object->isPrivate(),
-                //'compound'         => $item->isCompound(),
-                //'private_children' => $item->hasPrivateChildren(),
-                'children'       => $children,
-            ], $shipmentData, $invoiceData);
+        if (self::contextHasGroup('Api', $context)) {
+            return $this->normalizeForApi($object);
         }
 
         return $data;
+    }
+
+    private function normalizeForSummary(SaleItemInterface $object): array
+    {
+        $children = [];
+        foreach ($object->getChildren() as $child) {
+            $children[] = $this->normalizeForSummary($child);
+        }
+
+        $precision = Units::getPrecision($object->getUnit());
+        $sale = $object->getRootSale();
+        $total = $object->getTotalQuantity();
+
+        $invoiceData = ['invoiced' => 0, 'credited' => 0, 'invoice_class' => null,];
+        if ($sale instanceof InvoiceSubjectInterface && !$sale->isSample()) {
+            $invoiceData = [
+                'invoiced' => $this->invoiceCalculator->calculateInvoicedQuantity($object),
+                'credited' => $this->invoiceCalculator->calculateCreditedQuantity($object, null, false),
+            ];
+
+            $invoiceable = $this->invoiceCalculator->calculateInvoiceableQuantity($object);
+            if ($invoiceable->isZero()) {
+                $invoiceData['invoice_class'] = 'success';
+            } elseif ($invoiceable->equals($total)) {
+                $invoiceData['invoice_class'] = 'danger';
+            } else {
+                $invoiceData['invoice_class'] = 'warning';
+            }
+        }
+
+        $shipmentData = [
+            'shipped'            => null,
+            'returned'           => null,
+            'available'          => null,
+            'in_stock'           => null,
+            'shipment_class'     => null,
+            'availability_class' => null,
+        ];
+        if ($sale instanceof ShipmentSubjectInterface) {
+            $shipmentData = [
+                'shipped'            => $this->shipmentCalculator->calculateShippedQuantity($object),
+                'returned'           => $this->shipmentCalculator->calculateReturnedQuantity($object),
+                'available'          => $this->shipmentCalculator->calculateAvailableQuantity($object),
+                'in_stock'           => $this->getInStock($object),
+                'availability_class' => null,
+            ];
+
+            $shippable = $this->shipmentCalculator->calculateShippableQuantity($object);
+            if ($shippable->isZero()) {
+                $invoiceData['shipment_class'] = 'success';
+            } elseif ($shippable->equals($total)) {
+                $invoiceData['shipment_class'] = 'danger';
+            } else {
+                $invoiceData['shipment_class'] = 'warning';
+            }
+
+            if (0 < $shippable) {
+                if ($shipmentData['available'] > $shippable) {
+                    $invoiceData['availability_class'] = 'success';
+                } elseif ($shipmentData['available']->isZero()) {
+                    $invoiceData['availability_class'] = 'danger';
+                } else {
+                    $invoiceData['availability_class'] = 'warning';
+                }
+            }
+        }
+
+        return array_replace([
+            'designation'    => $object->getDesignation(),
+            'reference'      => $object->getReference(),
+            'quantity'       => $object->getQuantity()->toFixed($precision),
+            'total_quantity' => $total->toFixed($precision),
+            'private'        => $object->isPrivate(),
+            //'compound'         => $item->isCompound(),
+            //'private_children' => $item->hasPrivateChildren(),
+            'children'       => $children,
+        ], $shipmentData, $invoiceData);
+    }
+
+    private function normalizeForApi(SaleItemInterface $object): array
+    {
+        $children = [];
+        foreach ($object->getChildren() as $child) {
+            $children[] = $this->normalizeForApi($child);
+        }
+
+        return [
+            'designation' => $object->getDesignation(),
+            'reference'   => $object->getReference(),
+            'quantity'    => $object->getQuantity()->toFixed(Units::getPrecision($object->getUnit())),
+            'private'     => $object->isPrivate(),
+            'children'    => $children,
+        ];
     }
 
     /**

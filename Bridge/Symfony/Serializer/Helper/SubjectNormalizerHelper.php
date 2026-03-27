@@ -8,6 +8,7 @@ use Decimal\Decimal;
 use Ekyna\Bundle\CommerceBundle\Service\ConstantsHelper;
 use Ekyna\Bundle\ResourceBundle\Helper\ResourceHelper;
 use Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Group;
+use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Common\Util\FormatterAwareTrait;
 use Ekyna\Component\Commerce\Common\Util\FormatterFactory;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -51,53 +52,11 @@ class SubjectNormalizerHelper
         $data = [];
 
         if (ResourceNormalizer::contextHasGroup(Group::STOCK_VIEW, $context)) {
-            $translator = $this->constantHelper->getTranslator();
-            $formatter = $this->getFormatter();
+            $data = $this->normalizeStockView($subject);
+        }
 
-            if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
-                $eda = $formatter->date($eda);
-            } else {
-                $eda = $translator->trans('value.undefined', [], 'EkynaUi');
-            }
-            if (null !== $releasedAt = $subject->getReleasedAt()) {
-                $releasedAt = $formatter->date($releasedAt);
-            } else {
-                $releasedAt = $translator->trans('value.undefined', [], 'EkynaUi');
-            }
-
-            $virtual = $formatter->number($subject->getVirtualStock());
-            if (null !== $pending = $this->getPendingQuantity($subject)) {
-                $virtual = sprintf('%s (+%s)', $virtual, $formatter->number($pending));
-            }
-
-            $data = [
-                //'mode_label'    => $this->constantHelper->renderStockSubjectModeLabel($subject),
-                'mode_badge'     => $this->constantHelper->renderStockSubjectModeBadge($subject),
-                //'state_label'   => $this->constantHelper->renderStockSubjectStateLabel($subject),
-                'state_badge'    => $this->constantHelper->renderStockSubjectStateBadge($subject),
-                'unit'           => $this->constantHelper->renderUnit($subject->getUnit()),
-                'in'             => $formatter->number($subject->getInStock()),
-                'available'      => $formatter->number($subject->getAvailableStock()),
-                'virtual'        => $virtual,
-                'floor'          => $formatter->number($subject->getStockFloor()),
-                'geocode'        => $subject->getGeocode(),
-                'replenishment'  => $formatter->number($subject->getReplenishmentTime()),
-                'eda'            => $eda,
-                'released_at'    => $releasedAt,
-                'hs_code'        => $subject->getHsCode(),
-                'moq'            => $formatter->number($subject->getMinimumOrderQuantity()),
-                'weight'         => $formatter->number($subject->getWeight()),
-                'width'          => $formatter->number($subject->getWidth()),
-                'height'         => $formatter->number($subject->getHeight()),
-                'depth'          => $formatter->number($subject->getDepth()),
-                'package_weight' => $formatter->number($subject->getPackageWeight()),
-                'package_width'  => $formatter->number($subject->getPackageWidth()),
-                'package_height' => $formatter->number($subject->getPackageHeight()),
-                'package_depth'  => $formatter->number($subject->getPackageDepth()),
-                'physical'       => $this->badge($subject->isPhysical(), 'success', 'warning'),
-                'quote_only'     => $this->badge($subject->isQuoteOnly()),
-                'end_of_life'    => $this->badge($subject->isEndOfLife()),
-            ];
+        if (ResourceNormalizer::contextHasGroup(Group::STOCK_DATA, $context)) {
+            $data = $this->normalizeStockData($subject);
         }
 
         if (ResourceNormalizer::contextHasGroup(Group::STOCK_UNIT, $context)) {
@@ -107,6 +66,91 @@ class SubjectNormalizerHelper
         }
 
         return $data;
+    }
+
+    protected function normalizeStockView(StockSubjectInterface $subject): array
+    {
+        $translator = $this->constantHelper->getTranslator();
+        $formatter = $this->getFormatter();
+
+        if (null !== $eda = $subject->getEstimatedDateOfArrival()) {
+            $eda = $formatter->date($eda);
+        } else {
+            $eda = $translator->trans('value.undefined', [], 'EkynaUi');
+        }
+        if (null !== $releasedAt = $subject->getReleasedAt()) {
+            $releasedAt = $formatter->date($releasedAt);
+        } else {
+            $releasedAt = $translator->trans('value.undefined', [], 'EkynaUi');
+        }
+
+        $precision = Units::getPrecision($subject->getUnit());
+
+        $virtual = $subject->getVirtualStock()->toFixed($precision);
+        if (null !== $pending = $this->getPendingQuantity($subject)) {
+            $virtual = sprintf('%s (+%s)', $virtual, $pending->toFixed($precision));
+        }
+
+        return [
+            //'mode_label'    => $this->constantHelper->renderStockSubjectModeLabel($subject),
+            'mode_badge'     => $this->constantHelper->renderStockSubjectModeBadge($subject),
+            //'state_label'   => $this->constantHelper->renderStockSubjectStateLabel($subject),
+            'state_badge'    => $this->constantHelper->renderStockSubjectStateBadge($subject),
+            'unit'           => $this->constantHelper->renderUnit($subject->getUnit()),
+            'in'             => $subject->getInStock()->toFixed($precision),
+            'available'      => $subject->getAvailableStock()->toFixed($precision),
+            'virtual'        => $virtual,
+            'floor'          => $subject->getStockFloor()->toFixed($precision),
+            'geocode'        => $subject->getGeocode(),
+            'replenishment'  => $subject->getReplenishmentTime(),
+            'eda'            => $eda,
+            'released_at'    => $releasedAt,
+            'hs_code'        => $subject->getHsCode(),
+            'moq'            => $subject->getMinimumOrderQuantity()->toFixed($precision),
+            'weight'         => $subject->getWeight()->toFixed($precision),
+            'width'          => $subject->getWidth(),
+            'height'         => $subject->getHeight(),
+            'depth'          => $subject->getDepth(),
+            'package_weight' => $subject->getPackageWeight()->toFixed($precision),
+            'package_width'  => $subject->getPackageWidth(),
+            'package_height' => $subject->getPackageHeight(),
+            'package_depth'  => $subject->getPackageDepth(),
+            'physical'       => $this->badge($subject->isPhysical(), 'success', 'warning'),
+            'quote_only'     => $this->badge($subject->isQuoteOnly()),
+            'end_of_life'    => $this->badge($subject->isEndOfLife()),
+        ];
+    }
+
+    protected function normalizeStockData(StockSubjectInterface $subject): array
+    {
+        $precision = Units::getPrecision($subject->getUnit());
+
+        return [
+            'mode'           => $subject->getStockMode(),
+            'state'          => $subject->getStockState(),
+            'unit'           => $subject->getUnit(),
+            'in'             => $subject->getInStock()->toFixed($precision),
+            'available'      => $subject->getAvailableStock()->toFixed($precision),
+            'virtual'        => $subject->getVirtualStock()->toFixed($precision),
+            'floor'          => $subject->getStockFloor()->toFixed($precision),
+            'geocode'        => $subject->getGeocode(),
+            'replenishment'  => $subject->getReplenishmentTime(),
+            'eda'            => $subject->getEstimatedDateOfArrival()?->format('Y-m-d'),
+            'released_at'    => $subject->getReleasedAt()?->format('Y-m-d'),
+            'hs_code'        => $subject->getHsCode(),
+            'moq'            => $subject->getMinimumOrderQuantity()->toFixed($precision),
+            'weight'         => $subject->getWeight(),
+            'width'          => $subject->getWidth(),
+            'height'         => $subject->getHeight(),
+            'depth'          => $subject->getDepth(),
+            'package_weight' => $subject->getPackageWeight()->toFixed(3),
+            'package_width'  => $subject->getPackageWidth(),
+            'package_height' => $subject->getPackageHeight(),
+            'package_depth'  => $subject->getPackageDepth(),
+            'physical'       => $subject->isPhysical(),
+            'quote_only'     => $subject->isQuoteOnly(),
+            'end_of_life'    => $subject->isEndOfLife(),
+        ];
     }
 
     private function badge(bool $flag, string $true = 'warning', string $false = 'success'): string

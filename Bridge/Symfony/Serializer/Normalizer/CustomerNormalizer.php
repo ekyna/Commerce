@@ -44,7 +44,7 @@ class CustomerNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if (self::contextHasGroup(['Default', 'Customer', 'Summary'], $context)) {
+        if (self::contextHasGroup(['Default', 'Customer', 'Summary', 'Api'], $context)) {
             $data = array_replace($data, [
                 'number'         => $object->getNumber(),
                 'company'        => $object->getCompany(),
@@ -60,7 +60,7 @@ class CustomerNormalizer extends ResourceNormalizer
             ]);
         }
 
-        if (self::contextHasGroup('Summary', $context)) {
+        if (self::contextHasGroup(['Summary', 'Api'], $context)) {
             $payment = $parent ?: $object;
 
             $data = array_replace($data, [
