@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
 use Decimal\Decimal;
+use Ekyna\Component\Commerce\Common\Model\SaleItemAdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
 use Ekyna\Component\Commerce\Common\Model\Units;
 use Ekyna\Component\Commerce\Invoice\Calculator\InvoiceSubjectCalculatorInterface;
@@ -55,7 +56,7 @@ class SaleItemNormalizer extends ResourceNormalizer
         }
 
         if (self::contextHasGroup('Api', $context)) {
-            return $this->normalizeForApi($object);
+            return $this->normalizeForApi($object, $format, $context);
         }
 
         return $data;
@@ -138,22 +139,29 @@ class SaleItemNormalizer extends ResourceNormalizer
         ], $shipmentData, $invoiceData);
     }
 
-    private function normalizeForApi(SaleItemInterface $object): array
+    private function normalizeForApi(SaleItemInterface $object, string $format, array $context): array
     {
         $children = [];
         foreach ($object->getChildren() as $child) {
-            $children[] = $this->normalizeForApi($child);
+            $children[] = $this->normalizeForApi($child, $format, $context);
         }
+
+        $taxGroup = $object->getTaxGroup();
 
         return [
             'designation' => $object->getDesignation(),
             'reference'   => $object->getReference(),
             'quantity'    => $object->getQuantity()->toFixed(Units::getPrecision($object->getUnit())),
             'net_price'   => $object->getNetPrice()->toFixed(5),
-            //TODO tax_group
+            'tax_group' => $taxGroup ? [
+                'id'   => $taxGroup->getId(),
+                'name' => $taxGroup->getName(),
+            ] : null,
             'private'     => $object->isPrivate(),
             'children'    => $children,
-            // TODO adjustments
+            'adjustments' => array_values(array_map(function (SaleItemAdjustmentInterface $adjustment) use ($format, $context) {
+                return $this->normalizeObject($adjustment, $format, $context);
+            }, $object->getAdjustments()->toArray())),
         ];
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Bridge\Symfony\Serializer\Normalizer;
 
+use Ekyna\Component\Commerce\Common\Model\AdjustmentInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Util\Money;
 use Ekyna\Component\Commerce\Invoice\Model\InvoiceInterface;
@@ -15,7 +16,9 @@ use Ekyna\Component\Commerce\Shipment\Model\ShipmentStates;
 use Ekyna\Component\Commerce\Shipment\Model\ShipmentSubjectInterface;
 use Ekyna\Component\Resource\Bridge\Symfony\Serializer\ResourceNormalizer;
 
+use function array_map;
 use function array_replace;
+use function array_values;
 
 /**
  * Class SaleNormalizer
@@ -235,6 +238,11 @@ class SaleNormalizer extends ResourceNormalizer
         if (null !== $date = $object->getOutstandingDate()) {
             $data['outstanding_date'] = $date->format('Y-m-d');
         }
+
+        // Adjustments
+        $data['adjustments'] = array_values(array_map(function (AdjustmentInterface $adjustment) use ($format, $context) {
+            return $this->normalizeObject($adjustment, $format, $context);
+        }, $object->getAdjustments()->toArray()));
 
         // Payments
         $data['payments'] = [];
