@@ -42,7 +42,7 @@
     {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     <th class="sale-detail-actions">
-        {% if view.vars.private -%}
+        {% if view.vars.private and view.vars.has_private_item -%}
         <a data-sale-toggle-all-children
            href="javascript: void(0)"
            title="Afficher les détails">{# TODO Translate #}

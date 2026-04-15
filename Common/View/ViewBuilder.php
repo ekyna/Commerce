@@ -116,6 +116,7 @@ class ViewBuilder
         }
 
         // Items lines
+        $this->view->vars['has_private_item'] = false;
         $this->buildSaleItemsLinesViews($sale);
         // Discounts lines
         $this->buildSaleDiscountsLinesViews($sale);
@@ -308,6 +309,7 @@ class ViewBuilder
                 $this->number($item->getParentsQuantity())
             );
             $weight = '';
+            $this->view->vars['has_private_item'] = true;
         } else {
             $quantity = $this->number($item->getTotalQuantity());
             $weight = $this->weightCalculator->calculateSaleItem($item);
