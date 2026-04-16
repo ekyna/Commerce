@@ -15,13 +15,14 @@ use Ekyna\Component\Resource\Event\ResourceEvent;
 class SaleTransformEvent extends ResourceEvent
 {
     private SaleInterface $source;
+    private bool          $duplicate;
 
-
-    public function __construct(SaleInterface $source, SaleInterface $target)
+    public function __construct(SaleInterface $source, SaleInterface $target, bool $duplicate = false)
     {
         $this->setResource($target);
 
         $this->source = $source;
+        $this->duplicate = $duplicate;
     }
 
     public function getSource(): SaleInterface
@@ -33,5 +34,10 @@ class SaleTransformEvent extends ResourceEvent
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getResource();
+    }
+
+    public function isDuplicate(): bool
+    {
+        return $this->duplicate;
     }
 }

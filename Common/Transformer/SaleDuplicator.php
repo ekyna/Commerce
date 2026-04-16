@@ -24,7 +24,7 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
         $this->source = $source;
         $this->target = $target;
 
-        $event = new SaleTransformEvent($this->source, $this->target);
+        $event = new SaleTransformEvent($this->source, $this->target, true);
 
         $this->eventDispatcher->dispatch($event, SaleTransformEvents::INIT_DUPLICATE);
         if ($event->isPropagationStopped()) {
@@ -39,7 +39,7 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
             ->copyItems();
 
         $this->target
-            ->setCustomerGroup(null)
+            //->setCustomerGroup(null)
             ->setCompanyNumber(null)
             ->setDescription(null)
             ->setPreparationNote(null)
@@ -73,7 +73,7 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
             throw new LogicException('Please call initialize first.');
         }
 
-        $event = new SaleTransformEvent($this->source, $this->target);
+        $event = new SaleTransformEvent($this->source, $this->target, true);
 
         $this->eventDispatcher->dispatch($event, SaleTransformEvents::PRE_DUPLICATE);
         if ($event->hasErrors() || $event->isPropagationStopped()) {
