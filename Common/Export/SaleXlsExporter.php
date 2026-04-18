@@ -200,9 +200,11 @@ class SaleXlsExporter implements SaleExporterInterface
         };
 
         // B5(-C5): Invoice address
-        $address = $formatAddress(
-            $this->commonRenderer->renderAddress($sale->getInvoiceAddress())
-        );
+        if ($address = $sale->getInvoiceAddress()) {
+            $address = $formatAddress(
+                $this->commonRenderer->renderAddress($address)
+            );
+        }
 
         $this->sheet->mergeCells("B$this->row:C$this->row");
         $this->col = 1;
@@ -214,9 +216,9 @@ class SaleXlsExporter implements SaleExporterInterface
         $this->sheet->mergeCells("D$this->row:E$this->row");
 
         // F5(-K5): Delivery address
-        if (!$sale->isSameAddress()) {
+        if (!$sale->isSameAddress() && $address = $sale->getDeliveryAddress()) {
             $address = $formatAddress(
-                $this->commonRenderer->renderAddress($sale->getDeliveryAddress())
+                $this->commonRenderer->renderAddress($address)
             );
         }
 
