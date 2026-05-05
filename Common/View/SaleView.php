@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\View;
 
-use InvalidArgumentException;
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
 
 use function array_replace;
 use function is_string;
@@ -132,9 +132,36 @@ class SaleView extends AbstractView
     /**
      * Adds the button.
      */
-    public function addButton(Button $button): void
+    public function addButton(string $name, Button $button, bool $replace = false): void
     {
-        $this->buttons[] = $button;
+        if ($this->hasButton($name) && !$replace) {
+            throw new InvalidArgumentException("Button '$name' already exists.");
+        }
+
+        $this->buttons[$name] = $button;
+    }
+
+    public function removeButton(string $name): void
+    {
+        if (!$this->hasButton($name)) {
+            throw new InvalidArgumentException("Button '$name' does not exist.");
+        }
+
+        unset($this->buttons[$name]);
+    }
+
+    public function hasButton(string $name): bool
+    {
+        return isset($this->buttons[$name]);
+    }
+
+    public function getButton(string $name): Button
+    {
+        if (!$this->hasButton($name)) {
+            throw new InvalidArgumentException("Button '$name' does not exist.");
+        }
+
+        return $this->buttons[$name];
     }
 
     /**

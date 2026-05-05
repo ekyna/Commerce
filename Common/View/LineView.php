@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\View;
 
+use Ekyna\Component\Commerce\Exception\InvalidArgumentException;
+
 /**
  * Class LineView
  * @package Ekyna\Component\Commerce\Common\View
@@ -48,9 +50,36 @@ class LineView extends AbstractView
     ) {
     }
 
-    public function addAction(Action $action): void
+    public function addAction(string $name, Action $action, bool $replace = false): void
     {
-        $this->actions[] = $action;
+        if ($this->hasAction($name) && !$replace) {
+            throw new InvalidArgumentException("Action '$name' already exists.");
+        }
+
+        $this->actions[$name] = $action;
+    }
+
+    public function removeAction(string $name): void
+    {
+        if (!$this->hasAction($name)) {
+            throw new InvalidArgumentException("Action '$name' already exists.");
+        }
+
+        unset($this->actions[$name]);
+    }
+
+    public function hasAction(string $name): bool
+    {
+        return isset($this->actions[$name]);
+    }
+
+    public function getAction(string $name): Action
+    {
+        if (!$this->hasAction($name)) {
+            throw new InvalidArgumentException("Action '$name' already exists.");
+        }
+
+        return $this->actions[$name];
     }
 
     /**
