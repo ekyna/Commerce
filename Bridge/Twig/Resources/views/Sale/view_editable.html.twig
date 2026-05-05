@@ -40,6 +40,7 @@
 {% block lines_headers %}
 {% apply spaceless %}
     {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
+    {% if view.vars.show_drag %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     <th class="sale-detail-actions">
         {% if view.vars.private and view.vars.has_private_item -%}
@@ -108,6 +109,15 @@
         {%- endif -%}
     </td>
     {%- endif %}
+    {% if view.vars.show_drag -%}
+    <td class="sale-detail-drag">
+        {% if line.level == 0 -%}
+        <a href="javascript:void(0)" class="text-muted" draggable="false">
+            <i class="fa fa-bars"></i>
+        </a>
+        {%- endif %}
+    </td>
+    {%- endif %}
     {{ parent() }}
 {% endapply %}
 {% endblock line_columns %}
@@ -118,6 +128,7 @@
     <tbody>
     <tr id="sale_gross">
         {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
+        {% if view.vars.show_drag %}<td>&nbsp;</td>{% endif %}
         <th>&nbsp;</th>
         <th class="text-right" colspan="{{ view.vars.columns_count - (view.vars.show_discounts ? 7 : 4) + (view.vars.show_availability ? 1 : 0) }}">
             <strong>{{ view.translations.gross_totals }}</strong>
@@ -143,6 +154,7 @@
 {% block discount %}
 {% apply spaceless %}
     {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
+    {% if view.vars.show_drag %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     {{ block('actions') }}
 {% endapply %}
@@ -152,6 +164,7 @@
 {% block shipment %}
 {% apply spaceless %}
     {% if view.vars.show_batch %}<td>&nbsp;</td>{% endif %}
+    {% if view.vars.show_drag %}<td>&nbsp;</td>{% endif %}
     {{ parent() }}
     {{ block('actions') }}
 {% endapply %}

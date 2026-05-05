@@ -130,41 +130,50 @@ class ViewBuilder
             $type->buildSaleView($sale, $this->view, $this->options);
         }
 
-        $columnsCount = 6;
+        $columnsCount = 6; // number, designation, reference, unit_price, quantity, total
         if ($this->view->vars['show_availability']) {
-            $columnsCount++;
-        }
-
-        $this->view->vars['show_discounts'] =
-            $this->options['discounts'] || 0 < count($grossResult->getDiscountAdjustments());
-        if ($this->view->vars['show_discounts']) {
-            $columnsCount += 3;
+            $columnsCount++; // availability
         }
 
         $this->view->vars['show_taxes'] =
             $this->options['taxes'] || 1 < count($finalResult->getTaxAdjustments());
         if ($this->view->vars['show_taxes']) {
-            $columnsCount++;
+            $columnsCount++; // tax_rate
         }
+
+        $this->view->vars['show_discounts'] =
+            $this->options['discounts'] || 0 < count($grossResult->getDiscountAdjustments());
+        if ($this->view->vars['show_discounts']) {
+            $columnsCount += 3; // gross, discount percent, discount amount
+        }
+
         if ($this->view->vars['show_margin']) {
-            $columnsCount++;
+            $columnsCount++; // margin percent
         }
-        if ($this->options['editable'] && is_null($this->view->vars['show_batch'])) {
-            $columnsCount++;
-            $batchableCount = 0;
-            foreach ($this->view->getItems() as $line) {
-                if (!$line->batchable) {
-                    continue;
-                }
-                $batchableCount++;
-                if (1 < $batchableCount) {
-                    $this->view->vars['show_batch'] = true;
-                    break;
+        if ($this->options['editable']) {
+            $columnsCount++; // actions
+            if ($this->options['private']) {
+                $this->view->vars['show_drag'] = true;
+            }
+            if (is_null($this->view->vars['show_batch'])) {
+                $batchableCount = 0;
+                foreach ($this->view->getItems() as $line) {
+                    if (!$line->batchable) {
+                        continue;
+                    }
+                    $batchableCount++;
+                    if (1 < $batchableCount) {
+                        $this->view->vars['show_batch'] = true;
+                        break;
+                    }
                 }
             }
         }
         if ($this->view->vars['show_batch']) {
-            $columnsCount++;
+            $columnsCount++; // checkbox
+        }
+        if ($this->view->vars['show_drag']) {
+            $columnsCount++; // drag handler
         }
         $this->view->vars['columns_count'] = $columnsCount;
         $this->view->vars['private'] = $this->options['private'];

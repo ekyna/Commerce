@@ -54,6 +54,7 @@ class SaleView extends AbstractView
             'show_discount'     => false,
             'show_margin'       => false,
             'show_batch'        => null,
+            'show_drag'         => false,
         ];
     }
 
