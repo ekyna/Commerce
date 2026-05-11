@@ -118,6 +118,9 @@
         {%- if line.vars.invalid is defined -%}
             <span>🔶</span>
         {%- endif -%}
+        {% if line.icon is not null -%}
+            {{ line.icon.html|raw }}
+        {%- endif %}
         {%- if line.vars.link is defined -%}
             <a{% with {attr: {'href': 'javascript:void(0)'}|merge(line.vars.link)} %} {{ block('attributes') }}{% endwith %}>
                 {{ line.designation|raw }}

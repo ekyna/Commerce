@@ -22,6 +22,8 @@ use Locale;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function array_map;
+use function array_replace;
 use function implode;
 use function sprintf;
 
@@ -381,6 +383,15 @@ class ViewBuilder
                     $view->addLine($line);
                 }
             }
+        }
+        if (!empty($view->getComments())) {
+            $view->vars['attr'] = array_replace($view->vars['attr'], [
+                'data-toggle'  => 'popover',
+                'data-content' => implode('<br>', array_map(
+                    fn (Comment $c) => $c->html(),
+                    $view->getComments()
+                )),
+            ]);
         }
 
         return $view;

@@ -39,8 +39,11 @@ class LineView extends AbstractView
     public ?object $source         = null;
     /** @var array<LineView> */
     private array $lines = [];
-    /** @var array<Action> */
+    /** @var array<string, Action> */
     private array $actions = [];
+    /** @var array<string, Comment> */
+    private array $comments = [];
+    public ?Icon  $icon     = null;
 
     public function __construct(
         public string $id,
@@ -62,7 +65,7 @@ class LineView extends AbstractView
     public function removeAction(string $name): void
     {
         if (!$this->hasAction($name)) {
-            throw new InvalidArgumentException("Action '$name' already exists.");
+            throw new InvalidArgumentException("Action '$name' does not exist.");
         }
 
         unset($this->actions[$name]);
@@ -76,18 +79,58 @@ class LineView extends AbstractView
     public function getAction(string $name): Action
     {
         if (!$this->hasAction($name)) {
-            throw new InvalidArgumentException("Action '$name' already exists.");
+            throw new InvalidArgumentException("Action '$name' does not exist.");
         }
 
         return $this->actions[$name];
     }
 
     /**
-     * @return array<Action>
+     * @return array<string, Action>
      */
     public function getActions(): array
     {
         return $this->actions;
+    }
+
+    public function addComment(string $name, Comment $comment, bool $replace = false): void
+    {
+        if ($this->hasComment($name) && !$replace) {
+            throw new InvalidArgumentException("Comment '$name' already exists.");
+        }
+
+        $this->comments[$name] = $comment;
+    }
+
+    public function removeComment(string $name): void
+    {
+        if (!$this->hasComment($name)) {
+            throw new InvalidArgumentException("Comment '$name' does not exist.");
+        }
+
+        unset($this->comments[$name]);
+    }
+
+    public function hasComment(string $name): bool
+    {
+        return isset($this->comments[$name]);
+    }
+
+    public function getComment(string $name): Comment
+    {
+        if (!$this->hasComment($name)) {
+            throw new InvalidArgumentException("Comment '$name' does not exist.");
+        }
+
+        return $this->comments[$name];
+    }
+
+    /**
+     * @return array<string, Comment>
+     */
+    public function getComments(): array
+    {
+        return $this->comments;
     }
 
     public function addLine(LineView $line): void
