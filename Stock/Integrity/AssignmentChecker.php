@@ -2,6 +2,7 @@
 
 namespace Ekyna\Component\Commerce\Stock\Integrity;
 
+use Ekyna\Component\Commerce\Order\Model\OrderStates;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -42,6 +43,9 @@ class AssignmentChecker extends AbstractChecker
         } elseif ($result['is_released']) {
             throw new \RuntimeException("Released non sample order #{$result['order_id']}");
         } else {
+            if (!OrderStates::isStockableState($result['state'], true)) {
+                $result['item_sum'] = 0;
+            }
             // Regular case
             $result['sold_sum'] = max($result['item_sum'], $result['invoice_sum'] - $result['adjusted_sum']) - $result['credit_sum'];
         }
@@ -334,6 +338,7 @@ SQL
         return <<<SQL
 SELECT 
     o.id AS order_id, 
+    o.state,
     o.is_sample, 
     o.is_released,
     i1.id as item_id, 
