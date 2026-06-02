@@ -23,6 +23,29 @@ class Margin
     ) {
     }
 
+    public static function fromArray(array $data): Margin
+    {
+        $data = array_replace_recursive([
+            'revenue' => [
+                'product'  => '0',
+                'shipment' => '0',
+            ],
+            'cost'    => [
+                'product'  => '0',
+                'supply'   => '0',
+                'shipment' => '0',
+            ],
+        ], $data);
+
+        return new Margin(
+            new Decimal((string)$data['revenue']['product']),
+            new Decimal((string)$data['revenue']['shipment']),
+            new Decimal((string)$data['cost']['product']),
+            new Decimal((string)$data['cost']['supply']),
+            new Decimal((string)$data['cost']['shipment']),
+        );
+    }
+
     public function __clone(): void
     {
         $this->revenueProduct = clone $this->revenueProduct;
@@ -231,5 +254,20 @@ class Margin
     public function isAverage(): bool
     {
         return $this->average;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'revenue' => [
+                'product'  => $this->revenueProduct->toFixed(2),
+                'shipment' => $this->revenueShipment->toFixed(2),
+            ],
+            'cost'    => [
+                'product'  => $this->costProduct->toFixed(2),
+                'supply'   => $this->costSupply->toFixed(2),
+                'shipment' => $this->costShipment->toFixed(2),
+            ],
+        ];
     }
 }
