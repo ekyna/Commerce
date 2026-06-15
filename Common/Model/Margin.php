@@ -6,6 +6,8 @@ namespace Ekyna\Component\Commerce\Common\Model;
 
 use Decimal\Decimal;
 
+use function array_replace_recursive;
+
 /**
  * Class Margin
  * @package Ekyna\Component\Commerce\Common\Model
@@ -53,6 +55,13 @@ class Margin
         $this->costProduct = clone $this->costProduct;
         $this->costSupply = clone $this->costSupply;
         $this->costShipment = clone $this->costShipment;
+    }
+
+    public function duplicate(array $data = []): Margin
+    {
+        $data = array_replace_recursive($this->toArray(), $data);
+
+        return self::fromArray($data);
     }
 
     public function addRevenue(Revenue $revenue): Margin
