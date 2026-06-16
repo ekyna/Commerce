@@ -13,7 +13,6 @@ final class SaleItemEvents
 {
     public const INITIALIZE = 'ekyna_commerce.sale_item.initialize';
     public const BUILD      = 'ekyna_commerce.sale_item.build';
-    public const DISCOUNT   = 'ekyna_commerce.sale_item.discount';
 
     /**
      * Disabled constructor.

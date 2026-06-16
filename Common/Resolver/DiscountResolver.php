@@ -44,9 +44,9 @@ class DiscountResolver implements DiscountResolverInterface
             return [];
         }
 
-        $event = new Event\SaleItemEvent($item);
+        $event = new Event\SaleItemDiscountEvent($item);
 
-        $this->eventDispatcher->dispatch($event, Event\SaleItemEvents::DISCOUNT);
+        $this->eventDispatcher->dispatch($event);
 
         return $event->getAdjustmentsData();
     }
