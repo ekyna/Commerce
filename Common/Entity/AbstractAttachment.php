@@ -30,6 +30,11 @@ abstract class AbstractAttachment extends AbstractResource implements Attachment
         return $this->getFilename() ?: 'New attachment';
     }
 
+    public function __construct()
+    {
+        $this->initializeTimestampable();
+    }
+
     public function getTitle(): ?string
     {
         return $this->title;
