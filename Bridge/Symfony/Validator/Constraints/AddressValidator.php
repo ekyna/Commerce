@@ -113,7 +113,7 @@ class AddressValidator extends ConstraintValidator
         ];
 
         if (null !== $country = $address->getCountry()) {
-            $config['phone'] = [
+            /*$config['phone'] = [
                 new PhoneNumber([
                     'type'          => ['fixed_line', 'voip'],
                     'defaultRegion' => $country->getCode(),
@@ -124,7 +124,7 @@ class AddressValidator extends ConstraintValidator
                     'type'          => 'mobile',
                     'defaultRegion' => $country->getCode(),
                 ]),
-            ];
+            ];*/
 
             $zipCodeClass = 'ZipCodeValidator\Constraints\ZipCode';
             if (class_exists($zipCodeClass)) {

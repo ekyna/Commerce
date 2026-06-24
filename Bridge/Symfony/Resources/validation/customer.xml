@@ -70,7 +70,7 @@
                 </option>
             </constraint>
         </property>
-        <property name="phone">
+        <!--<property name="phone">
             <constraint name="Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber">
                 <option name="type">
                     <value>fixed_line</value>
@@ -94,7 +94,7 @@
                     <value>Profile</value>
                 </option>
             </constraint>
-        </property>
+        </property>-->
         <property name="customerGroup">
             <constraint name="NotNull">
                 <option name="groups">
