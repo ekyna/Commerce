@@ -42,6 +42,9 @@
                 <cascade-persist/>
                 <cascade-remove/>
             </cascade>
+            <order-by>
+                <order-by-field name="position"/>
+            </order-by>
         </one-to-many>
 
     </mapped-superclass>
