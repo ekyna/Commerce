@@ -105,6 +105,10 @@ class SaleUpdater implements SaleUpdaterInterface
 
     public function updateDiscounts(SaleInterface $sale, bool $persistence = false): bool
     {
+        if (!$sale->isAutoDiscount())  {
+            return false;
+        }
+
         $changed = $this->itemUpdater->updateChildrenNetPriceAndDiscount($sale, $persistence);
 
         return $this->adjustmentBuilder->buildSaleDiscountAdjustments($sale, $persistence) || $changed;
