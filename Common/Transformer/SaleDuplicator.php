@@ -40,6 +40,7 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
 
         $this->target
             //->setCustomerGroup(null)
+            ->setAutoDiscount(false)
             ->setCompanyNumber(null)
             ->setDescription(null)
             ->setPreparationNote(null)
@@ -81,7 +82,9 @@ class SaleDuplicator extends AbstractOperator implements SaleDuplicatorInterface
         }
 
         // Persist the target sale
+        $this->adjustmentBuilder->setEnabled(false);
         $targetEvent = $this->getManager($this->target)->save($this->target);
+        $this->adjustmentBuilder->setEnabled(true);
         if ($targetEvent->hasErrors() || $targetEvent->isPropagationStopped()) {
             return $targetEvent;
         }

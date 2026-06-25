@@ -43,6 +43,8 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
             ->create($this->source, $this->target)
             ->copySale();
 
+        $this->target->setAutoDiscount(false);
+
         $this->eventDispatcher->dispatch($event, SaleTransformEvents::POST_COPY);
 
         $this->getFactory($this->target)->initialize($this->target);
@@ -64,7 +66,9 @@ class SaleTransformer extends AbstractOperator implements SaleTransformerInterfa
         }
 
         // Persist the target sale
+        $this->adjustmentBuilder->setEnabled(false);
         $targetEvent = $this->getManager($this->target)->save($this->target);
+        $this->adjustmentBuilder->setEnabled(true);
         if ($targetEvent->hasErrors() || $targetEvent->isPropagationStopped()) {
             return $targetEvent;
         }

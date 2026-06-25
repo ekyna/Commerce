@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\Transformer;
 
 use Ekyna\Component\Commerce\Cart\Model\CartInterface;
+use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilderInterface;
 use Ekyna\Component\Commerce\Common\Factory\SaleFactoryInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Exception\UnexpectedTypeException;
@@ -26,10 +27,11 @@ class AbstractOperator
     protected ?SaleInterface $target = null;
 
     public function __construct(
-        protected readonly SaleCopierFactoryInterface $saleCopierFactory,
-        protected readonly FactoryFactoryInterface    $factoryFactory,
-        protected readonly ManagerFactoryInterface    $managerFactory,
-        protected readonly EventDispatcherInterface   $eventDispatcher
+        protected readonly SaleCopierFactoryInterface     $saleCopierFactory,
+        protected readonly SaleAdjustmentBuilderInterface $adjustmentBuilder,
+        protected readonly FactoryFactoryInterface        $factoryFactory,
+        protected readonly ManagerFactoryInterface        $managerFactory,
+        protected readonly EventDispatcherInterface       $eventDispatcher
     ) {
     }
 

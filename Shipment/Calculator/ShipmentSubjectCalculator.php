@@ -45,6 +45,11 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
 
     public function isShipped(SaleItem $saleItem): bool
     {
+        $sale = $saleItem->getRootSale();
+        if (!$sale instanceof Subject) {
+            return false;
+        }
+
         // If compound with only public children
         if ($saleItem->isCompound() && !$saleItem->hasPrivateChildren()) {
             // Shipped if any of its children is
@@ -54,11 +59,6 @@ class ShipmentSubjectCalculator implements ShipmentSubjectCalculatorInterface
                 }
             }
 
-            return false;
-        }
-
-        $sale = $saleItem->getRootSale();
-        if (!$sale instanceof Subject) {
             return false;
         }
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
-use Ekyna\Component\Commerce\Common\Event;
+use Ekyna\Component\Commerce\Common\Event\SaleEvent;
+use Ekyna\Component\Commerce\Common\Event\SaleEvents;
+use Ekyna\Component\Commerce\Common\Event\SaleItemDiscountEvent;
 use Ekyna\Component\Commerce\Common\Model;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -23,31 +25,31 @@ class DiscountResolver implements DiscountResolverInterface
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function resolveSale(Model\SaleInterface $sale): array
+    public function resolveSale(Model\SaleInterface $sale): SaleEvent
     {
-        $event = new Event\SaleEvent($sale);
+        $event = new SaleEvent($sale);
 
-        $this->eventDispatcher->dispatch($event, Event\SaleEvents::DISCOUNT);
+        $this->eventDispatcher->dispatch($event, SaleEvents::DISCOUNT); // TODO SaleDiscountEvent
 
-        return $event->getAdjustmentsData();
+        return $event;
     }
 
-    public function resolveSaleItem(Model\SaleItemInterface $item): array
+    public function resolveSaleItem(Model\SaleItemInterface $item): SaleItemDiscountEvent
     {
+        $event = new SaleItemDiscountEvent($item);
+
         // Don't apply discounts to private items (they will inherit from parents)
         if ($item->isPrivate()) {
-            return [];
+            return $event;
         }
 
         // Don't apply discount to compound items with only public children
         if ($item->isCompound() && !$item->hasPrivateChildren()) {
-            return [];
+            return $event;
         }
-
-        $event = new Event\SaleItemDiscountEvent($item);
 
         $this->eventDispatcher->dispatch($event);
 
-        return $event->getAdjustmentsData();
+        return $event;
     }
 }

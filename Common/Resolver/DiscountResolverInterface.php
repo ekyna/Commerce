@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Resolver;
 
+use Ekyna\Component\Commerce\Common\Event\SaleEvent;
+use Ekyna\Component\Commerce\Common\Event\SaleItemDiscountEvent;
 use Ekyna\Component\Commerce\Common\Model;
 
 /**
@@ -15,15 +17,11 @@ interface DiscountResolverInterface
 {
     /**
      * Resolves the sale discount adjustments.
-     *
-     * @return Model\AdjustmentDataInterface[]
      */
-    public function resolveSale(Model\SaleInterface $sale): array;
+    public function resolveSale(Model\SaleInterface $sale): SaleEvent;
 
     /**
      * Resolves the sale item discount adjustments.
-     *
-     * @return Model\AdjustmentDataInterface[]
      */
-    public function resolveSaleItem(Model\SaleItemInterface $item): array;
+    public function resolveSaleItem(Model\SaleItemInterface $item): SaleItemDiscountEvent;
 }

@@ -31,6 +31,7 @@ class SaleUpdater implements SaleUpdaterInterface
 {
     public function __construct(
         private readonly AddressBuilderInterface           $addressBuilder,
+        private readonly SaleItemUpdaterInterface          $itemUpdater,
         private readonly SaleAdjustmentBuilderInterface    $adjustmentBuilder,
         private readonly AmountCalculatorFactory           $calculatorFactory,
         private readonly CurrencyConverterInterface        $currencyConverter,
@@ -104,7 +105,7 @@ class SaleUpdater implements SaleUpdaterInterface
 
     public function updateDiscounts(SaleInterface $sale, bool $persistence = false): bool
     {
-        $changed = $this->adjustmentBuilder->buildSaleItemsDiscountAdjustments($sale, $persistence);
+        $changed = $this->itemUpdater->updateChildrenNetPriceAndDiscount($sale, $persistence);
 
         return $this->adjustmentBuilder->buildSaleDiscountAdjustments($sale, $persistence) || $changed;
     }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Ekyna\Component\Commerce\Common\EventListener;
 
 use Ekyna\Component\Commerce\Common\Builder\SaleAdjustmentBuilderInterface;
+use Ekyna\Component\Commerce\Common\Helper\SaleHelper;
 use Ekyna\Component\Commerce\Common\Model;
+use Ekyna\Component\Commerce\Common\Updater\SaleItemUpdater;
 use Ekyna\Component\Commerce\Exception\IllegalOperationException;
 use Ekyna\Component\Resource\Event\ResourceEventInterface;
 use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
@@ -18,11 +20,17 @@ use Ekyna\Component\Resource\Persistence\PersistenceHelperInterface;
 abstract class AbstractSaleItemListener
 {
     protected PersistenceHelperInterface     $persistenceHelper;
+    protected SaleItemUpdater                $saleItemUpdater;
     protected SaleAdjustmentBuilderInterface $adjustmentBuilder;
 
     public function setPersistenceHelper(PersistenceHelperInterface $persistenceHelper): void
     {
         $this->persistenceHelper = $persistenceHelper;
+    }
+
+    public function setSaleItemUpdater(SaleItemUpdater $saleItemUpdater): void
+    {
+        $this->saleItemUpdater = $saleItemUpdater;
     }
 
     public function setSaleAdjustmentBuilder(SaleAdjustmentBuilderInterface $adjustmentBuilder): void
@@ -59,7 +67,7 @@ abstract class AbstractSaleItemListener
         // Handle discount update
         $discountFields = [
             'subjectIdentity.provider', 'subjectIdentity.identifier',
-            'netPrice', 'quantity', 'compound', 'private'
+            'quantity', 'compound', 'private'
         ];
         if ($this->persistenceHelper->isChanged($item, $discountFields)) {
             $this->updateDiscount($item);
@@ -152,7 +160,11 @@ abstract class AbstractSaleItemListener
      */
     protected function updateDiscount(Model\SaleItemInterface $item): bool
     {
-        return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item, true);
+        if (!$item->getRootSale()->isAutoDiscount()) {
+            return false;
+        }
+
+        return $this->saleItemUpdater->updateNetPriceAndDiscount($item, true);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ekyna\Component\Commerce\Common\Builder;
 
+use Ekyna\Component\Commerce\Common\Helper\SaleHelper;
 use Ekyna\Component\Commerce\Common\Model\AdjustmentTypes;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
@@ -20,6 +21,9 @@ use function array_key_exists;
  */
 class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
 {
+    private bool $discountEnabled = true;
+    private bool $taxationEnabled = true;
+
     public function __construct(
         private readonly AdjustmentBuilderInterface $adjustmentBuilder,
         private readonly TaxResolverInterface       $taxResolver,
@@ -27,48 +31,53 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
     ) {
     }
 
+    public function setEnabled(bool $enabled): void
+    {
+        $this->discountEnabled = $enabled;
+        $this->taxationEnabled = $enabled;
+    }
+
+    public function setDiscountEnabled(bool $enabled): void
+    {
+        $this->discountEnabled = $enabled;
+    }
+
+    public function setTaxationEnabled(bool $enabled): void
+    {
+        $this->taxationEnabled = $enabled;
+    }
+
     /**
      * @inheritDoc
      */
     public function buildSaleDiscountAdjustments(SaleInterface $sale, bool $persistence = false): bool
     {
+        if (!$this->discountEnabled) {
+            return false;
+        }
+
         if (!$this->canUpdateDiscounts($sale)) {
             return false;
         }
 
-        $changed = $this->buildSaleItemsDiscountAdjustments($sale, $persistence);
+        $changed = false;
 
-        $data = !$sale->isSample() ? $this->discountResolver->resolveSale($sale) : [];
+        $data = [];
+        if (!$sale->isSample()) {
+            $event = $this->discountResolver->resolveSale($sale);
+            $data = $event->getAdjustmentsData();
+        }
 
         return $this
                 ->adjustmentBuilder
                 ->buildAdjustments(AdjustmentTypes::TYPE_DISCOUNT, $sale, $data, $persistence) || $changed;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function buildSaleItemsDiscountAdjustments(
-        SaleInterface|SaleItemInterface $parent,
-        bool                            $persistence = false
-    ): bool {
-        if ($parent instanceof SaleInterface) {
-            $children = $parent->getItems();
-        } else {
-            $children = $parent->getChildren();
-        }
-
-        $changed = false;
-
-        foreach ($children as $child) {
-            $changed = $this->buildSaleItemDiscountAdjustments($child, $persistence) || $changed;
-
-            if ($child->hasChildren()) {
-                $changed = $this->buildSaleItemsDiscountAdjustments($child, $persistence) || $changed;
-            }
-        }
-
-        return $changed;
+    public function clearSaleDiscountAdjustments(SaleInterface $sale, bool $persistence = false): bool
+    {
+        return $this
+            ->adjustmentBuilder
+            ->clearAdjustments(AdjustmentTypes::TYPE_DISCOUNT, $sale, $persistence);
     }
 
     /**
@@ -76,11 +85,19 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
      */
     public function buildSaleItemDiscountAdjustments(SaleItemInterface $item, bool $persistence = false): bool
     {
+        if (!$this->discountEnabled) {
+            return false;
+        }
+
         if (!$this->canUpdateDiscounts($item)) {
             return false;
         }
 
-        $data = !$item->getRootSale()->isSample() ? $this->discountResolver->resolveSaleItem($item) : [];
+        $data =  [];
+        if (!$item->getRootSale()->isSample()) {
+            $event = $this->discountResolver->resolveSaleItem($item);
+            $data = $event->getAdjustmentsData();
+        }
 
         $changed = false;
         if (array_key_exists('force_update', $data)) {
@@ -94,16 +111,27 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
             || $changed;
     }
 
+    public function clearSaleItemDiscountAdjustments(SaleItemInterface $item, bool $persistence = false): bool
+    {
+        return $this
+            ->adjustmentBuilder
+            ->clearAdjustments(AdjustmentTypes::TYPE_DISCOUNT, $item, $persistence);
+    }
+
     /**
      * @inheritDoc
      */
     public function buildSaleTaxationAdjustments(SaleInterface $sale, bool $persistence = false): bool
     {
+        if (!$this->taxationEnabled) {
+            return false;
+        }
+
         if (!$this->canUpdateTaxation($sale)) {
             return false;
         }
 
-        $changed = $this->buildSaleItemsTaxationAdjustments($sale, $persistence);
+        $changed = false;
 
         $data = [];
 
@@ -125,6 +153,10 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
         SaleInterface|SaleItemInterface $parent,
         bool                            $persistence = false
     ): bool {
+        if (!$this->taxationEnabled) {
+            return false;
+        }
+
         if (!$this->canUpdateTaxation($parent)) {
             return false;
         }
@@ -153,6 +185,10 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
      */
     public function buildSaleItemTaxationAdjustments(SaleItemInterface $item, bool $persistence = false): bool
     {
+        if (!$this->taxationEnabled) {
+            return false;
+        }
+
         if (!$this->canUpdateTaxation($item)) {
             return false;
         }
@@ -182,8 +218,7 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
         }
 
         if ($resource instanceof SaleInterface) {
-            // TODO Define when it should be locked
-            return $resource->isAutoDiscount(); // && !$resource->hasPaidPayments()
+            return $resource->isAutoDiscount() && !SaleHelper::isSalePriceLocked($resource);
         }
 
         throw new UnexpectedTypeException($resource, [SaleInterface::class, SaleItemInterface::class]);
@@ -202,8 +237,7 @@ class SaleAdjustmentBuilder implements SaleAdjustmentBuilderInterface
         }
 
         if ($resource instanceof SaleInterface) {
-            // TODO Define when it should be locked
-            return true; // && !$resource->hasPaidPayments()
+            return !SaleHelper::isSalePriceLocked($resource);
         }
 
         throw new UnexpectedTypeException($resource, [SaleInterface::class, SaleItemInterface::class]);

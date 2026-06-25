@@ -28,6 +28,28 @@ class AdjustmentBuilder implements AdjustmentBuilderInterface
     ) {
     }
 
+    public function clearAdjustments(
+        string              $type,
+        AdjustableInterface $adjustable,
+        bool                $persistence = false
+    ): bool {
+        AdjustmentTypes::isValidType($type);
+
+        if (!$adjustable->hasAdjustments($type)) {
+            return false;
+        }
+
+        foreach ($adjustable->getAdjustments($type) as $adjustment) {
+            $adjustable->removeAdjustment($adjustment);
+
+            if ($persistence) {
+                $this->persistenceHelper->remove($adjustment, true);
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Builds the adjustments regarding the given data and type.
      *

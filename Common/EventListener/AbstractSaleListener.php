@@ -9,6 +9,7 @@ use Ekyna\Component\Commerce\Common\Calculator\AmountCalculatorFactory;
 use Ekyna\Component\Commerce\Common\Currency\CurrencyProviderInterface;
 use Ekyna\Component\Commerce\Common\Generator\GeneratorInterface;
 use Ekyna\Component\Commerce\Common\Helper\FactoryHelperInterface;
+use Ekyna\Component\Commerce\Common\Helper\SaleHelper;
 use Ekyna\Component\Commerce\Common\Model\SaleInterface;
 use Ekyna\Component\Commerce\Common\Resolver\StateResolverInterface;
 use Ekyna\Component\Commerce\Common\Updater\SaleUpdaterInterface;
@@ -393,19 +394,20 @@ abstract class AbstractSaleListener
      */
     protected function isDiscountUpdateNeeded(SaleInterface $sale): bool
     {
-        if ($this->persistenceHelper->isChanged($sale, ['autoDiscount', 'couponData', 'customerGroup', 'customer'])) {
-            return true;
+        if (SaleHelper::isSalePriceLocked($sale)) {
+            return false;
         }
 
-        if ($sale->getPaidTotal()->isZero()
-            && $this->persistenceHelper->isChanged($sale, [
-                'customerGroup',
-                'customer',
-            ])) {
+        if ($this->persistenceHelper->isChanged($sale, $this->getDiscountUpdateFields())) {
             return true;
         }
 
         return $this->didInvoiceCountryChanged($sale);
+    }
+
+    protected function getDiscountUpdateFields(): array
+    {
+        return ['autoDiscount', 'couponData', 'customerGroup', 'customer'];
     }
 
     /**
@@ -441,13 +443,22 @@ abstract class AbstractSaleListener
      */
     protected function isTaxationUpdateNeeded(SaleInterface $sale): bool
     {
+        if (SaleHelper::isSalePriceLocked($sale)) {
+            return false;
+        }
+
         // TODO Get tax resolution mode. (by invoice/delivery/origin).
 
-        if ($this->persistenceHelper->isChanged($sale, ['taxExempt', 'customer', 'vatValid'])) {
+        if ($this->persistenceHelper->isChanged($sale, $this->getTaxUpdateFields())) {
             return true;
         }
 
         return $this->didDeliveryCountryChanged($sale);
+    }
+
+    protected function getTaxUpdateFields(): array
+    {
+        return ['taxExempt', 'customer', 'vatValid'];
     }
 
     /**

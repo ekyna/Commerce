@@ -88,6 +88,8 @@ class SaleItemHelper
 
     public function isShippedOrInvoiced(SaleItemInterface $item): bool
     {
+        // Is Paid ?
+
         if ($this->shipmentSubjectCalculator->isShipped($item)) {
             return true;
         }

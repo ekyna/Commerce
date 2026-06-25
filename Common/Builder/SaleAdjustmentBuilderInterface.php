@@ -14,6 +14,12 @@ use Ekyna\Component\Commerce\Common\Model\SaleItemInterface;
  */
 interface SaleAdjustmentBuilderInterface
 {
+    public function setEnabled(bool $enabled): void;
+
+    public function setDiscountEnabled(bool $enabled): void;
+
+    public function setTaxationEnabled(bool $enabled): void;
+
     /**
      * Builds the discount adjustments for the given sale.
      *
@@ -24,18 +30,7 @@ interface SaleAdjustmentBuilderInterface
      */
     public function buildSaleDiscountAdjustments(SaleInterface $sale, bool $persistence = false): bool;
 
-    /**
-     * Builds the discount adjustments for the given sale items recursively.
-     *
-     * @param SaleInterface|SaleItemInterface $parent
-     * @param bool                            $persistence
-     *
-     * @return bool Whether at least one adjustment has been changed.
-     */
-    public function buildSaleItemsDiscountAdjustments(
-        SaleInterface|SaleItemInterface $parent,
-        bool                            $persistence = false
-    ): bool;
+    public function clearSaleDiscountAdjustments(SaleInterface $sale, bool $persistence = false): bool;
 
     /**
      * Builds the discount adjustments for the given sale item.
@@ -46,6 +41,8 @@ interface SaleAdjustmentBuilderInterface
      * @return bool Whether at least one adjustment has been changed.
      */
     public function buildSaleItemDiscountAdjustments(SaleItemInterface $item, bool $persistence = false): bool;
+
+    public function clearSaleItemDiscountAdjustments(SaleItemInterface $item, bool $persistence = false): bool;
 
     /**
      * Builds the taxation adjustments for the given sale.

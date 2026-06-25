@@ -378,22 +378,22 @@ class OrderListener extends AbstractSaleListener
         }
     }
 
-    protected function isDiscountUpdateNeeded(SaleInterface $sale): bool
+    protected function getDiscountUpdateFields(): array
     {
-        if ($this->persistenceHelper->isChanged($sale, 'sample')) {
-            return true;
-        }
+        $fields = parent::getDiscountUpdateFields();
 
-        return parent::isDiscountUpdateNeeded($sale);
+        $fields[] = 'sample';
+
+        return $fields;
     }
 
-    protected function isTaxationUpdateNeeded(SaleInterface $sale): bool
+    protected function getTaxUpdateFields(): array
     {
-        if ($this->persistenceHelper->isChanged($sale, 'sample')) {
-            return true;
-        }
+        $fields = parent::getTaxUpdateFields();
 
-        return parent::isTaxationUpdateNeeded($sale);
+        $fields[] = 'sample';
+
+        return $fields;
     }
 
     protected function isShipmentTaxationUpdateNeeded(SaleInterface $sale): bool

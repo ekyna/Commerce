@@ -11,6 +11,5 @@ namespace Ekyna\Component\Commerce\Common\Event;
  */
 class SaleItemDiscountEvent extends SaleItemEvent
 {
-    public bool $usePriceGrid = true;
-    public bool $usePricing   = true;
+
 }

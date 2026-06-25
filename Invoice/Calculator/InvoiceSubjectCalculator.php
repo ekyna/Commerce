@@ -43,6 +43,11 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     public function isInvoiced(Item|Adjustment $itemOrAdjustment): bool
     {
+        $sale = $itemOrAdjustment->getRootSale();
+        if (!$sale instanceof Subject) {
+            return false;
+        }
+
         // Good line case
         if ($itemOrAdjustment instanceof Item) {
             // If compound with only public children
@@ -54,11 +59,6 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
                     }
                 }
 
-                return false;
-            }
-
-            $sale = $itemOrAdjustment->getRootSale();
-            if (!$sale instanceof Subject) {
                 return false;
             }
 
