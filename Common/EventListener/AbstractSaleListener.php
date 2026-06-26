@@ -148,7 +148,7 @@ abstract class AbstractSaleListener
         $changed = $this->saleUpdater->updateShipmentMethodAndAmount($sale) || $changed;
 
         // Update discounts
-        $changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
+        //$changed = $this->saleUpdater->updateDiscounts($sale, true) || $changed;
 
         // Update taxation
         $changed = $this->saleUpdater->updateTaxation($sale, true) || $changed;
@@ -711,9 +711,9 @@ abstract class AbstractSaleListener
         $changed = false;
 
         // Update discounts
-        if ($this->isDiscountUpdateNeeded($sale)) {
+        /*if ($this->isDiscountUpdateNeeded($sale)) {
             $changed = $this->saleUpdater->updateDiscounts($sale, true);
-        }
+        }*/
 
         // Update taxation
         if ($this->isTaxationUpdateNeeded($sale)) {

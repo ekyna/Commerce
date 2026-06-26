@@ -190,6 +190,11 @@
                         data-confirm="{{ view.translations.confirm_batch_synchronize }}">
                     {{- view.translations.btn_batch_synchronize -}}
                 </button>
+                <button type="button" id="sale_items_synchronise" name="sale_items_synchronise" disabled
+                        class="sale-view-batch btn-sm btn btn-warning disabled" data-action="resolve-prices"
+                        data-confirm="{{ view.translations.confirm_batch_resolve_prices }}">
+                    {{- view.translations.btn_batch_resolve_prices -}}
+                </button>
             {%- endif %}
         </td>
         <th>{{ (view.ati ? view.translations.ati_total : view.translations.net_total)|upper }}</th>

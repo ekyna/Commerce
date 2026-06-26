@@ -62,9 +62,9 @@ class AvailabilityViewType extends AbstractViewType
         );
 
         if ($quantity > $availability->getMaximumQuantity()) {
-            $view->addClass('danger');
+            $view->setClass('availability', 'danger');
         } elseif (!$availability->isAvailableForQuantity($quantity)) {
-            $view->addClass('warning');
+            $view->setClass('availability', 'warning');
         }
     }
 

@@ -74,6 +74,11 @@ class SaleItemUpdater implements SaleItemUpdaterInterface
             return $changed;
         }
 
+        // Discount adjustments don't apply to private items
+        if ($item->isPrivate()) {
+            return $changed;
+        }
+
         return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item);
     }
 }

@@ -46,10 +46,10 @@ class SaleUpdater implements SaleUpdaterInterface
     public function recalculate(SaleInterface $sale): bool
     {
         // 1. discounts
-        $changed = $this->updateDiscounts($sale);
+        //$changed = $this->updateDiscounts($sale);
 
         // 2. weight
-        $changed = $this->updateWeightTotal($sale) || $changed;
+        $changed = $this->updateWeightTotal($sale)/* || $changed*/;
 
         // 3. shipment amount (based on 2.)
         $changed = $this->updateShipmentMethodAndAmount($sale) || $changed;
@@ -109,9 +109,9 @@ class SaleUpdater implements SaleUpdaterInterface
             return false;
         }
 
-        $changed = $this->itemUpdater->updateChildrenNetPriceAndDiscount($sale, $persistence);
+        //$changed = $this->itemUpdater->updateChildrenNetPriceAndDiscount($sale, $persistence);
 
-        return $this->adjustmentBuilder->buildSaleDiscountAdjustments($sale, $persistence) || $changed;
+        return $this->adjustmentBuilder->buildSaleDiscountAdjustments($sale, $persistence)/* || $changed*/;
     }
 
     public function makeDiscountsMutable(SaleInterface $sale): void

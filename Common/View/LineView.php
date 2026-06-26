@@ -43,6 +43,8 @@ class LineView extends AbstractView
     private array $actions = [];
     /** @var array<string, Comment> */
     private array $comments = [];
+    /** @var array<string, string> */
+    private array $classes = [];
     public ?Icon  $icon     = null;
 
     public function __construct(
@@ -144,5 +146,15 @@ class LineView extends AbstractView
     public function getLines(): array
     {
         return $this->lines;
+    }
+
+    public function setClass(string $cell, string $class): void
+    {
+        $this->classes[$cell] = $class;
+    }
+
+    public function getClass(string $column): string
+    {
+        return $this->classes[$column] ?? '';
     }
 }

@@ -71,7 +71,7 @@
 
 {% block line_public %}
 {% apply spaceless %}
-    <td class="text-right" id="{{ line.id }}_unit">
+    <td class="text-right {{ line.class('unit') }}" id="{{ line.id }}_unit">
         {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
     </td>
     {%- if view.vars.show_taxes %}{{ block('line_taxes') }}{% endif -%}
@@ -87,7 +87,7 @@
 
 {% block line_private %}
 {% apply spaceless %}
-    <td class="text-right" id="{{ line.id }}_unit">
+    <td class="text-right {{ line.class('unit') }}" id="{{ line.id }}_unit">
         {%- if line.unit is not null %}{{ line.unit }}{% endif -%}
     </td>
     {%- if view.vars.show_taxes %}<td>&nbsp;</td>{% endif -%}
@@ -138,7 +138,7 @@
     </td>
     <td id="{{ line.id }}_reference" data-clipboard-copy="{{ line.reference }}">{{ line.reference }}</td>
     {% if view.vars.show_availability -%}
-        <td class="sale-detail-availability" id="{{ line.id }}_availability">{{ line.availability|raw }}</td>
+        <td class="sale-detail-availability {{ line.class('availability') }}" id="{{ line.id }}_availability">{{ line.availability|raw }}</td>
     {%- endif %}
     {%- if line.private -%}
         {{ block('line_private') }}
