@@ -164,7 +164,7 @@ abstract class AbstractSaleItemListener
             return false;
         }
 
-        return $this->saleItemUpdater->updateNetPriceAndDiscount($item, true);
+        return $this->saleItemUpdater->updateNetPriceAndDiscount($item);
     }
 
     /**
