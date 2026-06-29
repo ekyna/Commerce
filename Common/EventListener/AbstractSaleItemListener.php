@@ -57,11 +57,11 @@ abstract class AbstractSaleItemListener
     {
         $item = $this->getSaleItemFromEvent($event);
 
-        $change = false;
+        $changed = false;
 
         // Handle taxation update
         if ($this->persistenceHelper->isChanged($item, ['taxGroup'])) {
-            $change = $this->updateTaxation($item);
+            $changed = $this->updateTaxation($item);
         }
 
         // Handle discount update
@@ -70,11 +70,10 @@ abstract class AbstractSaleItemListener
             'quantity', 'compound', 'private'
         ];
         if ($this->persistenceHelper->isChanged($item, $discountFields)) {
-            $this->updateDiscount($item);
-            $change = true;
+            $changed = $this->updateDiscount($item) || $changed;
         }
 
-        if ($change) {
+        if ($changed) {
             $this->persistenceHelper->persistAndRecompute($item, false);
 
             $this->scheduleSaleContentChangeEvent($item->getRootSale());
@@ -164,7 +163,7 @@ abstract class AbstractSaleItemListener
             return false;
         }
 
-        return $this->saleItemUpdater->updateNetPriceAndDiscount($item);
+        return $this->saleItemUpdater->updateNetPriceAndDiscount($item, true);
     }
 
     /**

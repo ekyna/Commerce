@@ -64,7 +64,7 @@ class SaleItemUpdater implements SaleItemUpdaterInterface
             $changed = true;
 
             if ($persistence) {
-                $this->persistenceHelper->persistAndRecompute($item, true);
+                $this->persistenceHelper->persistAndRecompute($item, false);
             }
         }
 
@@ -79,6 +79,6 @@ class SaleItemUpdater implements SaleItemUpdaterInterface
             return $changed;
         }
 
-        return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item);
+        return $this->adjustmentBuilder->buildSaleItemDiscountAdjustments($item, $persistence);
     }
 }
