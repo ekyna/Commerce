@@ -43,7 +43,9 @@ class InvoiceSubjectCalculator implements InvoiceSubjectCalculatorInterface
      */
     public function isInvoiced(Item|Adjustment $itemOrAdjustment): bool
     {
-        $sale = $itemOrAdjustment->getRootSale();
+        $sale = $itemOrAdjustment instanceof Item
+            ? $itemOrAdjustment->getRootSale()
+            : $itemOrAdjustment->getSale();
         if (!$sale instanceof Subject) {
             return false;
         }

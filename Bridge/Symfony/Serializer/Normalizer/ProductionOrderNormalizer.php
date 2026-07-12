@@ -60,11 +60,11 @@ class ProductionOrderNormalizer extends ResourceNormalizer
             }
 
             return array_replace($data, [
-                'start_date' => $object->getStartAt()->format('Y-m-d'),
-                'end_date'   => $object->getEndAt()->format('Y-m-d'),
-                'produced' => $produced,
-                'quantity' => $object->getQuantity(),
-                'items' => $items,
+                'start_date' => $object->getStartAt()?->format('Y-m-d'),
+                'end_date'   => $object->getEndAt()?->format('Y-m-d'),
+                'produced'   => $produced,
+                'quantity'   => $object->getQuantity(),
+                'items'      => $items,
             ]);
         }
 
