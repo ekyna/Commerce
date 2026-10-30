@@ -535,7 +535,11 @@ class Order extends AbstractSale implements Model\OrderInterface
         }
 
         foreach ($this->getShipments() as $shipment) {
-            if (!Shipment\ShipmentStates::isStockableState($shipment, false)) {
+            if (in_array($shipment->getState(), [
+                Shipment\ShipmentStates::STATE_PREPARATION,
+                Shipment\ShipmentStates::STATE_PENDING,
+                Shipment\ShipmentStates::STATE_READY,
+            ], true)) {
                 return false;
             }
         }
